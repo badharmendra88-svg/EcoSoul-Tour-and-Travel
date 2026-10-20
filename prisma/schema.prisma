@@ -109,9 +109,92 @@ model Enquiry {
   createdAt       DateTime       @default(now())
   updatedAt       DateTime       @updatedAt
   events          EnquiryEvent[]
+  quotes          Quote[]
 
   @@index([status])
   @@index([kind, createdAt])
+}
+
+// ---------- Rate card & quotations (admin estimate calculator) ----------
+// All money values are whole rupees.
+
+model VehicleRate {
+  id              String   @id // matches vehicleCategories ids, e.g. SEDAN
+  name            String
+  example         String // e.g. "Swift Dzire or similar"
+  seats           Int
+  perKm           Int // outstation rate per km
+  minKmPerDay     Int // minimum chargeable km per day (outstation)
+  driverAllowance Int // per day
+  nightHalt       Int // driver night-stay charge per night
+  localPackage    Int // local package price per day
+  localHours      Int      @default(8)
+  localKm         Int      @default(80)
+  extraHour       Int
+  extraKm         Int
+  active          Boolean  @default(true)
+  sortOrder       Int      @default(100)
+  updatedAt       DateTime @updatedAt
+}
+
+model HotelRate {
+  id             String   @id // BUDGET | STANDARD | PREMIUM
+  name           String
+  description    String
+  perRoomNight   Int // double occupancy, breakfast included
+  mealsPerPerson Int // extra for dinner (MAP) per person per night
+  sortOrder      Int      @default(100)
+  updatedAt      DateTime @updatedAt
+}
+
+model QuoteSettings {
+  id               String   @id @default("default")
+  gstPct           Float
+  gstLabel         String
+  markupPct        Float
+  markupLabel      String
+  validityDays     Int
+  advancePct       Int
+  peakSurchargePct Int
+  terms            String // one per line
+  updatedAt        DateTime @updatedAt
+}
+
+model Quote {
+  id            String    @id @default(cuid())
+  token         String    @unique // unguessable public link token
+  number        String    @unique // e.g. Q-261020-7KQ4
+  enquiryId     String?
+  enquiry       Enquiry?  @relation(fields: [enquiryId], references: [id], onDelete: SetNull)
+  status        String    @default("DRAFT") // DRAFT | SENT | ACCEPTED | DECLINED
+  customerName  String
+  customerPhone String?
+  customerEmail String?
+  title         String
+  tripSummary   String?
+  travelDate    String?
+  items         String    @default("[]") // JSON {label,qty,unit,rate}[]
+  subtotal      Int
+  markupPct     Float
+  markupLabel   String
+  markupAmount  Int
+  taxPct        Float
+  taxLabel      String
+  taxAmount     Int
+  total         Int
+  advancePct    Int
+  inclusions    String    @default("[]") // JSON string[]
+  exclusions    String    @default("[]") // JSON string[]
+  notes         String?
+  terms         String    @default("[]") // JSON string[] (snapshot at save time)
+  calcInput     String? // JSON calculator inputs, to reopen the estimate
+  validUntil    String // yyyy-mm-dd
+  sentAt        DateTime?
+  sentVia       String?
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
+
+  @@index([enquiryId])
 }
 
 // Audit trail for status / assignment / note changes (§10 access rule, TR-10)

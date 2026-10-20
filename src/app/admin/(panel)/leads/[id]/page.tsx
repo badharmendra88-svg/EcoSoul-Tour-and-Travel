@@ -4,6 +4,7 @@ import { enquiryKinds, serviceTypes, statusesFor, vehicleCategories } from "@/co
 import { requireAdmin } from "@/lib/admin-auth";
 import { db } from "@/lib/db";
 import { formatDateTime } from "@/lib/format";
+import { rupees } from "@/lib/quote";
 import { retryNotificationAction, updateEnquiryAction } from "../../../actions";
 
 // Indian 10-digit numbers get the 91 country code for wa.me links
@@ -15,7 +16,7 @@ function customerWhatsApp(phone: string, text: string) {
 export default async function LeadDetailPage({ params }: { params: Promise<{ id: string }> }) {
   await requireAdmin();
   const { id } = await params;
-  const e = await db.enquiry.findUnique({ where: { id }, include: { events: { orderBy: { at: "desc" } } } });
+  const e = await db.enquiry.findUnique({ where: { id }, include: { events: { orderBy: { at: "desc" } }, quotes: { orderBy: { createdAt: "desc" } } } });
   if (!e) notFound();
 
   const statuses = statusesFor(e.kind);
@@ -52,6 +53,7 @@ export default async function LeadDetailPage({ params }: { params: Promise<{ id:
           <p className="text-sm text-slate-600">Received {formatDateTime(e.createdAt)} · updated {formatDateTime(e.updatedAt)}</p>
         </div>
         <div className="flex flex-wrap gap-2">
+          <Link href={`/admin/quotes/new/?lead=${e.id}`} className="btn-primary">Create quote</Link>
           {e.phone && (
             <>
               <a href={`tel:${e.phone.replace(/[^\d+]/g, "")}`} className="btn-outline">Call</a>
@@ -118,6 +120,23 @@ export default async function LeadDetailPage({ params }: { params: Promise<{ id:
         </div>
 
         <aside className="space-y-6">
+          <div className="rounded-xl border border-slate-200 bg-white p-6 text-sm">
+            <h2 className="font-semibold text-slate-900">Quotes</h2>
+            {e.quotes.length === 0 ? (
+              <p className="mt-2 text-slate-500">No quotes yet.</p>
+            ) : (
+              <ul className="mt-3 space-y-2">
+                {e.quotes.map((q) => (
+                  <li key={q.id} className="flex items-center justify-between gap-3">
+                    <Link href={`/admin/quotes/${q.id}/`} className="font-mono text-forest-700 hover:underline">{q.number}</Link>
+                    <span className="text-slate-600">{rupees(q.total)} · {q.status}</span>
+                  </li>
+                ))}
+              </ul>
+            )}
+            <Link href={`/admin/quotes/new/?lead=${e.id}`} className="mt-4 inline-block font-semibold text-forest-700 hover:underline">+ New quote from this lead</Link>
+          </div>
+
           <form action={updateEnquiryAction} className="space-y-4 rounded-xl border border-slate-200 bg-white p-6">
             <input type="hidden" name="id" value={e.id} />
             <h2 className="font-semibold text-slate-900">Manage</h2>

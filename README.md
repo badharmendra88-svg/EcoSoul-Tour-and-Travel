@@ -69,9 +69,15 @@ Admin panel: <http://localhost:3200/admin/> — sign in with `ADMIN_PASSWORD` fr
 
 ### Admin panel (`/admin/`, §10, FR-06/07, §24.7)
 - Password login with signed, HTTP-only session cookie; middleware + server-side checks on every page/action; login rate-limited.
-- **Leads:** filter/search, detail view, status workflows (trip: New → Contacted → Qualified → Quote Sent → Confirmed/Lost/Spam; transport: New Enquiry → Checking Availability → … → Completed/Cancelled/Incident), assignment, internal notes, activity log, call/WhatsApp/email shortcuts, CSV export.
+- **Leads:** filter/search, *Create quote*, detail view, status workflows (trip: New → Contacted → Qualified → Quote Sent → Confirmed/Lost/Spam; transport: New Enquiry → Checking Availability → … → Completed/Cancelled/Incident), assignment, internal notes, activity log, call/WhatsApp/email shortcuts, CSV export.
 - **Packages:** create/edit, publish / draft / **pause** (hides immediately), price must state a price basis, internal "must clarify before sale" notes, SEO fields.
 - **Destinations:** create/edit content, FAQs, SEO fields and "last reviewed" date; stale items (6+ months) flagged.
+
+### Estimate calculator & quotations (`/admin/quotes/`, `/admin/rates/`)
+- **Rate card** (editable): per-vehicle outstation ₹/km, minimum km/day, driver allowance, night halt, local 8 hr/80 km package, extra hour/km; hotel ₹/room-night for Budget/Standard/Premium plus dinner (MAP); service charge %, GST %, advance %, peak-season surcharge, validity days and default terms. Defaults are typical Uttarakhand market rates — replace them with partner rates (`src/config/rate-defaults.ts`).
+- **Calculator:** open a lead → *Create quote*. Customer, dates, travellers, vehicle and days are prefilled. Outstation = max(actual km, min km/day × days) × ₹/km + driver allowance + night halts + tolls; local = package/day + extras; hotel = rooms × nights (+ dinner, + peak surcharge). Results become editable line items; totals (service charge → GST → total, advance, per person) update live and are recomputed on the server.
+- **Sending:** each saved quote gets a number (`Q-261020-7KQ4`), an A4 **PDF** and a private customer link (`/quote/<token>/`). *Send on WhatsApp* opens the customer's chat with a pre-filled summary + link; email via mail app. Sending marks the quote **Sent** and moves the lead to **Quote Sent** with an activity-log entry; record Accepted/Declined later.
+- WhatsApp links can't attach files — download the PDF and attach it manually, or integrate the WhatsApp Business API later. Customer links work only once the site is deployed with a public `NEXT_PUBLIC_SITE_URL`. PDFs use built-in fonts, so `₹` prints as `Rs.` and Hindi text is not supported yet.
 
 ### SEO / analytics / accessibility (§12, §16, FR-09/10/12)
 - Unique titles, descriptions and canonical URLs; trailing-slash URLs per the SEO plan; breadcrumbs + BreadcrumbList, FAQPage and TravelAgency JSON-LD.
@@ -84,7 +90,7 @@ Admin panel: <http://localhost:3200/admin/> — sign in with `ADMIN_PASSWORD` fr
 
 ```
 prisma/
-  schema.prisma        Destination, Package, Enquiry, EnquiryEvent
+  schema.prisma        Destination, Package, Enquiry, EnquiryEvent, VehicleRate, HotelRate, QuoteSettings, Quote
   seed.mjs             Starter content (blueprint §5–§6)
 src/
   app/(site)/          Public pages
