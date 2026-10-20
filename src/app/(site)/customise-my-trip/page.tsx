@@ -38,7 +38,12 @@ export default async function CustomiseTripPage({ searchParams }: { searchParams
         <div className="card p-6 sm:p-8">
           <TripEnquiryForm
             mode="custom"
-            destinations={[...destinations.map((d) => d.name), "Char Dham Yatra", "Kumaon circuit", "Garhwal circuit"]}
+            destinations={[
+              ...destinations.map((d) => ({ value: d.name, hint: d.region })),
+              { value: "Char Dham Yatra", hint: "Pilgrimage" },
+              { value: "Kumaon circuit", hint: "Multi-stop" },
+              { value: "Garhwal circuit", hint: "Multi-stop" },
+            ]}
             initial={{
               destination: sp.destination?.slice(0, 120),
               travelDate: sp.date && /^\d{4}-\d{2}-\d{2}$/.test(sp.date) ? sp.date : undefined,

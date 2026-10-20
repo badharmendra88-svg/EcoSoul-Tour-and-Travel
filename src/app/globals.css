@@ -133,3 +133,77 @@ body {
     @apply inline-flex min-h-8 items-center rounded-full bg-forest-50 px-3 py-1 text-xs font-medium text-forest-700;
   }
 }
+
+/* ---- Dropdowns (all public + admin <select>s) ----
+   Closed state: one consistent custom chevron everywhere.
+   Open list: styled in browsers that support customizable <select>
+   (appearance: base-select — Chrome/Edge 135+); others keep the native list. */
+select.input,
+select.admin-input {
+  appearance: none;
+  -webkit-appearance: none;
+  padding-right: 2.5rem;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%2364748b' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='m6 9 6 6 6-6'/%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-position: right 0.85rem center;
+  background-size: 1rem;
+  cursor: pointer;
+  text-overflow: ellipsis;
+}
+select.input:disabled,
+select.admin-input:disabled {
+  cursor: not-allowed;
+  opacity: 0.6;
+}
+
+@supports (appearance: base-select) {
+  select.input,
+  select.admin-input {
+    appearance: base-select;
+  }
+  select.input::picker-icon,
+  select.admin-input::picker-icon {
+    display: none; /* the chevron above is used instead */
+  }
+  select.input::picker(select),
+  select.admin-input::picker(select) {
+    appearance: base-select;
+    margin-block: 0.375rem;
+    padding: 0.375rem;
+    min-width: anchor-size(width);
+    max-height: min(22rem, 60vh);
+    overflow-y: auto;
+    border: 1px solid var(--color-slate-200);
+    border-radius: 0.875rem;
+    background: #fff;
+    box-shadow:
+      0 16px 40px -12px rgb(15 38 27 / 0.25),
+      0 2px 6px rgb(15 38 27 / 0.08);
+  }
+  select.input option,
+  select.admin-input option {
+    padding: 0.6rem 0.75rem;
+    border-radius: 0.625rem;
+    font-size: 0.9375rem;
+    color: var(--color-slate-700);
+    cursor: pointer;
+  }
+  select.input option:hover,
+  select.input option:focus-visible,
+  select.admin-input option:hover,
+  select.admin-input option:focus-visible {
+    background: var(--color-forest-50);
+    color: var(--color-forest-800);
+    outline: none;
+  }
+  select.input option:checked,
+  select.admin-input option:checked {
+    background: var(--color-forest-100);
+    color: var(--color-forest-900);
+    font-weight: 600;
+  }
+  select.input option::checkmark,
+  select.admin-input option::checkmark {
+    color: var(--color-forest-700);
+  }
+}

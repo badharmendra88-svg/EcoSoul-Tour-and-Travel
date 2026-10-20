@@ -3,6 +3,7 @@
 import { useState } from "react";
 import { budgetBands, interests as interestOptions } from "@/config/options";
 import { WhatsAppButton } from "../ContactButtons";
+import { Combobox, type ComboOption } from "./Combobox";
 import {
   ConsentField,
   ContactFields,
@@ -21,7 +22,7 @@ type Props = {
   mode: "custom" | "package";
   packageSlug?: string;
   packageTitle?: string;
-  destinations?: string[];
+  destinations?: ComboOption[];
   initial?: { destination?: string; travelDate?: string; adults?: string; interest?: string };
 };
 
@@ -119,18 +120,14 @@ export function TripEnquiryForm({ mode, packageSlug, packageTitle, destinations 
       {mode === "custom" && (
         <div className="sm:col-span-2">
           <Field id="destination" label="Where would you like to go?" hint="Pick one or leave blank if you'd like suggestions">
-            <input
-              {...inputProps("destination")}
-              list="destination-options"
+            <Combobox
+              id="destination"
+              describedBy="destination-hint"
               placeholder="e.g. Nainital, Kumaon circuit, Char Dham"
               value={v.destination}
-              onChange={(e) => set("destination", e.target.value)}
+              onChange={(x) => set("destination", x)}
+              options={destinations}
             />
-            <datalist id="destination-options">
-              {destinations.map((d) => (
-                <option key={d} value={d} />
-              ))}
-            </datalist>
           </Field>
         </div>
       )}
