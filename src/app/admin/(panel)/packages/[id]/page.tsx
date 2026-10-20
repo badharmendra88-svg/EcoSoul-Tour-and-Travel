@@ -6,6 +6,7 @@ import { db } from "@/lib/db";
 import { itineraryToLines, jsonToLines } from "@/lib/json";
 import { savePackageAction } from "../../../actions";
 import { FormBanner, TextArea, TextField } from "../../AdminFields";
+import { Icon, PageHeader } from "../../ui";
 
 export default async function EditPackagePage({
   params,
@@ -26,25 +27,30 @@ export default async function EditPackagePage({
   const selected = new Set(pkg?.destinations.map((d) => d.slug));
 
   return (
-    <div className="max-w-4xl space-y-6">
-      <Link href="/admin/packages/" className="text-sm text-slate-600 hover:underline">← All packages</Link>
-      <div className="flex flex-wrap items-center justify-between gap-3">
-        <h1 className="text-2xl font-bold text-slate-900">{isNew ? "New package" : pkg!.title}</h1>
-        {pkg?.status === "PUBLISHED" && (
-          <Link href={`/packages/${pkg.slug}/`} target="_blank" className="text-sm text-forest-700 hover:underline">View on site ↗</Link>
-        )}
-      </div>
+    <div className="max-w-5xl space-y-6">
+      <PageHeader
+        back={{ href: "/admin/packages/", label: "All packages" }}
+        eyebrow="Package"
+        title={isNew ? "New package" : pkg!.title}
+        actions={
+          pkg?.status === "PUBLISHED" && (
+            <Link href={`/packages/${pkg.slug}/`} target="_blank" className="btn-admin-ghost">
+              <Icon name="external" /> View on site
+            </Link>
+          )
+        }
+      />
       <FormBanner saved={saved} error={error} />
 
       <form action={savePackageAction} className="space-y-6">
         <input type="hidden" name="id" value={pkg?.id ?? ""} />
 
-        <section className="grid gap-4 rounded-xl border border-slate-200 bg-white p-6 sm:grid-cols-2">
+        <section className="grid gap-4 panel p-6 sm:grid-cols-2">
           <div className="sm:col-span-2"><TextField name="title" label="Title" defaultValue={pkg?.title} required maxLength={160} /></div>
           <TextField name="slug" label="URL slug" defaultValue={pkg?.slug} hint="Lowercase words with hyphens. Changing it changes the public URL." />
           <div>
-            <label htmlFor="status" className="label">Status</label>
-            <select id="status" name="status" defaultValue={pkg?.status ?? "DRAFT"} className="input">
+            <label htmlFor="status" className="admin-label">Status</label>
+            <select id="status" name="status" defaultValue={pkg?.status ?? "DRAFT"} className="admin-input">
               <option value="DRAFT">Draft (hidden)</option>
               <option value="PUBLISHED">Published</option>
               <option value="PAUSED">Paused (hidden — unavailable/unsafe)</option>
@@ -52,8 +58,8 @@ export default async function EditPackagePage({
           </div>
           <div className="sm:col-span-2"><TextArea name="summary" label="Summary" defaultValue={pkg?.summary} rows={2} required /></div>
           <div>
-            <label htmlFor="tripType" className="label">Trip type</label>
-            <select id="tripType" name="tripType" defaultValue={pkg?.tripType ?? "FAMILY"} className="input">
+            <label htmlFor="tripType" className="admin-label">Trip type</label>
+            <select id="tripType" name="tripType" defaultValue={pkg?.tripType ?? "FAMILY"} className="admin-input">
               {Object.entries(tripTypes).map(([k, l]) => (
                 <option key={k} value={k}>{l}</option>
               ))}
@@ -69,14 +75,14 @@ export default async function EditPackagePage({
           <TextField name="sortOrder" label="Sort order" type="number" defaultValue={pkg?.sortOrder ?? 100} />
         </section>
 
-        <section className="grid gap-4 rounded-xl border border-slate-200 bg-white p-6 sm:grid-cols-2">
-          <h2 className="font-semibold text-slate-900 sm:col-span-2">Price</h2>
+        <section className="grid gap-4 panel p-6 sm:grid-cols-2">
+          <h2 className="text-[15px] font-semibold text-slate-900 sm:col-span-2">Price</h2>
           <TextField name="startingPrice" label="Starting price (INR)" type="number" defaultValue={pkg?.startingPrice} hint="Leave empty to show “Price on request”. Only enter verified, costed prices." />
           <TextField name="priceBasis" label="Price basis" defaultValue={pkg?.priceBasis} hint="Required with a price: per person / per couple / per room / per vehicle…" />
         </section>
 
-        <section className="space-y-4 rounded-xl border border-slate-200 bg-white p-6">
-          <h2 className="font-semibold text-slate-900">Destinations</h2>
+        <section className="space-y-4 panel p-6">
+          <h2 className="text-[15px] font-semibold text-slate-900">Destinations</h2>
           <div className="grid grid-cols-2 gap-2 sm:grid-cols-4">
             {destinations.map((d) => (
               <label key={d.slug} className="flex items-center gap-2 text-sm">
@@ -87,8 +93,8 @@ export default async function EditPackagePage({
           </div>
         </section>
 
-        <section className="space-y-4 rounded-xl border border-slate-200 bg-white p-6">
-          <h2 className="font-semibold text-slate-900">Itinerary & inclusions</h2>
+        <section className="space-y-4 panel p-6">
+          <h2 className="text-[15px] font-semibold text-slate-900">Itinerary & inclusions</h2>
           <TextArea name="itinerary" label="Day-wise itinerary" rows={7} defaultValue={itineraryToLines(pkg?.itinerary)} hint="One day per line: Title | Details" />
           <div className="grid gap-4 sm:grid-cols-2">
             <TextArea name="inclusions" label="Inclusions" rows={6} defaultValue={jsonToLines(pkg?.inclusions)} hint="One per line" />
@@ -98,13 +104,13 @@ export default async function EditPackagePage({
           <TextArea name="internalNotes" label="Internal notes (never shown publicly)" rows={3} defaultValue={pkg?.internalNotes} hint="What must be clarified before sale, supplier notes…" />
         </section>
 
-        <section className="grid gap-4 rounded-xl border border-slate-200 bg-white p-6">
-          <h2 className="font-semibold text-slate-900">SEO</h2>
+        <section className="grid gap-4 panel p-6">
+          <h2 className="text-[15px] font-semibold text-slate-900">SEO</h2>
           <TextField name="seoTitle" label="SEO title" defaultValue={pkg?.seoTitle} maxLength={70} hint="Optional, up to ~60 characters. Defaults to the title + duration." />
           <TextArea name="seoDescription" label="Meta description" defaultValue={pkg?.seoDescription} rows={2} hint="Optional, up to ~155 characters. Defaults to the summary." />
         </section>
 
-        <button className="btn-secondary">Save package</button>
+        <button className="btn-admin-primary sticky bottom-4 px-6 py-3 shadow-xl shadow-forest-900/25"><Icon name="check" /> Save package</button>
       </form>
     </div>
   );

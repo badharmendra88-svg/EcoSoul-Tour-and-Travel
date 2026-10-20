@@ -1,69 +1,121 @@
 import Link from "next/link";
 import { requireAdmin } from "@/lib/admin-auth";
 import { db } from "@/lib/db";
-import { formatDate, formatDateTime } from "@/lib/format";
+import { formatDate } from "@/lib/format";
 import { rupees } from "@/lib/quote";
+import { Avatar, EmptyState, Icon, PageHeader, StatCard, StatusBadge, compactRupees, timeAgo } from "../ui";
 
-const statusStyle: Record<string, string> = {
-  DRAFT: "bg-slate-100 text-slate-700",
-  SENT: "bg-blue-100 text-blue-800",
-  ACCEPTED: "bg-green-100 text-green-800",
-  DECLINED: "bg-red-100 text-red-800",
-};
+const filters = [
+  { id: "", label: "All" },
+  { id: "DRAFT", label: "Draft" },
+  { id: "SENT", label: "Sent" },
+  { id: "ACCEPTED", label: "Accepted" },
+  { id: "DECLINED", label: "Declined" },
+];
 
-export default async function QuotesPage() {
+export default async function QuotesPage({ searchParams }: { searchParams: Promise<{ status?: string }> }) {
   await requireAdmin();
-  const quotes = await db.quote.findMany({ orderBy: { createdAt: "desc" }, take: 200, include: { enquiry: { select: { ref: true } } } });
+  const { status } = await searchParams;
+  const valid = filters.some((f) => f.id === status) ? status : undefined;
   const today = new Date(Date.now() + 5.5 * 3600 * 1000).toISOString().slice(0, 10);
 
+  const [quotes, groups] = await Promise.all([
+    db.quote.findMany({
+      where: valid ? { status: valid } : {},
+      orderBy: { createdAt: "desc" },
+      take: 200,
+      include: { enquiry: { select: { ref: true } } },
+    }),
+    db.quote.groupBy({ by: ["status"], _count: true, _sum: { total: true } }),
+  ]);
+  const g = Object.fromEntries(groups.map((x) => [x.status, { count: x._count, sum: x._sum.total ?? 0 }]));
+  const decided = (g.ACCEPTED?.count ?? 0) + (g.DECLINED?.count ?? 0);
+  const winRate = decided ? Math.round(((g.ACCEPTED?.count ?? 0) / decided) * 100) : 0;
+  const allCount = groups.reduce((s, x) => s + x._count, 0);
+
   return (
-    <div className="space-y-6">
-      <div className="flex flex-wrap items-end justify-between gap-4">
-        <div>
-          <h1 className="text-2xl font-bold text-slate-900">Quotes</h1>
-          <p className="text-sm text-slate-600">Create estimates from the calculator, then send them as PDF / WhatsApp.</p>
-        </div>
-        <div className="flex gap-2">
-          <Link href="/admin/rates/" className="btn-outline">Rate card</Link>
-          <Link href="/admin/quotes/new/" className="btn-secondary">New quote</Link>
-        </div>
+    <>
+      <PageHeader
+        eyebrow="Sales"
+        title="Quotes"
+        subtitle="Estimates built with the calculator — send them as PDF, link or WhatsApp."
+        actions={
+          <>
+            <Link href="/admin/rates/" className="btn-admin-ghost"><Icon name="calculator" /> Rate card</Link>
+            <Link href="/admin/quotes/new/" className="btn-admin-primary"><Icon name="plus" /> New quote</Link>
+          </>
+        }
+      />
+
+      <div className="grid grid-cols-2 gap-3 sm:gap-4 xl:grid-cols-4">
+        <StatCard label="Drafts" value={g.DRAFT?.count ?? 0} hint={`${compactRupees(g.DRAFT?.sum ?? 0)} not yet sent`} icon="edit" tone="slate" />
+        <StatCard label="Awaiting reply" value={compactRupees(g.SENT?.sum ?? 0)} hint={`${g.SENT?.count ?? 0} quotes sent`} icon="clock" tone="indigo" />
+        <StatCard label="Accepted" value={compactRupees(g.ACCEPTED?.sum ?? 0)} hint={`${g.ACCEPTED?.count ?? 0} quotes won`} icon="check" tone="emerald" />
+        <StatCard label="Win rate" value={`${winRate}%`} hint={decided ? `of ${decided} decided quotes` : "No decisions yet"} icon="trend" tone="amber" />
       </div>
-      <div className="overflow-x-auto rounded-xl border border-slate-200 bg-white">
-        <table className="w-full min-w-[800px] text-left text-sm">
-          <thead className="bg-slate-50 text-xs tracking-wide text-slate-500 uppercase">
-            <tr>
-              <th className="px-4 py-3">Quote</th>
-              <th className="px-4 py-3">Customer</th>
-              <th className="px-4 py-3">Trip</th>
-              <th className="px-4 py-3 text-right">Total</th>
-              <th className="px-4 py-3">Valid until</th>
-              <th className="px-4 py-3">Status</th>
-              <th className="px-4 py-3">Created</th>
-            </tr>
-          </thead>
-          <tbody className="divide-y divide-slate-100">
-            {quotes.map((q) => (
-              <tr key={q.id} className="hover:bg-slate-50">
-                <td className="px-4 py-3 font-mono">
-                  <Link href={`/admin/quotes/${q.id}/`} className="text-forest-700 hover:underline">{q.number}</Link>
-                  {q.enquiry && <div className="text-xs text-slate-500">Lead {q.enquiry.ref}</div>}
-                </td>
-                <td className="px-4 py-3">{q.customerName}</td>
-                <td className="max-w-64 truncate px-4 py-3 text-slate-700">{q.title}</td>
-                <td className="px-4 py-3 text-right font-medium">{rupees(q.total)}</td>
-                <td className={`px-4 py-3 ${q.validUntil < today && q.status !== "ACCEPTED" ? "text-red-700" : ""}`}>{formatDate(q.validUntil)}</td>
-                <td className="px-4 py-3">
-                  <span className={`rounded-full px-2 py-0.5 text-xs font-medium ${statusStyle[q.status] ?? ""}`}>{q.status}</span>
-                </td>
-                <td className="px-4 py-3 text-slate-500">{formatDateTime(q.createdAt)}</td>
-              </tr>
+
+      <div className="panel mt-8 overflow-hidden">
+        <div className="border-b border-slate-100 p-4 sm:p-5">
+          <nav aria-label="Quote status" className="inline-flex flex-wrap gap-1 rounded-xl bg-slate-100/80 p-1">
+            {filters.map((f) => (
+              <Link key={f.id} href={f.id ? `/admin/quotes/?status=${f.id}` : "/admin/quotes/"} className={`admin-tab ${(valid ?? "") === f.id ? "admin-tab-active" : ""}`}>
+                {f.label}
+                <span className="text-xs text-slate-400 tabular-nums">{f.id ? g[f.id]?.count ?? 0 : allCount}</span>
+              </Link>
             ))}
-            {quotes.length === 0 && (
-              <tr><td colSpan={7} className="px-4 py-10 text-center text-slate-500">No quotes yet. Open a lead and click “Create quote”, or start a new one.</td></tr>
-            )}
-          </tbody>
-        </table>
+          </nav>
+        </div>
+        <div className="overflow-x-auto">
+          <table className="w-full min-w-[900px] text-sm">
+            <thead className="bg-slate-50/70">
+              <tr>
+                <th className="admin-th">Customer</th>
+                <th className="admin-th">Quote</th>
+                <th className="admin-th">Trip</th>
+                <th className="admin-th text-right">Total</th>
+                <th className="admin-th">Valid until</th>
+                <th className="admin-th">Status</th>
+                <th className="admin-th text-right">Created</th>
+              </tr>
+            </thead>
+            <tbody className="divide-y divide-slate-100">
+              {quotes.map((q) => {
+                const expired = q.validUntil < today && (q.status === "SENT" || q.status === "DRAFT");
+                return (
+                  <tr key={q.id} className="admin-row group relative">
+                    <td className="admin-td">
+                      <Link href={`/admin/quotes/${q.id}/`} className="flex items-center gap-3 after:absolute after:inset-0">
+                        <Avatar name={q.customerName} size="sm" />
+                        <span className="font-medium text-slate-900 group-hover:text-forest-700">{q.customerName}</span>
+                      </Link>
+                    </td>
+                    <td className="admin-td">
+                      <span className="block font-mono text-xs text-slate-700">{q.number}</span>
+                      {q.enquiry && <span className="block text-xs text-slate-500">Lead {q.enquiry.ref}</span>}
+                    </td>
+                    <td className="admin-td max-w-72"><span className="block truncate text-slate-700">{q.title}</span></td>
+                    <td className="admin-td text-right font-semibold text-slate-900 tabular-nums">{rupees(q.total)}</td>
+                    <td className="admin-td whitespace-nowrap">
+                      <span className={expired ? "font-medium text-rose-600" : "text-slate-600"}>{formatDate(q.validUntil)}</span>
+                      {expired && <span className="block text-xs text-rose-500">Expired</span>}
+                    </td>
+                    <td className="admin-td"><StatusBadge status={q.status} /></td>
+                    <td className="admin-td text-right whitespace-nowrap text-slate-500">{timeAgo(q.createdAt)}</td>
+                  </tr>
+                );
+              })}
+            </tbody>
+          </table>
+          {quotes.length === 0 && (
+            <EmptyState
+              icon="quote"
+              title="No quotes here yet"
+              text="Open a lead and click “Create quote”, or start a blank quote."
+              action={<Link href="/admin/quotes/new/" className="btn-admin-primary"><Icon name="plus" /> New quote</Link>}
+            />
+          )}
+        </div>
       </div>
-    </div>
+    </>
   );
 }

@@ -7,6 +7,7 @@
   --color-forest-100: #d6e8dc;
   --color-forest-200: #aed1ba;
   --color-forest-300: #7fb394;
+  --color-forest-400: #5a9673;
   --color-forest-500: #2f6b47;
   --color-forest-600: #25583a;
   --color-forest-700: #1d4630;
@@ -87,6 +88,46 @@ body {
   }
   .field-error {
     @apply mt-1 text-sm text-red-700;
+  }
+  /* ---- Admin ---- */
+  .panel {
+    @apply rounded-2xl bg-white shadow-[0_1px_2px_rgba(15,38,27,0.04),0_4px_16px_-4px_rgba(15,38,27,0.06)] ring-1 ring-slate-900/[0.06];
+  }
+  .admin-th {
+    @apply px-5 py-3 text-left text-[11px] font-semibold tracking-wider whitespace-nowrap text-slate-500 uppercase;
+  }
+  .admin-td {
+    @apply px-5 py-4 align-middle;
+  }
+  .admin-row {
+    @apply transition-colors hover:bg-forest-50/40;
+  }
+  .admin-tab {
+    @apply inline-flex items-center gap-2 rounded-lg px-3 py-1.5 text-sm font-medium text-slate-600 transition-colors hover:bg-white hover:text-slate-900;
+  }
+  .admin-tab-active {
+    @apply bg-white text-slate-900 shadow-sm ring-1 ring-slate-900/5;
+  }
+  .btn-admin {
+    @apply inline-flex items-center justify-center gap-2 rounded-xl px-4 py-2.5 text-sm font-semibold transition-all disabled:cursor-not-allowed disabled:opacity-60;
+  }
+  .btn-admin-primary {
+    @apply inline-flex items-center justify-center gap-2 rounded-xl bg-forest-700 px-4 py-2.5 text-sm font-semibold text-white shadow-sm shadow-forest-900/20 transition-all hover:bg-forest-800 disabled:cursor-not-allowed disabled:opacity-60;
+  }
+  .btn-admin-accent {
+    @apply inline-flex items-center justify-center gap-2 rounded-xl bg-accent px-4 py-2.5 text-sm font-semibold text-forest-900 shadow-sm transition-all hover:bg-accent-strong disabled:cursor-not-allowed disabled:opacity-60;
+  }
+  .btn-admin-ghost {
+    @apply inline-flex items-center justify-center gap-2 rounded-xl bg-white px-4 py-2.5 text-sm font-semibold text-slate-700 shadow-sm ring-1 ring-slate-900/10 transition-all hover:bg-slate-50 hover:text-slate-900 disabled:cursor-not-allowed disabled:opacity-60;
+  }
+  .btn-admin-whatsapp {
+    @apply inline-flex items-center justify-center gap-2 rounded-xl bg-[#1fa855] px-4 py-2.5 text-sm font-semibold text-white shadow-sm transition-all hover:bg-[#178f47];
+  }
+  .admin-input {
+    @apply w-full rounded-xl border-0 bg-white px-3.5 py-2.5 text-sm text-slate-900 shadow-sm ring-1 ring-slate-900/10 transition-shadow ring-inset placeholder:text-slate-400 focus:ring-2 focus:ring-forest-500 focus:outline-none;
+  }
+  .admin-label {
+    @apply mb-1.5 block text-[13px] font-medium text-slate-700;
   }
   .chip {
     @apply inline-flex items-center rounded-full bg-forest-50 px-2.5 py-1 text-xs font-medium text-forest-700;

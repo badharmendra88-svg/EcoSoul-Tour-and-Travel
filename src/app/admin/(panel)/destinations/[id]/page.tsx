@@ -6,6 +6,7 @@ import { faqsToLines, jsonToLines } from "@/lib/json";
 import { formatDate } from "@/lib/format";
 import { saveDestinationAction } from "../../../actions";
 import { FormBanner, TextArea, TextField } from "../../AdminFields";
+import { Icon, PageHeader } from "../../ui";
 
 const scenes = ["mountain", "lake", "river", "forest", "snow", "temple", "meadow"];
 
@@ -24,41 +25,46 @@ export default async function EditDestinationPage({
   if (!isNew && !d) notFound();
 
   return (
-    <div className="max-w-4xl space-y-6">
-      <Link href="/admin/destinations/" className="text-sm text-slate-600 hover:underline">← All destinations</Link>
-      <div className="flex flex-wrap items-center justify-between gap-3">
-        <h1 className="text-2xl font-bold text-slate-900">{isNew ? "New destination" : d!.name}</h1>
-        {d?.status === "PUBLISHED" && (
-          <Link href={`/destinations/${d.slug}/`} target="_blank" className="text-sm text-forest-700 hover:underline">View on site ↗</Link>
-        )}
-      </div>
+    <div className="max-w-5xl space-y-6">
+      <PageHeader
+        back={{ href: "/admin/destinations/", label: "All destinations" }}
+        eyebrow="Destination"
+        title={isNew ? "New destination" : d!.name}
+        actions={
+          d?.status === "PUBLISHED" && (
+            <Link href={`/destinations/${d.slug}/`} target="_blank" className="btn-admin-ghost">
+              <Icon name="external" /> View on site
+            </Link>
+          )
+        }
+      />
       <FormBanner saved={saved} error={error} />
 
       <form action={saveDestinationAction} className="space-y-6">
         <input type="hidden" name="id" value={d?.id ?? ""} />
 
-        <section className="grid gap-4 rounded-xl border border-slate-200 bg-white p-6 sm:grid-cols-2">
+        <section className="grid gap-4 panel p-6 sm:grid-cols-2">
           <TextField name="name" label="Name" defaultValue={d?.name} required />
           <TextField name="slug" label="URL slug" defaultValue={d?.slug} hint="Changing it changes the public URL." />
           <div>
-            <label htmlFor="region" className="label">Region</label>
-            <select id="region" name="region" defaultValue={d?.region ?? "Kumaon"} className="input">
+            <label htmlFor="region" className="admin-label">Region</label>
+            <select id="region" name="region" defaultValue={d?.region ?? "Kumaon"} className="admin-input">
               <option>Kumaon</option>
               <option>Garhwal</option>
             </select>
           </div>
           <TextField name="cluster" label="Category" defaultValue={d?.cluster} hint="e.g. Lake & hill escapes, Hill stations, Wildlife & nature" />
           <div>
-            <label htmlFor="scene" className="label">Artwork style</label>
-            <select id="scene" name="scene" defaultValue={d?.scene ?? "mountain"} className="input">
+            <label htmlFor="scene" className="admin-label">Artwork style</label>
+            <select id="scene" name="scene" defaultValue={d?.scene ?? "mountain"} className="admin-input">
               {scenes.map((s) => (
                 <option key={s}>{s}</option>
               ))}
             </select>
           </div>
           <div>
-            <label htmlFor="status" className="label">Status</label>
-            <select id="status" name="status" defaultValue={d?.status ?? "DRAFT"} className="input">
+            <label htmlFor="status" className="admin-label">Status</label>
+            <select id="status" name="status" defaultValue={d?.status ?? "DRAFT"} className="admin-input">
               <option value="DRAFT">Draft (hidden)</option>
               <option value="PUBLISHED">Published</option>
             </select>
@@ -66,8 +72,8 @@ export default async function EditDestinationPage({
           <TextField name="sortOrder" label="Sort order" type="number" defaultValue={d?.sortOrder ?? 100} />
         </section>
 
-        <section className="space-y-4 rounded-xl border border-slate-200 bg-white p-6">
-          <h2 className="font-semibold text-slate-900">Content</h2>
+        <section className="space-y-4 panel p-6">
+          <h2 className="text-[15px] font-semibold text-slate-900">Content</h2>
           <TextArea name="summary" label="Card summary" defaultValue={d?.summary} rows={2} required />
           <TextArea name="intro" label="Introduction" defaultValue={d?.intro} rows={4} required hint="Original text: what the place is known for and who it suits." />
           <TextArea name="bestTime" label="Best time to visit" defaultValue={d?.bestTime} rows={3} hint="Qualify by weather, road, snow and activity conditions." />
@@ -85,13 +91,13 @@ export default async function EditDestinationPage({
           </label>
         </section>
 
-        <section className="grid gap-4 rounded-xl border border-slate-200 bg-white p-6">
-          <h2 className="font-semibold text-slate-900">SEO</h2>
+        <section className="grid gap-4 panel p-6">
+          <h2 className="text-[15px] font-semibold text-slate-900">SEO</h2>
           <TextField name="seoTitle" label="SEO title" defaultValue={d?.seoTitle} maxLength={70} />
           <TextArea name="seoDescription" label="Meta description" defaultValue={d?.seoDescription} rows={2} />
         </section>
 
-        <button className="btn-secondary">Save destination</button>
+        <button className="btn-admin-primary sticky bottom-4 px-6 py-3 shadow-xl shadow-forest-900/25"><Icon name="check" /> Save destination</button>
       </form>
     </div>
   );

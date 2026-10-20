@@ -11,6 +11,7 @@ import { getRateCard } from "@/lib/rates";
 import { setQuoteStatusAction } from "../../../quote-actions";
 import { QuoteBuilder, type BuilderInitial } from "../QuoteBuilder";
 import { SendPanel } from "../SendPanel";
+import { Avatar, Icon, PageHeader, Panel, StatusBadge } from "../../ui";
 
 const defaultTransportInclusions = ["Vehicle as per category for the dates and route above", "Fuel and driver charges", "Driver allowance and night halts as listed"];
 const defaultTransportExclusions = ["Tolls, parking and state entry taxes beyond the estimate (at actuals)", "Entry tickets, activities and meals", "Anything not listed under inclusions"];
@@ -150,24 +151,40 @@ export default async function QuotePage({
 
   return (
     <div className="space-y-6">
-      <div className="flex flex-wrap items-center gap-4 text-sm">
-        <Link href="/admin/quotes/" className="text-slate-600 hover:underline">← All quotes</Link>
-        {lead && <Link href={`/admin/leads/${lead.id}/`} className="text-forest-700 hover:underline">Lead {lead.ref}</Link>}
-      </div>
-      <div className="flex flex-wrap items-end justify-between gap-4">
-        <div>
-          <h1 className="text-2xl font-bold text-slate-900">{quote ? `Quote ${quote.number}` : "New quote"}</h1>
-          {quote && (
-            <p className="text-sm text-slate-600">
-              Status: <strong>{quote.status}</strong> · created {formatDateTime(quote.createdAt)}
+      <PageHeader
+        back={{ href: "/admin/quotes/", label: "All quotes" }}
+        eyebrow={quote ? "Quotation" : "Estimate calculator"}
+        title={
+          <span className="flex flex-wrap items-center gap-3">
+            {quote ? <span className="font-mono">{quote.number}</span> : "New quote"}
+            {quote && <StatusBadge status={quote.status} />}
+          </span>
+        }
+        subtitle={
+          quote ? (
+            <>
+              Created {formatDateTime(quote.createdAt)}
               {quote.sentAt && <> · sent {formatDateTime(quote.sentAt)} via {quote.sentVia?.toLowerCase()}</>}
-            </p>
-          )}
-        </div>
-      </div>
-      {saved && <p role="status" className="rounded-lg border border-green-200 bg-green-50 px-4 py-3 text-sm text-green-800">Quote saved. Download the PDF or send it from the panel.</p>}
+            </>
+          ) : (
+            "Calculate from the rate card, adjust line items, then save to send."
+          )
+        }
+        actions={
+          lead && (
+            <Link href={`/admin/leads/${lead.id}/`} className="btn-admin-ghost">
+              <Avatar name={lead.name} size="sm" /> {lead.name} · <span className="font-mono text-xs">{lead.ref}</span>
+            </Link>
+          )
+        }
+      />
+      {saved && (
+        <p role="status" className="-mt-2 flex items-center gap-2 rounded-2xl bg-emerald-50 px-5 py-3 text-sm text-emerald-800 ring-1 ring-emerald-100">
+          <Icon name="check" /> Quote saved. Download the PDF or send it from the panel.
+        </p>
+      )}
 
-      <div className="grid gap-6 xl:grid-cols-[1fr_340px]">
+      <div className="grid gap-6 xl:grid-cols-[1fr_360px]">
         <QuoteBuilder
           key={quote?.updatedAt.toISOString() ?? "new"}
           quoteId={quote?.id}
@@ -190,28 +207,32 @@ export default async function QuotePage({
                 message={message}
                 emailSubject={`Your quotation ${quote.number} — ${site.name}`}
               />
-              <form action={setQuoteStatusAction} className="space-y-3 rounded-xl border border-slate-200 bg-white p-6">
-                <input type="hidden" name="id" value={quote.id} />
-                <h2 className="font-semibold text-slate-900">Customer response</h2>
-                <div className="flex flex-wrap gap-2">
-                  <button name="status" value="ACCEPTED" className="btn-secondary px-4 py-2">Accepted</button>
-                  <button name="status" value="DECLINED" className="btn-outline px-4 py-2">Declined</button>
-                </div>
-                <p className="text-xs text-slate-500">After acceptance, confirm partners and update the lead status.</p>
-              </form>
+              <Panel title="Customer response" icon="check">
+                <form action={setQuoteStatusAction} className="space-y-3">
+                  <input type="hidden" name="id" value={quote.id} />
+                  <div className="grid grid-cols-2 gap-2">
+                    <button name="status" value="ACCEPTED" className="btn-admin-primary">Accepted</button>
+                    <button name="status" value="DECLINED" className="btn-admin-ghost">Declined</button>
+                  </div>
+                  <p className="text-xs text-slate-500">After acceptance, confirm partners and update the lead status.</p>
+                </form>
+              </Panel>
             </>
           ) : (
-            <div className="rounded-xl border border-dashed border-slate-300 bg-white p-6 text-sm text-slate-600">
-              Save the quote to get the PDF, customer link and WhatsApp sending options.
+            <div className="flex flex-col items-center rounded-2xl border-2 border-dashed border-slate-200 bg-white/50 p-8 text-center text-sm text-slate-500">
+              <span className="flex h-11 w-11 items-center justify-center rounded-2xl bg-forest-50 text-forest-700"><Icon name="quote" className="h-5 w-5" /></span>
+              <p className="mt-3 font-medium text-slate-700">Ready to send?</p>
+              <p className="mt-1">Save the quote to unlock the PDF, customer link and WhatsApp sending.</p>
             </div>
           )}
           {lead && (
-            <div className="rounded-xl border border-slate-200 bg-white p-6 text-sm">
-              <h2 className="font-semibold text-slate-900">From the enquiry</h2>
-              {lead.message ? <p className="mt-2 whitespace-pre-wrap text-slate-700">{lead.message}</p> : <p className="mt-2 text-slate-500">No message.</p>}
-              {lead.budgetBand && <p className="mt-2 text-slate-600">Budget: {lead.budgetBand}</p>}
-              {lead.interests && <p className="mt-1 text-slate-600">Interests: {lead.interests}</p>}
-            </div>
+            <Panel title="From the enquiry" icon="message">
+              <div className="text-sm">
+                {lead.message ? <p className="whitespace-pre-wrap text-slate-700">{lead.message}</p> : <p className="text-slate-500">No message.</p>}
+                {lead.budgetBand && <p className="mt-3 text-slate-600"><span className="text-slate-400">Budget:</span> {lead.budgetBand}</p>}
+                {lead.interests && <p className="mt-1 text-slate-600"><span className="text-slate-400">Interests:</span> {lead.interests}</p>}
+              </div>
+            </Panel>
           )}
         </aside>
       </div>
