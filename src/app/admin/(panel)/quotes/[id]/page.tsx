@@ -11,6 +11,7 @@ import { getRateCard } from "@/lib/rates";
 import { setQuoteStatusAction } from "../../../quote-actions";
 import { QuoteBuilder, type BuilderInitial } from "../QuoteBuilder";
 import { SendPanel } from "../SendPanel";
+import { getSettings, getWhatsAppApiConfig } from "@/lib/settings";
 import { Avatar, Icon, PageHeader, Panel, StatusBadge } from "../../ui";
 
 const defaultTransportInclusions = ["Vehicle as per category for the dates and route above", "Fuel and driver charges", "Driver allowance and night halts as listed"];
@@ -35,6 +36,8 @@ export default async function QuotePage({
   const { id } = await params;
   const { lead: leadId, saved } = await searchParams;
   const { vehicles, hotels, settings } = await getRateCard();
+  const contact = await getSettings();
+  const waApiReady = (await getWhatsAppApiConfig()) !== null;
   const isNew = id === "new";
 
   const quote = isNew ? null : await db.quote.findUnique({ where: { id }, include: { enquiry: true } });
@@ -143,7 +146,7 @@ export default async function QuotePage({
         `View / download PDF: ${publicUrl}`,
         ``,
         `This is a quotation, not a booking confirmation. Reply here to confirm or for any changes.`,
-        `— ${site.name}, ${site.phone}`,
+        `— ${site.name}, ${contact.phone}`,
       ]
         .filter((l) => l !== null)
         .join("\n")
@@ -205,6 +208,7 @@ export default async function QuotePage({
                 customerPhone={quote.customerPhone}
                 customerEmail={quote.customerEmail}
                 message={message}
+                waApiReady={waApiReady}
                 emailSubject={`Your quotation ${quote.number} — ${site.name}`}
               />
               <Panel title="Customer response" icon="check">

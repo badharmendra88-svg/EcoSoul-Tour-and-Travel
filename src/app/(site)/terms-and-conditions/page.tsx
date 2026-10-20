@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { PolicyPage } from "@/components/PolicyPage";
 import { site } from "@/config/site";
+import { getSettings } from "@/lib/settings";
 import { pageMeta } from "@/lib/seo";
 
 export const metadata = pageMeta({
@@ -9,7 +10,8 @@ export const metadata = pageMeta({
   path: "/terms-and-conditions/",
 });
 
-export default function TermsPage() {
+export default async function TermsPage() {
+  const s = await getSettings();
   return (
     <PolicyPage title="Terms & Conditions" path="/terms-and-conditions/">
       <h2>1. About this website</h2>
@@ -39,7 +41,7 @@ export default function TermsPage() {
       </p>
       <h2>6. Contact</h2>
       <p>
-        Questions about these terms: <a href={`mailto:${site.email}`}>{site.email}</a>.
+        Questions about these terms: <a href={`mailto:${s.email}`}>{s.email}</a>.
       </p>
     </PolicyPage>
   );

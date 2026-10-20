@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { PageHero } from "@/components/PageHero";
 import { site } from "@/config/site";
+import { getSettings } from "@/lib/settings";
 import { pageMeta } from "@/lib/seo";
 
 export const metadata = pageMeta({
@@ -10,7 +11,8 @@ export const metadata = pageMeta({
   path: "/about-us/",
 });
 
-export default function AboutPage() {
+export default async function AboutPage() {
+  const s = await getSettings();
   return (
     <>
       <PageHero
@@ -44,10 +46,10 @@ export default function AboutPage() {
         <aside className="card h-fit p-6">
           <h2 className="font-semibold text-forest-900">Business details</h2>
           <dl className="mt-3 space-y-2 text-sm">
-            <div><dt className="text-slate-500">Phone</dt><dd className="font-medium">{site.phone}</dd></div>
-            <div><dt className="text-slate-500">Email</dt><dd className="font-medium">{site.email}</dd></div>
-            <div><dt className="text-slate-500">Service area</dt><dd className="font-medium">{site.address}</dd></div>
-            <div><dt className="text-slate-500">Hours</dt><dd className="font-medium">{site.hours}</dd></div>
+            <div><dt className="text-slate-500">Phone</dt><dd className="font-medium">{s.phone}</dd></div>
+            <div><dt className="text-slate-500">Email</dt><dd className="font-medium">{s.email}</dd></div>
+            <div><dt className="text-slate-500">Service area</dt><dd className="font-medium">{s.address}</dd></div>
+            <div><dt className="text-slate-500">Hours</dt><dd className="font-medium">{s.hours}</dd></div>
           </dl>
           <Link href="/contact/" className="btn-primary mt-5 w-full">Contact us</Link>
         </aside>

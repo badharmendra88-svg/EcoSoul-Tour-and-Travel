@@ -239,7 +239,7 @@ export default async function LeadDetailPage({ params }: { params: Promise<{ id:
               )}
             </div>
             {e.notifyError && <p className="mt-2 text-xs text-rose-700">{e.notifyError}</p>}
-            {e.notifyStatus === "SKIPPED" && <p className="mt-2 text-xs text-slate-500">No webhook configured (NOTIFY_WEBHOOK_URL).</p>}
+            {e.notifyStatus === "SKIPPED" && <p className="mt-2 text-xs text-slate-500">No webhook configured — add one in Settings → Tracking & alerts.</p>}
           </Panel>
         </aside>
       </div>

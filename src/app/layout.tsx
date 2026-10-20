@@ -2,17 +2,22 @@ import type { Metadata, Viewport } from "next";
 import Script from "next/script";
 import { Inter } from "next/font/google";
 import { site } from "@/config/site";
+import { getSettings } from "@/lib/settings";
 import "./globals.css";
 
 const inter = Inter({ subsets: ["latin"], variable: "--font-inter", display: "swap" });
 
-export const metadata: Metadata = {
-  metadataBase: new URL(site.url),
-  title: { default: `${site.name} — Tours, Taxis & Custom Trips`, template: `%s | ${site.name}` },
-  description: site.description,
-  applicationName: site.name,
-  openGraph: { siteName: site.name, locale: site.locale, type: "website" },
-};
+export async function generateMetadata(): Promise<Metadata> {
+  const s = await getSettings();
+  return {
+    metadataBase: new URL(site.url),
+    title: { default: `${site.name} — Tours, Taxis & Custom Trips`, template: `%s | ${site.name}` },
+    description: site.description,
+    applicationName: site.name,
+    openGraph: { siteName: site.name, locale: site.locale, type: "website" },
+    ...(s.googleVerification ? { verification: { google: s.googleVerification } } : {}),
+  };
+}
 
 export const viewport: Viewport = {
   themeColor: "#1d4630",
@@ -20,19 +25,26 @@ export const viewport: Viewport = {
   initialScale: 1,
 };
 
-export default function RootLayout({ children }: Readonly<{ children: React.ReactNode }>) {
+export default async function RootLayout({ children }: Readonly<{ children: React.ReactNode }>) {
+  // Tracking IDs are managed in Admin → Settings → Tracking (validated there)
+  const { gaId, metaPixelId } = await getSettings();
   return (
     // English at launch; architecture keeps copy in pages/DB so Hindi can be added as /hi/ routes later
     <html lang="en-IN" className={inter.variable}>
       <body className="min-h-screen font-sans">
         {children}
-        {site.gaId && (
+        {gaId && (
           <>
-            <Script src={`https://www.googletagmanager.com/gtag/js?id=${site.gaId}`} strategy="afterInteractive" />
+            <Script src={`https://www.googletagmanager.com/gtag/js?id=${gaId}`} strategy="afterInteractive" />
             <Script id="ga-init" strategy="afterInteractive">
-              {`window.dataLayer=window.dataLayer||[];function gtag(){dataLayer.push(arguments);}gtag('js',new Date());gtag('config','${site.gaId}',{anonymize_ip:true});`}
+              {`window.dataLayer=window.dataLayer||[];function gtag(){dataLayer.push(arguments);}gtag('js',new Date());gtag('config','${gaId}',{anonymize_ip:true});`}
             </Script>
           </>
+        )}
+        {metaPixelId && (
+          <Script id="meta-pixel" strategy="afterInteractive">
+            {`!function(f,b,e,v,n,t,s){if(f.fbq)return;n=f.fbq=function(){n.callMethod?n.callMethod.apply(n,arguments):n.queue.push(arguments)};if(!f._fbq)f._fbq=n;n.push=n;n.loaded=!0;n.version='2.0';n.queue=[];t=b.createElement(e);t.async=!0;t.src=v;s=b.getElementsByTagName(e)[0];s.parentNode.insertBefore(t,s)}(window,document,'script','https://connect.facebook.net/en_US/fbevents.js');fbq('init','${metaPixelId}');fbq('track','PageView');`}
+          </Script>
         )}
       </body>
     </html>

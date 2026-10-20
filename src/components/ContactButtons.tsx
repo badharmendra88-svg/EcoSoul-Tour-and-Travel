@@ -1,7 +1,8 @@
 "use client";
 
-import { site, telLink, whatsappLink } from "@/config/site";
+import { telLink, whatsappLink } from "@/config/site";
 import { track } from "@/lib/analytics";
+import { useSiteSettings } from "./SiteSettingsProvider";
 
 // FR-05: WhatsApp / phone CTAs with click tracking. The pre-filled message
 // carries only trip context (no personal data).
@@ -17,9 +18,10 @@ export function WhatsAppButton({
   className?: string;
   label?: string;
 }) {
+  const s = useSiteSettings();
   return (
     <a
-      href={whatsappLink(message ?? `Hi ${site.shortName}, I'd like help planning an Uttarakhand trip.`)}
+      href={whatsappLink(s.whatsapp, message ?? s.whatsappGreeting)}
       target="_blank"
       rel="noopener noreferrer"
       className={className}
@@ -32,10 +34,11 @@ export function WhatsAppButton({
 }
 
 export function PhoneButton({ className = "btn-outline", label }: { className?: string; label?: string }) {
+  const s = useSiteSettings();
   return (
-    <a href={telLink()} className={className} onClick={() => track("click_phone")}>
+    <a href={telLink(s.phone)} className={className} onClick={() => track("click_phone")}>
       <PhoneIcon />
-      {label ?? `Call ${site.phone}`}
+      {label ?? `Call ${s.phone}`}
     </a>
   );
 }

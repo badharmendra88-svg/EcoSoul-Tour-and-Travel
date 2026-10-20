@@ -6,6 +6,7 @@ import { SceneArt } from "@/components/SceneArt";
 import { tripTypes, serviceTypes } from "@/config/options";
 import { site } from "@/config/site";
 import { getPublishedDestinations, getPublishedPackages } from "@/lib/queries";
+import { getSettings } from "@/lib/settings";
 import { pageMeta } from "@/lib/seo";
 
 export const revalidate = 300;
@@ -40,15 +41,16 @@ const reasons = [
   { title: "Honest advice", text: "We tell you about road, weather and crowd conditions, even when that means changing plans." },
 ];
 
-const faqs = [
+const homeFaqs = (hours: string) => [
   { q: "Is submitting an enquiry a confirmed booking?", a: "No. An enquiry lets us check availability and prepare a written quote. Your booking is confirmed only after you accept the quote, agree to the booking terms and pay any agreed advance, and we confirm the hotel and vehicle." },
   { q: "Can I book only a car with a driver?", a: "Yes. You can request a car + driver for outstation trips, local sightseeing, one-way or round trips, airport and railway transfers, or a driver for your own vehicle." },
   { q: "Do you handle Char Dham yatra registration?", a: "Yatra registration is completed by travellers on the official government portal. We help with route planning, stays and transport, and remind you about current requirements." },
-  { q: "How quickly will you reply?", a: `We aim to respond during working hours (${site.hours}). For urgent travel, WhatsApp or call us.` },
+  { q: "How quickly will you reply?", a: `We aim to respond during working hours (${hours}). For urgent travel, WhatsApp or call us.` },
 ];
 
 export default async function HomePage() {
-  const [featured, destinations] = await Promise.all([getPublishedPackages({ featured: true }), getPublishedDestinations()]);
+  const [featured, destinations, s] = await Promise.all([getPublishedPackages({ featured: true }), getPublishedDestinations(), getSettings()]);
+  const faqs = homeFaqs(s.hours);
 
   return (
     <>
@@ -246,7 +248,7 @@ export default async function HomePage() {
         <aside className="card h-fit p-6">
           <h2 className="text-lg font-semibold text-forest-900">Talk to a trip planner</h2>
           <p className="mt-2 text-sm text-slate-600">
-            Prefer to chat? Reach us on WhatsApp or phone. {site.hours}.
+            Prefer to chat? Reach us on WhatsApp or phone. {s.hours}.
           </p>
           <div className="mt-5 grid gap-3">
             <WhatsAppButton className="btn-secondary w-full" />

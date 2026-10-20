@@ -79,6 +79,12 @@ Admin panel: <http://localhost:3200/admin/> — sign in with `ADMIN_PASSWORD` fr
 - **Sending:** each saved quote gets a number (`Q-261020-7KQ4`), an A4 **PDF** and a private customer link (`/quote/<token>/`). *Send on WhatsApp* opens the customer's chat with a pre-filled summary + link; email via mail app. Sending marks the quote **Sent** and moves the lead to **Quote Sent** with an activity-log entry; record Accepted/Declined later.
 - WhatsApp links can't attach files — download the PDF and attach it manually, or integrate the WhatsApp Business API later. Customer links work only once the site is deployed with a public `NEXT_PUBLIC_SITE_URL`. PDFs use built-in fonts, so `₹` prints as `Rs.` and Hindi text is not supported yet.
 
+### Integrations & settings (`/admin/settings/`)
+- **Business contact:** phone, WhatsApp number, email, address and hours — used site-wide (buttons, footer, contact page, JSON-LD, PDFs). Empty fields fall back to the `NEXT_PUBLIC_*` env values.
+- **WhatsApp:** floating "Chat with us" button toggle and default chat message. **WhatsApp Business Cloud API** (Meta): phone number ID, encrypted access token (AES-256-GCM, key derived from `SESSION_SECRET` — re-enter tokens if you rotate it), optional approved quote template, *Test saved connection*, and a built-in setup guide. When enabled, quotes get **Send PDF via WhatsApp API** (uploads the PDF and sends it to the customer; without an approved template this only works within 24 h of the customer's last message).
+- **Social media:** Instagram, Facebook, YouTube, X, LinkedIn, Google Business Profile, Tripadvisor → footer icons and `sameAs` structured data.
+- **Tracking & alerts:** GA4 ID, Meta Pixel ID, Google Search Console verification (paste the tag or code) and the new-lead webhook (overrides `NOTIFY_WEBHOOK_URL`).
+
 ### SEO / analytics / accessibility (§12, §16, FR-09/10/12)
 - Unique titles, descriptions and canonical URLs; trailing-slash URLs per the SEO plan; breadcrumbs + BreadcrumbList, FAQPage and TravelAgency JSON-LD.
 - Analytics events `view_package`, `click_whatsapp`, `click_phone`, `submit_enquiry` — never include personal data.

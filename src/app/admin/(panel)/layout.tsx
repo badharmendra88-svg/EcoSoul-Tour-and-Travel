@@ -29,6 +29,10 @@ export default async function AdminLayout({ children }: { children: React.ReactN
         { href: "/admin/destinations/", label: "Destinations", icon: <Icon name="map" className="h-[18px] w-[18px]" /> },
       ],
     },
+    {
+      group: "Settings",
+      items: [{ href: "/admin/settings/", label: "Integrations", icon: <Icon name="settings" className="h-[18px] w-[18px]" /> }],
+    },
   ];
 
   return <AdminShell nav={nav}>{children}</AdminShell>;

@@ -5,7 +5,10 @@ import { redirect } from "next/navigation";
 import { z } from "zod";
 import { requireAdmin } from "@/lib/admin-auth";
 import { db } from "@/lib/db";
-import { computeTotals } from "@/lib/quote";
+import { computeTotals, rupees } from "@/lib/quote";
+import { renderQuotePdf } from "@/lib/quote-pdf";
+import { getSettings, getWhatsAppApiConfig } from "@/lib/settings";
+import { sendPdfDocument } from "@/lib/whatsapp-api";
 import { getRateCard } from "@/lib/rates";
 
 // ---------- Rate card ----------
@@ -164,7 +167,7 @@ export async function saveQuoteAction(payload: QuotePayload): Promise<{ ok: true
   return { ok: true, id };
 }
 
-export async function markQuoteSentAction(id: string, via: "WHATSAPP" | "EMAIL" | "LINK") {
+export async function markQuoteSentAction(id: string, via: "WHATSAPP" | "WHATSAPP_API" | "EMAIL" | "LINK") {
   const actor = await requireAdmin();
   const quote = await db.quote.findUnique({ where: { id } });
   if (!quote) return;
@@ -180,7 +183,7 @@ export async function markQuoteSentAction(id: string, via: "WHATSAPP" | "EMAIL" 
           ...(moveStatus ? { status: "QUOTE_SENT" } : {}),
           events: {
             create: [
-              { actor, action: "quote_sent", detail: `${quote.number} via ${via.toLowerCase()}` },
+              { actor, action: "quote_sent", detail: `${quote.number} via ${via.toLowerCase().replace("_", " ")}` },
               ...(moveStatus ? [{ actor, action: "status", detail: `${enquiry.status} → QUOTE_SENT` }] : []),
             ],
           },
@@ -191,6 +194,32 @@ export async function markQuoteSentAction(id: string, via: "WHATSAPP" | "EMAIL" 
   }
   revalidatePath(`/admin/quotes/${id}/`);
   revalidatePath("/admin/quotes/");
+}
+
+/** Uploads the quote PDF and sends it to the customer through the WhatsApp Cloud API. */
+export async function sendQuoteViaWhatsAppApiAction(id: string): Promise<{ ok: true } | { ok: false; error: string }> {
+  await requireAdmin();
+  const quote = await db.quote.findUnique({ where: { id } });
+  if (!quote) return { ok: false, error: "Quote not found" };
+  if (!quote.customerPhone) return { ok: false, error: "Add the customer's WhatsApp number to the quote first." };
+  const cfg = await getWhatsAppApiConfig();
+  if (!cfg) return { ok: false, error: "WhatsApp Cloud API is not set up. Configure it in Settings → WhatsApp." };
+
+  try {
+    const pdf = await renderQuotePdf(quote);
+    const settings = await getSettings();
+    await sendPdfDocument(cfg, {
+      to: quote.customerPhone,
+      pdf,
+      filename: `EcoSoul-${quote.number}.pdf`,
+      caption: `Your quotation ${quote.number} — ${quote.title}. Total ${rupees(quote.total)}, valid until ${quote.validUntil}. Reply here to confirm. ${settings.phone}`,
+      templateParams: [quote.customerName, quote.number, rupees(quote.total, "Rs.")],
+    });
+  } catch (e) {
+    return { ok: false, error: e instanceof Error ? e.message : "Sending failed" };
+  }
+  await markQuoteSentAction(id, "WHATSAPP_API");
+  return { ok: true };
 }
 
 export async function setQuoteStatusAction(formData: FormData) {

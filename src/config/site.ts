@@ -1,5 +1,5 @@
-// Central business configuration. Real contact details come from env
-// (see .env.example) so they can be changed without code edits.
+// Central business configuration. Contact values here are fallbacks only —
+// the live values are managed in Admin → Settings (see src/lib/settings.ts).
 
 export const site = {
   name: "EcoSoul Uttarakhand Travel",
@@ -17,13 +17,13 @@ export const site = {
   locale: "en_IN",
 };
 
-export function whatsappLink(message?: string) {
-  const base = `https://wa.me/${site.whatsapp.replace(/\D/g, "")}`;
+export function whatsappLink(number: string, message?: string) {
+  const base = `https://wa.me/${number.replace(/\D/g, "")}`;
   return message ? `${base}?text=${encodeURIComponent(message)}` : base;
 }
 
-export function telLink() {
-  return `tel:${site.phone.replace(/[^\d+]/g, "")}`;
+export function telLink(phone: string) {
+  return `tel:${phone.replace(/[^\d+]/g, "")}`;
 }
 
 export type NavItem = { label: string; href: string };

@@ -2,6 +2,7 @@ import { PhoneButton, WhatsAppButton } from "@/components/ContactButtons";
 import { ContactForm } from "@/components/forms/ContactForm";
 import { PageHero } from "@/components/PageHero";
 import { site } from "@/config/site";
+import { getSettings } from "@/lib/settings";
 import { pageMeta } from "@/lib/seo";
 
 export const metadata = pageMeta({
@@ -10,7 +11,8 @@ export const metadata = pageMeta({
   path: "/contact/",
 });
 
-export default function ContactPage() {
+export default async function ContactPage() {
+  const s = await getSettings();
   return (
     <>
       <PageHero
@@ -30,15 +32,15 @@ export default function ContactPage() {
             <dl className="mt-6 space-y-3 text-sm">
               <div>
                 <dt className="text-slate-500">Email</dt>
-                <dd><a href={`mailto:${site.email}`} className="font-medium text-forest-700 hover:underline">{site.email}</a></dd>
+                <dd><a href={`mailto:${s.email}`} className="font-medium text-forest-700 hover:underline">{s.email}</a></dd>
               </div>
               <div>
                 <dt className="text-slate-500">Service area</dt>
-                <dd className="font-medium">{site.address}</dd>
+                <dd className="font-medium">{s.address}</dd>
               </div>
               <div>
                 <dt className="text-slate-500">Hours</dt>
-                <dd className="font-medium">{site.hours}</dd>
+                <dd className="font-medium">{s.hours}</dd>
               </div>
             </dl>
           </div>

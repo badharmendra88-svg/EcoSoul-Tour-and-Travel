@@ -4,6 +4,7 @@ import type { Quote } from "@prisma/client";
 import { site } from "@/config/site";
 import { formatDate } from "./format";
 import { parseList } from "./json";
+import { getSettings } from "@/lib/settings";
 import { lineAmount, rupees, type QuoteItem } from "./quote";
 
 // A4 quotation PDF using built-in fonts (no font files to ship).
@@ -46,6 +47,7 @@ function wrap(text: string, font: PDFFont, size: number, width: number) {
 }
 
 export async function renderQuotePdf(q: Quote) {
+  const settings = await getSettings();
   const pdf = await PDFDocument.create();
   pdf.setTitle(`Quotation ${q.number} — ${site.name}`);
   pdf.setAuthor(site.name);
@@ -75,7 +77,7 @@ export async function renderQuotePdf(q: Quote) {
   // Header band
   page.drawRectangle({ x: 0, y: A4[1] - 110, width: A4[0], height: 110, color: FOREST });
   page.drawText(clean(site.name), { x: M, y: A4[1] - 52, size: 18, font: bold, color: rgb(1, 1, 1) });
-  page.drawText(clean(`${site.phone}  ·  ${site.email}`), { x: M, y: A4[1] - 72, size: 9.5, font, color: rgb(0.84, 0.91, 0.86) });
+  page.drawText(clean(`${settings.phone}  ·  ${settings.email}`), { x: M, y: A4[1] - 72, size: 9.5, font, color: rgb(0.84, 0.91, 0.86) });
   page.drawText(clean(site.url.replace(/^https?:\/\//, "")), { x: M, y: A4[1] - 86, size: 9.5, font, color: rgb(0.84, 0.91, 0.86) });
   const qt = "QUOTATION";
   page.drawText(qt, { x: A4[0] - M - bold.widthOfTextAtSize(qt, 16), y: A4[1] - 52, size: 16, font: bold, color: rgb(0.94, 0.65, 0.24) });

@@ -1,8 +1,11 @@
 import Link from "next/link";
 import { footerNav, officialLinks, site, telLink } from "@/config/site";
+import { getSettings } from "@/lib/settings";
 import { Logo } from "./Logo";
+import { SocialLinks } from "./SocialIcons";
 
-export function Footer() {
+export async function Footer() {
+  const s = await getSettings();
   const year = new Date().getFullYear();
   return (
     <footer className="mt-20 bg-forest-900 pb-24 text-forest-100 sm:pb-0">
@@ -13,11 +16,12 @@ export function Footer() {
             Tour packages, custom trips and car + driver bookings across Uttarakhand — planned by people who know the hills.
           </p>
           <address className="space-y-1 text-sm not-italic">
-            <a href={telLink()} className="block hover:text-white">{site.phone}</a>
-            <a href={`mailto:${site.email}`} className="block hover:text-white">{site.email}</a>
-            <span className="block text-forest-200">{site.address}</span>
-            <span className="block text-forest-200">{site.hours}</span>
+            <a href={telLink(s.phone)} className="block hover:text-white">{s.phone}</a>
+            <a href={`mailto:${s.email}`} className="block hover:text-white">{s.email}</a>
+            <span className="block text-forest-200">{s.address}</span>
+            <span className="block text-forest-200">{s.hours}</span>
           </address>
+          <SocialLinks links={s.social} className="pt-2" />
         </div>
         {footerNav.map((group) => (
           <nav key={group.title} aria-label={group.title}>

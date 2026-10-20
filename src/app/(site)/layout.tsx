@@ -1,27 +1,33 @@
+import { FloatingWhatsApp } from "@/components/FloatingWhatsApp";
 import { Footer } from "@/components/Footer";
 import { Header } from "@/components/Header";
 import { MobileEnquiryBar } from "@/components/MobileEnquiryBar";
+import { SiteSettingsProvider } from "@/components/SiteSettingsProvider";
 import { site } from "@/config/site";
+import { getSettings } from "@/lib/settings";
 import { jsonLd } from "@/lib/seo";
 
-const organization = {
-  "@context": "https://schema.org",
-  "@type": "TravelAgency",
-  name: site.name,
-  url: site.url,
-  telephone: site.phone,
-  email: site.email,
-  areaServed: { "@type": "State", name: "Uttarakhand" },
-};
+export default async function SiteLayout({ children }: { children: React.ReactNode }) {
+  const settings = await getSettings();
+  const organization = {
+    "@context": "https://schema.org",
+    "@type": "TravelAgency",
+    name: site.name,
+    url: site.url,
+    telephone: settings.phone,
+    email: settings.email,
+    areaServed: { "@type": "State", name: "Uttarakhand" },
+    ...(settings.social.length ? { sameAs: settings.social.map((s) => s.url) } : {}),
+  };
 
-export default function SiteLayout({ children }: { children: React.ReactNode }) {
   return (
-    <>
+    <SiteSettingsProvider value={settings}>
       <script type="application/ld+json" dangerouslySetInnerHTML={jsonLd(organization)} />
       <Header />
       <main id="main">{children}</main>
       <Footer />
       <MobileEnquiryBar />
-    </>
+      <FloatingWhatsApp />
+    </SiteSettingsProvider>
   );
 }

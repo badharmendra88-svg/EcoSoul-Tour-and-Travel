@@ -197,6 +197,46 @@ model Quote {
   @@index([enquiryId])
 }
 
+// ---------- Site settings & integrations (admin "Settings") ----------
+// Empty contact fields fall back to the NEXT_PUBLIC_* env values.
+model SiteSettings {
+  id                  String    @id @default("default")
+  // Business contact
+  phone               String?
+  whatsapp            String?
+  email               String?
+  address             String?
+  hours               String?
+  // WhatsApp on the website
+  whatsappButton      Boolean   @default(true)
+  whatsappGreeting    String?
+  // WhatsApp Business Cloud API (Meta)
+  waApiEnabled        Boolean   @default(false)
+  waPhoneNumberId     String?
+  waBusinessAccountId String?
+  waAccessTokenEnc    String? // AES-256-GCM encrypted, never sent to the browser
+  waApiVersion        String    @default("v21.0")
+  waQuoteTemplate     String? // approved template with a DOCUMENT header
+  waTemplateLang      String    @default("en")
+  waLastTestAt        DateTime?
+  waLastTestOk        Boolean?
+  waLastTestResult    String?
+  // Social profiles
+  instagram           String?
+  facebook            String?
+  youtube             String?
+  twitter             String?
+  linkedin            String?
+  googleBusiness      String?
+  tripadvisor         String?
+  // Tracking & notifications
+  gaId                String?
+  metaPixelId         String?
+  googleVerification  String?
+  notifyWebhookUrl    String?
+  updatedAt           DateTime  @updatedAt
+}
+
 // Audit trail for status / assignment / note changes (§10 access rule, TR-10)
 model EnquiryEvent {
   id        String   @id @default(cuid())

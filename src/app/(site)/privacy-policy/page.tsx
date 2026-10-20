@@ -1,5 +1,5 @@
 import { PolicyPage } from "@/components/PolicyPage";
-import { site } from "@/config/site";
+import { getSettings } from "@/lib/settings";
 import { pageMeta } from "@/lib/seo";
 
 export const metadata = pageMeta({
@@ -8,7 +8,8 @@ export const metadata = pageMeta({
   path: "/privacy-policy/",
 });
 
-export default function PrivacyPolicyPage() {
+export default async function PrivacyPolicyPage() {
+  const s = await getSettings();
   return (
     <PolicyPage title="Privacy Policy" path="/privacy-policy/">
       <h2>1. What we collect</h2>
@@ -45,7 +46,7 @@ export default function PrivacyPolicyPage() {
       <h2>6. Your choices</h2>
       <p>
         To access, correct or delete your information, or to stop follow-up messages, contact us at{" "}
-        <a href={`mailto:${site.email}`}>{site.email}</a>.
+        <a href={`mailto:${s.email}`}>{s.email}</a>.
       </p>
       <h2>7. Cookies and analytics</h2>
       <p>

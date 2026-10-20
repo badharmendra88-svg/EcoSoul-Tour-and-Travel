@@ -1,5 +1,6 @@
 import "server-only";
 import { db } from "./db";
+import { getNotifyWebhookUrl } from "./settings";
 import { site } from "@/config/site";
 import { enquiryKinds, serviceTypes } from "@/config/options";
 import type { Enquiry } from "@prisma/client";
@@ -21,7 +22,7 @@ function summary(e: Enquiry) {
 }
 
 export async function notifyNewEnquiry(enquiry: Enquiry) {
-  const url = process.env.NOTIFY_WEBHOOK_URL;
+  const url = await getNotifyWebhookUrl();
   if (!url) {
     await db.enquiry.update({ where: { id: enquiry.id }, data: { notifyStatus: "SKIPPED" } });
     return;
