@@ -26,6 +26,9 @@ export async function generateMetadata(): Promise<Metadata> {
   };
 }
 
+// Attributes injected by common browser extensions (never used by this app)
+const EXTENSION_ATTRS = ["fdprocessedid", "data-new-gr-c-s-check-loaded", "data-gr-ext-installed", "cz-shortcut-listen", "data-lt-installed"];
+
 export const viewport: Viewport = {
   themeColor: "#0b4a30",
   width: "device-width",
@@ -39,6 +42,12 @@ export default async function RootLayout({ children }: Readonly<{ children: Reac
     // English at launch; architecture keeps copy in pages/DB so Hindi can be added as /hi/ routes later
     <html lang="en-IN" className={`${inter.variable} ${brandSerif.variable} ${brandScript.variable}`}>
       <body className="min-h-screen font-sans">
+        {/* Some browser extensions (form fillers, password managers, Grammarly) stamp attributes such as
+            `fdprocessedid` on inputs/buttons before React hydrates, causing hydration-mismatch warnings.
+            Strip only those known extension attributes until hydration has finished. */}
+        <Script id="strip-extension-attrs" strategy="beforeInteractive">
+          {`(function(){var A=${JSON.stringify(EXTENSION_ATTRS)};function c(e){for(var i=0;i<A.length;i++){if(e.hasAttribute&&e.hasAttribute(A[i]))e.removeAttribute(A[i]);}}function all(){for(var i=0;i<A.length;i++){var n=document.querySelectorAll('['+A[i]+']');for(var j=0;j<n.length;j++)c(n[j]);}}all();var o=new MutationObserver(function(m){for(var i=0;i<m.length;i++)c(m[i].target);});o.observe(document.documentElement,{attributes:true,subtree:true,attributeFilter:A});document.addEventListener('DOMContentLoaded',all);setTimeout(function(){o.disconnect();},10000);})();`}
+        </Script>
         {children}
         <ServiceWorker />
         {gaId && (
