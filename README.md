@@ -14,10 +14,10 @@ Built from `EcoSoul_Uttarakhand_Travel_Blueprint_with_SEO_Plan.docx` (v1.0, 20 O
 npm install
 cp .env.example .env          # then edit values (see below)
 npx prisma migrate dev        # creates prisma/dev.db and seeds starter content
-npm run dev                   # http://localhost:3000
+npm run dev                   # http://localhost:3200
 ```
 
-Admin panel: <http://localhost:3000/admin/> — sign in with `ADMIN_PASSWORD` from `.env`.
+Admin panel: <http://localhost:3200/admin/> — sign in with `ADMIN_PASSWORD` from `.env`.
 
 | Script | What it does |
 | --- | --- |
