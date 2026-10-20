@@ -86,6 +86,11 @@ Admin panel: <http://localhost:3200/admin/> — sign in with `ADMIN_PASSWORD` fr
 - **Social media:** Instagram, Facebook, YouTube, X, LinkedIn, Google Business Profile, Tripadvisor → footer icons and `sameAs` structured data.
 - **Tracking & alerts:** GA4 ID, Meta Pixel ID, Google Search Console verification (paste the tag or code) and the new-lead webhook (overrides `NOTIFY_WEBHOOK_URL`).
 
+### Mobile & installable apps (PWA)
+- Two installable apps: the **website** (`/site-app/manifest/`) and **EcoSoul Admin** (`/admin-app/manifest/`, opens `/admin/`). Android/Chrome: menu → *Install app*; iPhone Safari: Share → *Add to Home Screen*. Icons are generated in code (`src/lib/app-icon.tsx`).
+- `public/sw.js` is network-first and never caches pages or admin data; it only shows an offline page when there is no connection. It registers in production builds only.
+- Mobile-checked at 360 px (Android), 390 px (iPhone) and 768 px (tablet) for every public and admin page: no horizontal scrolling, 32 px+ tap targets, 16 px form inputs (no iOS zoom-on-focus), safe-area padding for the bottom bar.
+
 ### SEO / analytics / accessibility (§12, §16, FR-09/10/12)
 - Unique titles, descriptions and canonical URLs; trailing-slash URLs per the SEO plan; breadcrumbs + BreadcrumbList, FAQPage and TravelAgency JSON-LD.
 - Analytics events `view_package`, `click_whatsapp`, `click_phone`, `submit_enquiry` — never include personal data.

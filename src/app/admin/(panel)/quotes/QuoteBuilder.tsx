@@ -115,7 +115,7 @@ export function QuoteBuilder({ quoteId, enquiryId, vehicles, hotels, peakSurchar
   );
 
   return (
-    <div className="space-y-6">
+    <div className="min-w-0 space-y-6">
       {/* Customer & trip */}
       <section className="grid gap-4 panel p-6 sm:grid-cols-3">
         <div className="sm:col-span-3"><Step n={1} title="Customer & trip" text="Who the quote is for and what it covers" /></div>
@@ -185,7 +185,7 @@ export function QuoteBuilder({ quoteId, enquiryId, vehicles, hotels, peakSurchar
                 <Labeled label="Distance (km)" hint={`Min billed: ${rules.oneWayMinKm} km · ${vehicle ? rupees(vehicle.oneWayPerKm) : ""}/km`}>
                   {numInput(calc.totalKm, (v) => setC("totalKm", v))}
                 </Labeled>
-                <label className="flex items-center gap-2 self-end pb-3 text-sm"><input type="checkbox" className="h-4 w-4" checked={calc.driverAllowanceOneWay} onChange={(e) => setC("driverAllowanceOneWay", e.target.checked)} /> Add driver allowance</label>
+                <label className="flex min-h-11 items-center gap-2 self-end text-sm"><input type="checkbox" className="h-4 w-4" checked={calc.driverAllowanceOneWay} onChange={(e) => setC("driverAllowanceOneWay", e.target.checked)} /> Add driver allowance</label>
               </>
             )}
             {calc.mode === "TRANSFER" && (
@@ -207,12 +207,12 @@ export function QuoteBuilder({ quoteId, enquiryId, vehicles, hotels, peakSurchar
                 <Labeled label="Nights away">{numInput(calc.nights, (v) => setC("nights", v))}</Labeled>
                 <Labeled label="Overtime hours (est.)" hint={`Beyond ${rules.driverDayHours} hrs/day`}>{numInput(calc.extraHours, (v) => setC("extraHours", v))}</Labeled>
                 <Labeled label="Driver return fare (₹)">{numInput(calc.driverReturnFare, (v) => setC("driverReturnFare", v))}</Labeled>
-                <label className="flex items-center gap-2 self-end pb-3 text-sm"><input type="checkbox" className="h-4 w-4" checked={calc.driverOutstation} onChange={(e) => setC("driverOutstation", e.target.checked)} /> Outstation trip</label>
+                <label className="flex min-h-11 items-center gap-2 self-end text-sm"><input type="checkbox" className="h-4 w-4" checked={calc.driverOutstation} onChange={(e) => setC("driverOutstation", e.target.checked)} /> Outstation trip</label>
               </>
             )}
 
             {(calc.mode === "TRANSFER" || calc.mode === "ONE_WAY") && (
-              <label className="flex items-center gap-2 self-end pb-3 text-sm"><input type="checkbox" className="h-4 w-4" checked={calc.lateNight} onChange={(e) => setC("lateNight", e.target.checked)} /> Late night (10 pm–6 am)</label>
+              <label className="flex min-h-11 items-center gap-2 self-end text-sm"><input type="checkbox" className="h-4 w-4" checked={calc.lateNight} onChange={(e) => setC("lateNight", e.target.checked)} /> Late night (10 pm–6 am)</label>
             )}
             {calc.mode !== "DRIVER_ONLY" && (
               <Labeled label="Tolls & parking (₹ est.)">{numInput(calc.tolls, (v) => setC("tolls", v))}</Labeled>
@@ -234,8 +234,8 @@ export function QuoteBuilder({ quoteId, enquiryId, vehicles, hotels, peakSurchar
             <>
               <Labeled label="Rooms">{numInput(calc.rooms, (v) => setC("rooms", v), { min: 1 })}</Labeled>
               <Labeled label="Nights">{numInput(calc.hotelNights, (v) => setC("hotelNights", v))}</Labeled>
-              <label className="flex items-center gap-2 text-sm"><input type="checkbox" className="h-4 w-4" checked={calc.meals} onChange={(e) => setC("meals", e.target.checked)} /> Add dinner (MAP)</label>
-              <label className="flex items-center gap-2 text-sm"><input type="checkbox" className="h-4 w-4" checked={calc.peak} onChange={(e) => setC("peak", e.target.checked)} /> Peak season (+{peakSurchargePct}%)</label>
+              <label className="flex min-h-11 items-center gap-2 text-sm"><input type="checkbox" className="h-4 w-4" checked={calc.meals} onChange={(e) => setC("meals", e.target.checked)} /> Add dinner (MAP)</label>
+              <label className="flex min-h-11 items-center gap-2 text-sm"><input type="checkbox" className="h-4 w-4" checked={calc.peak} onChange={(e) => setC("peak", e.target.checked)} /> Peak season (+{peakSurchargePct}%)</label>
             </>
           )}
         </div>

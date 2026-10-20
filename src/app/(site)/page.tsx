@@ -144,7 +144,7 @@ export default async function HomePage() {
                 <p className="eyebrow">Featured packages</p>
                 <h2 className="h2 mt-2">Popular Uttarakhand trips</h2>
               </div>
-              <Link href="/uttarakhand/tour-packages/" className="font-semibold text-forest-700 hover:underline">
+              <Link href="/uttarakhand/tour-packages/" className="inline-block py-2 font-semibold text-forest-700 hover:underline">
                 View all packages →
               </Link>
             </div>
@@ -221,7 +221,7 @@ export default async function HomePage() {
               <p className="eyebrow">Destination inspiration</p>
               <h2 className="h2 mt-2">Where to go in Uttarakhand</h2>
             </div>
-            <Link href="/destinations/" className="font-semibold text-forest-700 hover:underline">
+            <Link href="/destinations/" className="inline-block py-2 font-semibold text-forest-700 hover:underline">
               All destinations →
             </Link>
           </div>
@@ -241,7 +241,7 @@ export default async function HomePage() {
           <div className="mt-6">
             <FaqList faqs={faqs} />
           </div>
-          <Link href="/faqs/" className="mt-4 inline-block font-semibold text-forest-700 hover:underline">
+          <Link href="/faqs/" className="mt-2 inline-block py-2 font-semibold text-forest-700 hover:underline">
             More FAQs →
           </Link>
         </div>

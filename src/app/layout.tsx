@@ -3,6 +3,7 @@ import Script from "next/script";
 import { Inter } from "next/font/google";
 import { site } from "@/config/site";
 import { getSettings } from "@/lib/settings";
+import { ServiceWorker } from "@/components/ServiceWorker";
 import "./globals.css";
 
 const inter = Inter({ subsets: ["latin"], variable: "--font-inter", display: "swap" });
@@ -14,6 +15,9 @@ export async function generateMetadata(): Promise<Metadata> {
     title: { default: `${site.name} — Tours, Taxis & Custom Trips`, template: `%s | ${site.name}` },
     description: site.description,
     applicationName: site.name,
+    manifest: "/site-app/manifest/",
+    appleWebApp: { capable: true, title: "EcoSoul", statusBarStyle: "default" },
+    formatDetection: { telephone: false },
     openGraph: { siteName: site.name, locale: site.locale, type: "website" },
     ...(s.googleVerification ? { verification: { google: s.googleVerification } } : {}),
   };
@@ -33,6 +37,7 @@ export default async function RootLayout({ children }: Readonly<{ children: Reac
     <html lang="en-IN" className={inter.variable}>
       <body className="min-h-screen font-sans">
         {children}
+        <ServiceWorker />
         {gaId && (
           <>
             <Script src={`https://www.googletagmanager.com/gtag/js?id=${gaId}`} strategy="afterInteractive" />

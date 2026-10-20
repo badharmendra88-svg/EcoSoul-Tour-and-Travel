@@ -13,7 +13,7 @@ export function PackageCard({ pkg }: { pkg: PackageWithDest }) {
   const scene = pkg.destinations?.[0]?.scene ?? (pkg.tripType === "PILGRIMAGE" ? "temple" : "mountain");
   const facts = parseList(pkg.inclusions).slice(0, 3);
   return (
-    <article className="card group flex flex-col overflow-hidden">
+    <article className="card group relative flex flex-col overflow-hidden">
       <Link href={`/packages/${pkg.slug}/`} className="relative block aspect-[16/9] overflow-hidden" tabIndex={-1} aria-hidden="true">
         <SceneArt scene={scene} className="h-full w-full transition-transform duration-500 group-hover:scale-105" />
         <span className="absolute top-3 left-3 rounded-full bg-white/90 px-2.5 py-1 text-xs font-semibold text-forest-800">
@@ -24,7 +24,7 @@ export function PackageCard({ pkg }: { pkg: PackageWithDest }) {
         <div>
           <p className="text-sm font-medium text-forest-600">{pkg.durationLabel}</p>
           <h3 className="mt-1 text-lg font-semibold text-forest-900">
-            <Link href={`/packages/${pkg.slug}/`} className="hover:underline">
+            <Link href={`/packages/${pkg.slug}/`} className="after:absolute after:inset-0 hover:underline">
               {pkg.title}
             </Link>
           </h3>
@@ -55,7 +55,7 @@ export function PackageCard({ pkg }: { pkg: PackageWithDest }) {
               </>
             )}
           </div>
-          <Link href={`/packages/${pkg.slug}/`} className="btn-outline px-4 py-2">
+          <Link href={`/packages/${pkg.slug}/`} className="btn-outline relative z-10 px-4 py-2">
             View details
           </Link>
         </div>

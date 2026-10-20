@@ -10,7 +10,7 @@ import { useSiteSettings } from "./SiteSettingsProvider";
 export function MobileEnquiryBar() {
   const s = useSiteSettings();
   return (
-    <div className="fixed inset-x-0 bottom-0 z-30 border-t border-slate-200 bg-white/95 px-3 py-2 backdrop-blur sm:hidden">
+    <div className="fixed inset-x-0 bottom-0 z-30 border-t border-slate-200 bg-white/95 px-3 pt-2 pb-[max(0.5rem,env(safe-area-inset-bottom))] backdrop-blur sm:hidden">
       <div className="grid grid-cols-[auto_auto_1fr] gap-2">
         <a href={telLink(s.phone)} onClick={() => track("click_phone")} className="btn-outline px-4" aria-label="Call us">
           <PhoneIcon />

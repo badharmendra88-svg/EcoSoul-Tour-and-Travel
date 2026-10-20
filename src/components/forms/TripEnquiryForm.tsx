@@ -144,7 +144,7 @@ export function TripEnquiryForm({ mode, packageSlug, packageTitle, destinations 
         />
       </Field>
       <div className="flex items-end pb-2.5">
-        <label className="flex items-center gap-2 text-sm text-slate-700">
+        <label className="flex min-h-11 items-center gap-2 text-sm text-slate-700">
           <input type="checkbox" className="h-5 w-5 accent-forest-700" checked={v.dateFlexible} onChange={(e) => set("dateFlexible", e.target.checked)} />
           My dates are flexible
         </label>

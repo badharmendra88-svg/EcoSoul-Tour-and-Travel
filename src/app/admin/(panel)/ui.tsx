@@ -63,7 +63,7 @@ export function PageHeader({
   return (
     <div className="mb-8 space-y-3">
       {back && (
-        <Link href={back.href} className="inline-flex items-center gap-1.5 text-sm font-medium text-slate-500 transition-colors hover:text-forest-700">
+        <Link href={back.href} className="inline-flex items-center gap-1.5 py-1.5 text-sm font-medium text-slate-500 transition-colors hover:text-forest-700">
           <Icon name="arrowLeft" className="h-4 w-4" />
           {back.label}
         </Link>

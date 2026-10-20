@@ -63,7 +63,7 @@ export default async function LeadDetailPage({ params }: { params: Promise<{ id:
 
   return (
     <>
-      <Link href="/admin/" className="mb-5 inline-flex items-center gap-1.5 text-sm font-medium text-slate-500 transition-colors hover:text-forest-700">
+      <Link href="/admin/" className="mb-5 inline-flex items-center gap-1.5 py-1.5 text-sm font-medium text-slate-500 transition-colors hover:text-forest-700">
         <Icon name="arrowLeft" /> All leads
       </Link>
 

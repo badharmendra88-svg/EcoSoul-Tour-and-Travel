@@ -140,10 +140,10 @@ export function TransportLanding({
           <div className="card p-6 text-sm text-slate-600">
             <h2 className="font-semibold text-forest-900">Other transport services</h2>
             <ul className="mt-3 space-y-2">
-              <li><Link className="text-forest-700 hover:underline" href="/uttarakhand/taxi-booking/">Car + driver / taxi booking</Link></li>
-              <li><Link className="text-forest-700 hover:underline" href="/uttarakhand/driver-booking/">Driver only (your vehicle)</Link></li>
-              <li><Link className="text-forest-700 hover:underline" href="/uttarakhand/airport-transfers/">Airport / railway transfers</Link></li>
-              <li><Link className="text-forest-700 hover:underline" href="/uttarakhand/local-sightseeing-taxi/">Local sightseeing taxi</Link></li>
+              <li><Link className="inline-block py-1.5 text-forest-700 hover:underline" href="/uttarakhand/taxi-booking/">Car + driver / taxi booking</Link></li>
+              <li><Link className="inline-block py-1.5 text-forest-700 hover:underline" href="/uttarakhand/driver-booking/">Driver only (your vehicle)</Link></li>
+              <li><Link className="inline-block py-1.5 text-forest-700 hover:underline" href="/uttarakhand/airport-transfers/">Airport / railway transfers</Link></li>
+              <li><Link className="inline-block py-1.5 text-forest-700 hover:underline" href="/uttarakhand/local-sightseeing-taxi/">Local sightseeing taxi</Link></li>
             </ul>
           </div>
         </aside>

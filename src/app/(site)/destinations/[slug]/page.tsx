@@ -119,7 +119,7 @@ export default async function DestinationPage({ params }: { params: Promise<{ sl
           <div className="card p-6">
             <h2 className="font-semibold text-forest-900">Need only a taxi?</h2>
             <p className="mt-2 text-sm text-slate-600">Car + driver, transfers and local sightseeing on request.</p>
-            <Link href="/uttarakhand/taxi-booking/" className="mt-3 inline-block font-semibold text-forest-700 hover:underline">
+            <Link href="/uttarakhand/taxi-booking/" className="mt-2 inline-block py-2 font-semibold text-forest-700 hover:underline">
               Book a Car →
             </Link>
           </div>

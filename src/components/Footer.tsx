@@ -16,8 +16,8 @@ export async function Footer() {
             Tour packages, custom trips and car + driver bookings across Uttarakhand — planned by people who know the hills.
           </p>
           <address className="space-y-1 text-sm not-italic">
-            <a href={telLink(s.phone)} className="block hover:text-white">{s.phone}</a>
-            <a href={`mailto:${s.email}`} className="block hover:text-white">{s.email}</a>
+            <a href={telLink(s.phone)} className="block py-1.5 hover:text-white">{s.phone}</a>
+            <a href={`mailto:${s.email}`} className="block py-1.5 hover:text-white">{s.email}</a>
             <span className="block text-forest-200">{s.address}</span>
             <span className="block text-forest-200">{s.hours}</span>
           </address>
@@ -26,10 +26,10 @@ export async function Footer() {
         {footerNav.map((group) => (
           <nav key={group.title} aria-label={group.title}>
             <h2 className="mb-3 text-sm font-semibold text-white">{group.title}</h2>
-            <ul className="space-y-2 text-sm">
+            <ul className="space-y-1 text-sm">
               {group.items.map((item) => (
                 <li key={item.href}>
-                  <Link href={item.href} className="text-forest-200 hover:text-white">
+                  <Link href={item.href} className="inline-block py-1.5 text-forest-200 hover:text-white">
                     {item.label}
                   </Link>
                 </li>

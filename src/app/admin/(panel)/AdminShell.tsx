@@ -85,7 +85,7 @@ export function AdminShell({ nav, children }: { nav: { group: string; items: Nav
 
       {/* Mobile top bar + drawer */}
       <div className="sticky top-0 z-30 flex items-center justify-between border-b border-slate-200/70 bg-white/90 px-4 py-3 backdrop-blur lg:hidden">
-        <Link href="/admin/" className="font-semibold text-forest-900">EcoSoul Admin</Link>
+        <Link href="/admin/" className="py-2 font-semibold text-forest-900">EcoSoul Admin</Link>
         <button type="button" onClick={() => setOpen(true)} className="rounded-lg p-2 text-slate-700 hover:bg-slate-100" aria-label="Open menu" aria-expanded={open}>
           <svg viewBox="0 0 24 24" className="h-6 w-6" fill="none" stroke="currentColor" strokeWidth="2" aria-hidden="true"><path d="M4 6h16M4 12h16M4 18h16" /></svg>
         </button>

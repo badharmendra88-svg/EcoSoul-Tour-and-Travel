@@ -81,7 +81,7 @@ body {
     @apply mb-1 block text-sm font-medium text-slate-700;
   }
   .input {
-    @apply w-full rounded-lg border border-slate-300 bg-white px-3 py-2.5 text-base text-slate-900 placeholder:text-slate-400 focus:border-forest-500 focus:ring-2 focus:ring-forest-200 focus:outline-none sm:text-sm;
+    @apply w-full rounded-lg border border-slate-300 bg-white px-3 py-2.5 text-base text-slate-900 placeholder:text-slate-400 focus:border-forest-500 focus:ring-2 focus:ring-forest-200 focus:outline-none lg:text-sm;
   }
   .input-error {
     @apply border-red-500 focus:border-red-500 focus:ring-red-200;
@@ -124,12 +124,12 @@ body {
     @apply inline-flex items-center justify-center gap-2 rounded-xl bg-[#1fa855] px-4 py-2.5 text-sm font-semibold text-white shadow-sm transition-all hover:bg-[#178f47];
   }
   .admin-input {
-    @apply w-full rounded-xl border-0 bg-white px-3.5 py-2.5 text-sm text-slate-900 shadow-sm ring-1 ring-slate-900/10 transition-shadow ring-inset placeholder:text-slate-400 focus:ring-2 focus:ring-forest-500 focus:outline-none;
+    @apply w-full rounded-xl border-0 bg-white px-3.5 py-2.5 text-base text-slate-900 lg:text-sm shadow-sm ring-1 ring-slate-900/10 transition-shadow ring-inset placeholder:text-slate-400 focus:ring-2 focus:ring-forest-500 focus:outline-none;
   }
   .admin-label {
     @apply mb-1.5 block text-[13px] font-medium text-slate-700;
   }
   .chip {
-    @apply inline-flex items-center rounded-full bg-forest-50 px-2.5 py-1 text-xs font-medium text-forest-700;
+    @apply inline-flex min-h-8 items-center rounded-full bg-forest-50 px-3 py-1 text-xs font-medium text-forest-700;
   }
 }

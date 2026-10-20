@@ -17,14 +17,14 @@ export function FaqList({ faqs, withSchema = true }: { faqs: Faq[]; withSchema?:
     <div className="divide-y divide-slate-200 rounded-2xl border border-slate-200 bg-white">
       {withSchema && <script type="application/ld+json" dangerouslySetInnerHTML={jsonLd(data)} />}
       {faqs.map((f) => (
-        <details key={f.q} className="group p-5">
-          <summary className="flex cursor-pointer list-none items-start justify-between gap-4 font-medium text-forest-900">
+        <details key={f.q} className="group">
+          <summary className="flex cursor-pointer list-none items-start justify-between gap-4 p-5 font-medium text-forest-900">
             {f.q}
             <span aria-hidden="true" className="mt-0.5 text-forest-600 transition-transform group-open:rotate-45">
               +
             </span>
           </summary>
-          <p className="mt-3 leading-relaxed text-slate-600">{f.a}</p>
+          <p className="-mt-2 px-5 pb-5 leading-relaxed text-slate-600">{f.a}</p>
         </details>
       ))}
     </div>
