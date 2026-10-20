@@ -1,4 +1,6 @@
 import "server-only";
+import { readFile } from "node:fs/promises";
+import path from "node:path";
 import { PDFDocument, StandardFonts, rgb, type PDFFont, type PDFPage } from "pdf-lib";
 import type { Quote } from "@prisma/client";
 import { site } from "@/config/site";
@@ -13,11 +15,13 @@ import { lineAmount, rupees, type QuoteItem } from "./quote";
 
 const A4: [number, number] = [595.28, 841.89];
 const M = 48; // page margin
-const FOREST = rgb(0.114, 0.275, 0.188);
+// Brand colours from the logo
+const FOREST = rgb(0.043, 0.29, 0.188); // #0b4a30
+const ORANGE = rgb(0.996, 0.639, 0.141); // #fea324
 const SLATE = rgb(0.2, 0.25, 0.3);
 const MUTED = rgb(0.42, 0.47, 0.53);
 const LINE = rgb(0.85, 0.87, 0.89);
-const TINT = rgb(0.93, 0.96, 0.94);
+const TINT = rgb(0.933, 0.965, 0.945);
 
 const rs = (v: number) => rupees(v, "Rs.");
 
@@ -74,16 +78,26 @@ export async function renderQuotePdf(q: Quote) {
     }
   };
 
-  // Header band
-  page.drawRectangle({ x: 0, y: A4[1] - 110, width: A4[0], height: 110, color: FOREST });
-  page.drawText(clean(site.name), { x: M, y: A4[1] - 52, size: 18, font: bold, color: rgb(1, 1, 1) });
-  page.drawText(clean(`${settings.phone}  ·  ${settings.email}`), { x: M, y: A4[1] - 72, size: 9.5, font, color: rgb(0.84, 0.91, 0.86) });
-  page.drawText(clean(site.url.replace(/^https?:\/\//, "")), { x: M, y: A4[1] - 86, size: 9.5, font, color: rgb(0.84, 0.91, 0.86) });
-  const qt = "QUOTATION";
-  page.drawText(qt, { x: A4[0] - M - bold.widthOfTextAtSize(qt, 16), y: A4[1] - 52, size: 16, font: bold, color: rgb(0.94, 0.65, 0.24) });
-  const num = q.number;
-  page.drawText(num, { x: A4[0] - M - font.widthOfTextAtSize(num, 10), y: A4[1] - 72, size: 10, font, color: rgb(1, 1, 1) });
-  y = A4[1] - 140;
+  // Header: brand logo (Option 1) on white, quote number and contact on the right
+  const logoPng = await readFile(path.join(process.cwd(), "public", "brand", "logo-full.png")).catch(() => null);
+  if (logoPng) {
+    const logo = await pdf.embedPng(logoPng);
+    const lh = 92;
+    const lw = (logo.width / logo.height) * lh;
+    page.drawImage(logo, { x: M - 6, y: A4[1] - 24 - lh, width: lw, height: lh });
+  } else {
+    page.drawText(clean(site.name), { x: M, y: A4[1] - 60, size: 18, font: bold, color: FOREST });
+  }
+  const right = (t: string, yy: number, size: number, f: PDFFont, color = SLATE) =>
+    page.drawText(clean(t), { x: A4[0] - M - f.widthOfTextAtSize(clean(t), size), y: yy, size, font: f, color });
+  right("QUOTATION", A4[1] - 50, 18, bold, ORANGE);
+  right(q.number, A4[1] - 68, 10, bold, FOREST);
+  right(settings.phone, A4[1] - 86, 9, font, MUTED);
+  right(settings.email, A4[1] - 98, 9, font, MUTED);
+  right(site.url.replace(/^https?:\/\//, ""), A4[1] - 110, 9, font, MUTED);
+  page.drawRectangle({ x: M, y: A4[1] - 128, width: width, height: 2, color: FOREST });
+  page.drawRectangle({ x: M, y: A4[1] - 128, width: 70, height: 2, color: ORANGE });
+  y = A4[1] - 158;
 
   // Meta: customer + dates
   const colX = M + width / 2 + 10;

@@ -3,6 +3,7 @@
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useEffect, useState, type ReactNode } from "react";
+import { Logo } from "@/components/Logo";
 import { logoutAction } from "../actions";
 
 type NavItem = { href: string; label: string; icon: ReactNode; badge?: number };
@@ -26,17 +27,9 @@ export function AdminShell({
 
   const sidebar = (
     <div className="flex h-full flex-col">
-      <Link href="/admin/" className="flex items-center gap-3 px-5 pt-6 pb-8">
-        <span className="flex h-10 w-10 items-center justify-center rounded-xl bg-gradient-to-br from-accent to-accent-strong shadow-lg shadow-black/20">
-          <svg viewBox="0 0 40 40" className="h-6 w-6" aria-hidden="true">
-            <path d="M5 30 L15 15 L20 22 L26 12 L35 30Z" fill="#0f261b" />
-            <circle cx="30" cy="9" r="3" fill="#0f261b" />
-          </svg>
-        </span>
-        <span className="leading-tight">
-          <span className="block text-[15px] font-semibold text-white">EcoSoul</span>
-          <span className="block text-[11px] font-medium tracking-[0.16em] text-forest-300 uppercase">Admin console</span>
-        </span>
+      <Link href="/admin/" className="block px-5 pt-6 pb-7" aria-label="EcoSoul admin console home">
+        <Logo light size="sm" />
+        <span className="mt-2 block pl-0.5 text-[11px] font-semibold tracking-[0.18em] text-accent uppercase">Admin console</span>
       </Link>
 
       <nav aria-label="Admin" className="flex-1 space-y-7 overflow-y-auto px-3">
@@ -97,15 +90,17 @@ export function AdminShell({
   );
 
   return (
-    <div className="min-h-screen bg-[#f5f6f3]">
+    <div className="min-h-screen bg-[#f6f7f2]">
       {/* Desktop sidebar */}
-      <aside className="fixed inset-y-0 left-0 z-30 hidden w-64 bg-gradient-to-b from-forest-900 via-forest-900 to-[#0b1d14] lg:block">
+      <aside className="fixed inset-y-0 left-0 z-30 hidden w-64 bg-gradient-to-b from-forest-900 via-forest-900 to-[#021a10] lg:block">
         {sidebar}
       </aside>
 
       {/* Mobile top bar + drawer */}
       <div className="sticky top-0 z-30 flex items-center justify-between border-b border-slate-200/70 bg-white/90 px-4 py-3 backdrop-blur lg:hidden">
-        <Link href="/admin/" className="py-2 font-semibold text-forest-900">EcoSoul Admin</Link>
+        <Link href="/admin/" className="flex items-center gap-2 py-1" aria-label="EcoSoul admin console home">
+          <Logo size="sm" />
+        </Link>
         <button type="button" onClick={() => setOpen(true)} className="rounded-lg p-2 text-slate-700 hover:bg-slate-100" aria-label="Open menu" aria-expanded={open}>
           <svg viewBox="0 0 24 24" className="h-6 w-6" fill="none" stroke="currentColor" strokeWidth="2" aria-hidden="true"><path d="M4 6h16M4 12h16M4 18h16" /></svg>
         </button>
@@ -113,7 +108,7 @@ export function AdminShell({
       {open && (
         <div className="fixed inset-0 z-40 lg:hidden" role="dialog" aria-modal="true" aria-label="Admin menu">
           <button type="button" className="absolute inset-0 bg-forest-900/50 backdrop-blur-sm" onClick={() => setOpen(false)} aria-label="Close menu" />
-          <aside className="absolute inset-y-0 left-0 w-72 bg-gradient-to-b from-forest-900 to-[#0b1d14] shadow-2xl">{sidebar}</aside>
+          <aside className="absolute inset-y-0 left-0 w-72 bg-gradient-to-b from-forest-900 to-[#021a10] shadow-2xl">{sidebar}</aside>
         </div>
       )}
 

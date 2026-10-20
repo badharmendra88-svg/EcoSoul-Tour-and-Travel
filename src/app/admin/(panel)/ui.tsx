@@ -70,8 +70,8 @@ export function PageHeader({
       )}
       <div className="flex flex-wrap items-end justify-between gap-4">
         <div>
-          {eyebrow && <p className="text-xs font-semibold tracking-[0.18em] text-forest-600 uppercase">{eyebrow}</p>}
-          <h1 className="mt-1 text-[28px] leading-tight font-semibold tracking-tight text-slate-900">{title}</h1>
+          {eyebrow && <p className="text-xs font-semibold tracking-[0.18em] text-leaf-600 uppercase">{eyebrow}</p>}
+          <h1 className="mt-1 font-serif text-[28px] leading-tight font-bold text-forest-900">{title}</h1>
           {subtitle && <p className="mt-1.5 text-sm text-slate-500">{subtitle}</p>}
         </div>
         {actions && <div className="flex flex-wrap items-center gap-2">{actions}</div>}

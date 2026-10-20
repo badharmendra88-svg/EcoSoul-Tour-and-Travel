@@ -12,6 +12,7 @@ export async function Footer() {
       <div className="container-page grid gap-10 py-14 md:grid-cols-[1.3fr_repeat(4,1fr)]">
         <div className="space-y-4">
           <Logo light />
+          <p className="tagline">Devbhoomi · Uttarakhand</p>
           <p className="max-w-xs text-sm leading-relaxed text-forest-200">
             Tour packages, custom trips and car + driver bookings across Uttarakhand — planned by people who know the hills.
           </p>

@@ -1,12 +1,15 @@
 import type { Metadata, Viewport } from "next";
 import Script from "next/script";
-import { Inter } from "next/font/google";
+import { Dancing_Script, Inter, Merriweather } from "next/font/google";
 import { site } from "@/config/site";
 import { getSettings } from "@/lib/settings";
 import { ServiceWorker } from "@/components/ServiceWorker";
 import "./globals.css";
 
 const inter = Inter({ subsets: ["latin"], variable: "--font-inter", display: "swap" });
+// Brand fonts matching the logo: bold serif wordmark + script tagline
+const brandSerif = Merriweather({ subsets: ["latin"], weight: ["700", "900"], variable: "--font-brand-serif", display: "swap" });
+const brandScript = Dancing_Script({ subsets: ["latin"], weight: ["600"], variable: "--font-brand-script", display: "swap" });
 
 export async function generateMetadata(): Promise<Metadata> {
   const s = await getSettings();
@@ -24,7 +27,7 @@ export async function generateMetadata(): Promise<Metadata> {
 }
 
 export const viewport: Viewport = {
-  themeColor: "#1d4630",
+  themeColor: "#0b4a30",
   width: "device-width",
   initialScale: 1,
 };
@@ -34,7 +37,7 @@ export default async function RootLayout({ children }: Readonly<{ children: Reac
   const { gaId, metaPixelId } = await getSettings();
   return (
     // English at launch; architecture keeps copy in pages/DB so Hindi can be added as /hi/ routes later
-    <html lang="en-IN" className={inter.variable}>
+    <html lang="en-IN" className={`${inter.variable} ${brandSerif.variable} ${brandScript.variable}`}>
       <body className="min-h-screen font-sans">
         {children}
         <ServiceWorker />

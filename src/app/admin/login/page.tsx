@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { redirect } from "next/navigation";
+import { FullLogo, Logo } from "@/components/Logo";
 import { SceneArt } from "@/components/SceneArt";
 import { getCurrentUser } from "@/lib/admin-auth";
 import { db } from "@/lib/db";
@@ -21,27 +22,19 @@ export default async function LoginPage({ searchParams }: { searchParams: Promis
   const needsSetup = (await db.adminUser.count()) === 0;
 
   return (
-    <main className="grid min-h-screen bg-[#f5f6f3] lg:grid-cols-[1.1fr_1fr]">
+    <main className="grid min-h-screen bg-[#f6f7f2] lg:grid-cols-[1.1fr_1fr]">
       {/* Brand side */}
       <section className="relative hidden overflow-hidden bg-forest-900 lg:block">
         <SceneArt scene="snow" className="absolute inset-0 h-full w-full opacity-40" />
         <div className="absolute inset-0 bg-gradient-to-t from-forest-900 via-forest-900/70 to-forest-900/30" />
         <div className="relative flex h-full flex-col justify-between p-12 text-white">
-          <div className="flex items-center gap-3">
-            <span className="flex h-11 w-11 items-center justify-center rounded-xl bg-gradient-to-br from-accent to-accent-strong shadow-lg">
-              <svg viewBox="0 0 40 40" className="h-6 w-6" aria-hidden="true">
-                <path d="M5 30 L15 15 L20 22 L26 12 L35 30Z" fill="#0f261b" />
-                <circle cx="30" cy="9" r="3" fill="#0f261b" />
-              </svg>
-            </span>
-            <span className="leading-tight">
-              <span className="block font-semibold">EcoSoul Uttarakhand Travel</span>
-              <span className="block text-xs tracking-[0.16em] text-forest-300 uppercase">Admin console</span>
-            </span>
+          <div>
+            <Logo light />
+            <span className="mt-2 block text-xs font-semibold tracking-[0.18em] text-accent uppercase">Admin console</span>
           </div>
           <div className="max-w-md">
-            <p className="text-sm font-semibold tracking-[0.18em] text-accent uppercase">Devbhoomi, managed beautifully</p>
-            <h1 className="mt-3 text-4xl leading-tight font-semibold">Leads, quotes and trips — all in one calm place.</h1>
+            <p className="tagline text-2xl">Devbhoomi · Uttarakhand</p>
+            <h1 className="mt-2 font-serif text-4xl leading-tight font-bold">Leads, quotes and trips — all in one calm place.</h1>
             <ul className="mt-8 space-y-3 text-sm text-forest-100">
               {["Every enquiry in one queue", "Estimates from your own rate card", "Role-based access for your team"].map((t) => (
                 <li key={t} className="flex items-center gap-3">
@@ -59,9 +52,10 @@ export default async function LoginPage({ searchParams }: { searchParams: Promis
       <section className="flex items-center justify-center px-6 py-16">
         {needsSetup ? (
           <form action={setupSuperAdminAction} className="w-full max-w-sm space-y-4">
+            <FullLogo width={190} className="mx-auto mb-2" />
             <div>
               <p className="text-xs font-semibold tracking-[0.18em] text-forest-600 uppercase">First-time setup</p>
-              <h2 className="mt-1 text-2xl font-semibold tracking-tight text-slate-900">Create the Super Admin</h2>
+              <h2 className="mt-1 font-serif text-2xl font-bold text-forest-900">Create the Super Admin</h2>
               <p className="mt-1.5 text-sm text-slate-500">
                 Enter the setup key (the <code>ADMIN_PASSWORD</code> value from the server&apos;s <code>.env</code>) and your details.
               </p>
@@ -80,7 +74,8 @@ export default async function LoginPage({ searchParams }: { searchParams: Promis
           </form>
         ) : (
           <form action={loginAction} className="w-full max-w-sm">
-            <h2 className="text-2xl font-semibold tracking-tight text-slate-900">Welcome back</h2>
+            <FullLogo width={220} className="mx-auto mb-8" />
+            <h2 className="font-serif text-2xl font-bold text-forest-900">Welcome back</h2>
             <p className="mt-1.5 text-sm text-slate-500">Sign in with your work email.</p>
 
             <div className="mt-8 space-y-4">

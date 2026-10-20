@@ -93,8 +93,8 @@ export default async function HomePage() {
         <div className="absolute inset-0 bg-gradient-to-r from-forest-900/95 via-forest-900/75 to-forest-900/30" />
         <div className="container-page relative grid gap-10 py-14 sm:py-20 lg:grid-cols-[1.2fr_1fr] lg:items-center">
           <div>
-            <p className="text-sm font-semibold tracking-widest text-accent uppercase">Devbhoomi · Uttarakhand</p>
-            <h1 className="mt-3 text-4xl font-bold tracking-tight text-white sm:text-5xl">Explore Uttarakhand. Your Trip, Your Way.</h1>
+            <p className="tagline text-2xl">Devbhoomi · Uttarakhand</p>
+            <h1 className="mt-2 font-serif text-4xl leading-tight font-bold text-white sm:text-5xl">Explore Uttarakhand. Your Trip, Your Way.</h1>
             <p className="mt-5 max-w-xl text-lg leading-relaxed text-forest-100">
               Tour packages, taxi and driver booking with local partners, and itineraries customised around your dates, pace and
               budget — across Kumaon and Garhwal.

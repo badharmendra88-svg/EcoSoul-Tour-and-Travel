@@ -17,7 +17,7 @@ export default async function AdminLayout({ children }: { children: React.ReactN
   // New users / reset passwords must set their own password before anything else
   if (me.mustChangePassword)
     return (
-      <main className="flex min-h-screen items-center justify-center bg-[#f5f6f3] px-6 py-16">
+      <main className="flex min-h-screen items-center justify-center bg-[#f6f7f2] px-6 py-16">
         <FirstPasswordForm name={me.name} minLength={MIN_PASSWORD_LENGTH} />
       </main>
     );

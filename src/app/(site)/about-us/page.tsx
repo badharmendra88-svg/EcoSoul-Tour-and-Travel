@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { FullLogo } from "@/components/Logo";
 import { PageHero } from "@/components/PageHero";
 import { site } from "@/config/site";
 import { getSettings } from "@/lib/settings";
@@ -44,6 +45,7 @@ export default async function AboutPage() {
           </p>
         </article>
         <aside className="card h-fit p-6">
+          <FullLogo width={220} className="mx-auto mb-5" />
           <h2 className="font-semibold text-forest-900">Business details</h2>
           <dl className="mt-3 space-y-2 text-sm">
             <div><dt className="text-slate-500">Phone</dt><dd className="font-medium">{s.phone}</dd></div>

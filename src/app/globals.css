@@ -1,24 +1,33 @@
 @import "tailwindcss";
 
-/* Brand direction (blueprint §13): forest green + warm off-white + slate,
-   one marigold accent reserved for primary CTAs (dark text for contrast). */
+/* Brand theme — colours measured from the approved logo (Option 1):
+   "Eco" deep green #043a26, "Soul" leaf green #54972b, sun orange #fea324,
+   sky blue #42a1d5. Orange is reserved for primary CTAs (dark text for contrast). */
 @theme {
-  --color-forest-50: #eef5f0;
-  --color-forest-100: #d6e8dc;
-  --color-forest-200: #aed1ba;
-  --color-forest-300: #7fb394;
-  --color-forest-400: #5a9673;
-  --color-forest-500: #2f6b47;
-  --color-forest-600: #25583a;
-  --color-forest-700: #1d4630;
-  --color-forest-800: #163626;
-  --color-forest-900: #0f261b;
-  --color-cream: #faf7f0;
-  --color-sand: #f1ebdd;
-  --color-accent: #f0a53c;
-  --color-accent-strong: #e39222;
+  --color-forest-50: #eef6f1;
+  --color-forest-100: #d3e9dc;
+  --color-forest-200: #a7d2b8;
+  --color-forest-300: #6fb08b;
+  --color-forest-400: #3d8a60;
+  --color-forest-500: #1c6a44;
+  --color-forest-600: #12583a;
+  --color-forest-700: #0b4a30;
+  --color-forest-800: #063d27;
+  --color-forest-900: #03291a;
+  --color-leaf-50: #f1f8ea;
+  --color-leaf-100: #e0f0cf;
+  --color-leaf-500: #54972b;
+  --color-leaf-600: #448021;
+  --color-leaf-700: #36661a;
+  --color-sky-brand: #42a1d5;
+  --color-cream: #fbf8f1;
+  --color-sand: #f3eddf;
+  --color-accent: #fea324;
+  --color-accent-strong: #f08c0a;
 
   --font-sans: var(--font-inter), ui-sans-serif, system-ui, sans-serif;
+  --font-serif: var(--font-brand-serif), Georgia, "Times New Roman", serif;
+  --font-script: var(--font-brand-script), cursive;
 }
 
 html {
@@ -57,13 +66,16 @@ body {
     @apply rounded-2xl border border-slate-200 bg-white shadow-sm;
   }
   .eyebrow {
-    @apply text-xs font-semibold tracking-widest text-forest-600 uppercase;
+    @apply text-xs font-semibold tracking-widest text-leaf-600 uppercase;
   }
   .h1 {
-    @apply text-3xl font-bold tracking-tight text-forest-900 sm:text-4xl;
+    @apply font-serif text-3xl font-bold text-forest-900 sm:text-4xl;
   }
   .h2 {
-    @apply text-2xl font-bold tracking-tight text-forest-900 sm:text-3xl;
+    @apply font-serif text-2xl font-bold text-forest-900 sm:text-3xl;
+  }
+  .tagline {
+    @apply font-script text-xl text-accent;
   }
   .prose-body {
     @apply space-y-4 leading-relaxed text-slate-700;

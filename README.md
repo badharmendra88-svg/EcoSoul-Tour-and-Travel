@@ -80,6 +80,10 @@ Admin panel: <http://localhost:3200/admin/>. **First run:** the login page asks 
 - **Sending:** each saved quote gets a number (`Q-261020-7KQ4`), an A4 **PDF** and a private customer link (`/quote/<token>/`). *Send on WhatsApp* opens the customer's chat with a pre-filled summary + link; email via mail app. Sending marks the quote **Sent** and moves the lead to **Quote Sent** with an activity-log entry; record Accepted/Declined later.
 - WhatsApp links can't attach files — download the PDF and attach it manually, or integrate the WhatsApp Business API later. Customer links work only once the site is deployed with a public `NEXT_PUBLIC_SITE_URL`. PDFs use built-in fonts, so `₹` prints as `Rs.` and Hindi text is not supported yet.
 
+### Brand
+- Logo: **Option 1 (Nature Circle)** and **Favicon 1** from `docs/brand/logo-options-sheet.png`. `node scripts/brand-assets.mjs` regenerates `public/brand/*` (full logo, colour/white wordmarks, emblem, PWA + admin icons) and `src/app/icon.png` / `apple-icon.png`; replace the sheet with the designer's high-resolution files for sharper results.
+- Theme colours come from the logo (`public/brand/colours.json`): deep green `#043a26`, leaf green `#54972b`, sun orange `#fea324`, sky blue `#42a1d5` — defined once in `src/app/globals.css` and shared by the website, admin and quote PDF. Headings use Merriweather (matches the serif wordmark); the tagline uses Dancing Script.
+
 ### Photos & reviews
 - Admins upload licensed photos for the homepage hero (Integrations), destinations and packages. Uploads are re-encoded to WebP (max 2000 px) with `sharp`, stored in `./uploads` (`MEDIA_DIR`, git-ignored — back it up) and served from `/media/...`; `next/image` delivers AVIF/WebP and lazy-loads. Use object storage (S3/R2/Blob) on serverless hosting.
 - **Reviews** (Admin → Reviews): genuine customer reviews only, with a permission record; the homepage section appears once a review is published.
