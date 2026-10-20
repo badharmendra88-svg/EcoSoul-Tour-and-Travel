@@ -1,3 +1,4 @@
+import Link from "next/link";
 import { TransportLanding, commonTransportFaqs } from "@/components/TransportLanding";
 import { pageMeta } from "@/lib/seo";
 
@@ -34,6 +35,9 @@ export default function DriverBookingPage() {
           <li>Whether the driver&apos;s stay and meals will be arranged by you</li>
         </ul>
         <p className="mt-3 text-sm text-slate-600">Your vehicle must have valid registration, insurance and other documents required for the route.</p>
+        <p className="mt-3 text-sm text-slate-600">
+          Are you a driver? <Link href="/join-as-driver/" className="font-semibold text-forest-700 underline">Join as a driver partner</Link>.
+        </p>
       </section>
     </TransportLanding>
   );

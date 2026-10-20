@@ -15,6 +15,8 @@ const permissionLabels: Record<keyof typeof permissions, string> = {
   "rates.edit": "Edit rate card",
   "content.edit": "Edit packages & destinations",
   "settings.manage": "Integrations & settings",
+  "drivers.view": "View driver partners",
+  "drivers.manage": "Verify & manage drivers",
   "users.manage": "Manage users",
 };
 

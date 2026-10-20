@@ -84,6 +84,10 @@ Admin panel: <http://localhost:3200/admin/>. **First run:** the login page asks 
 - Admins upload licensed photos for the homepage hero (Integrations), destinations and packages. Uploads are re-encoded to WebP (max 2000 px) with `sharp`, stored in `./uploads` (`MEDIA_DIR`, git-ignored — back it up) and served from `/media/...`; `next/image` delivers AVIF/WebP and lazy-loads. Use object storage (S3/R2/Blob) on serverless hosting.
 - **Reviews** (Admin → Reviews): genuine customer reviews only, with a permission record; the homepage section appears once a review is published.
 
+### Driver partners (`/join-as-driver/`, `/admin/drivers/`)
+- Public registration for drivers (driver-only or with own vehicle): areas, experience, languages, licence, vehicle and permit, availability. Licence numbers are AES-256-GCM encrypted (only last 4 digits shown; full number visible to Admin/Super Admin). No document copies are collected online — originals are checked in person.
+- Admin: status tabs (Applied → Under review → Verified → Active / Inactive / Rejected), verification checklist, document expiry dates with 30-day alerts, notes, activity log, call/WhatsApp. A driver can be Verified/Active only when every check is ticked and documents are valid. Managers can view drivers but not manage them or see licence numbers. One open registration per mobile number.
+
 ### Users & roles (`/admin/users/`)
 - Individual accounts (email + password, scrypt-hashed). Roles: **Super Admin** (everything, incl. users), **Admin** (leads, quotes, CSV export, rate card, content, integrations), **Manager** (leads and quotes only). Permissions live in `src/lib/permissions.ts` and are enforced on every page, server action and the CSV export — not just by hiding menu items.
 - Only Super Admins create users, change roles, deactivate accounts and reset passwords. New/reset users get a one-time temporary password and must set their own at first sign-in. Deactivation and password changes sign the user out everywhere immediately. At least one active Super Admin is always kept; you can't demote or deactivate yourself.

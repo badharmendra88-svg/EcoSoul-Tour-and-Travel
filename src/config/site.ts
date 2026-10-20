@@ -66,6 +66,7 @@ export const footerNav: { title: string; items: NavItem[] }[] = [
       { label: "About Us", href: "/about-us/" },
       { label: "Contact", href: "/contact/" },
       { label: "FAQs", href: "/faqs/" },
+      { label: "Join as a Driver", href: "/join-as-driver/" },
     ],
   },
   {

@@ -59,7 +59,7 @@ export function TextArea({
   );
 }
 
-export function FormBanner({ saved, error }: { saved?: string; error?: string }) {
+export function FormBanner({ saved, error, savedText = "Saved. The public site has been refreshed." }: { saved?: string; error?: string; savedText?: string }) {
   if (error)
     return (
       <p role="alert" className="flex items-center gap-2 rounded-2xl bg-rose-50 px-5 py-3 text-sm text-rose-800 ring-1 ring-rose-100">
@@ -69,7 +69,7 @@ export function FormBanner({ saved, error }: { saved?: string; error?: string })
   if (saved)
     return (
       <p role="status" className="flex items-center gap-2 rounded-2xl bg-emerald-50 px-5 py-3 text-sm text-emerald-800 ring-1 ring-emerald-100">
-        <Icon name="check" /> Saved. The public site has been refreshed.
+        <Icon name="check" /> {savedText}
       </p>
     );
   return null;

@@ -17,6 +17,8 @@ export const permissions = {
   "rates.edit": ["SUPER_ADMIN", "ADMIN"],
   "content.edit": ["SUPER_ADMIN", "ADMIN"],
   "settings.manage": ["SUPER_ADMIN", "ADMIN"],
+  "drivers.view": ["SUPER_ADMIN", "ADMIN", "MANAGER"],
+  "drivers.manage": ["SUPER_ADMIN", "ADMIN"],
   "users.manage": ["SUPER_ADMIN"],
 } as const satisfies Record<string, readonly Role[]>;
 export type Permission = keyof typeof permissions;

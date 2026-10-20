@@ -48,7 +48,14 @@ export default async function PrivacyPolicyPage() {
         To access, correct or delete your information, or to stop follow-up messages, contact us at{" "}
         <a href={`mailto:${s.email}`}>{s.email}</a>.
       </p>
-      <h2>7. Cookies and analytics</h2>
+      <h2>7. Driver partner registrations</h2>
+      <p>
+        Drivers who register with us share contact details, experience, driving licence details and, if applicable, vehicle
+        details. The licence number is stored encrypted and is visible only to authorised staff. We do not collect copies of
+        identity or vehicle documents online — our team checks originals in person and records only that the check was done and
+        relevant expiry dates. Applications that do not proceed are deleted after a defined retention period.
+      </p>
+      <h2>8. Cookies and analytics</h2>
       <p>
         We may use analytics cookies to understand how the website is used. Analytics events never include your name, phone
         number, email or message text.

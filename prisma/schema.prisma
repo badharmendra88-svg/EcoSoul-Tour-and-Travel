@@ -312,3 +312,66 @@ model EnquiryEvent {
 
   @@index([enquiryId, at])
 }
+
+// ---------- Driver partners (public registration + admin verification) ----------
+// status: APPLIED | UNDER_REVIEW | VERIFIED | ACTIVE | INACTIVE | REJECTED
+model DriverPartner {
+  id                  String        @id @default(cuid())
+  ref                 String        @unique // e.g. DR-261020-7KQ4
+  status              String        @default("APPLIED")
+  name                String
+  phone               String
+  email               String?
+  baseLocation        String
+  serviceAreas        String // comma separated
+  experienceYears     Int
+  hillExperienceYears Int?
+  languages           String? // comma separated
+  licenceType         String // LMV | LMV_TR | HMV
+  licenceNumberEnc    String // AES-256-GCM encrypted
+  licenceLast4        String
+  licenceExpiry       String // yyyy-mm-dd (as declared; re-checked by staff)
+  partnerType         String // DRIVER_ONLY | WITH_VEHICLE
+  vehicleCategory     String?
+  vehicleModel        String?
+  vehicleRegNo        String?
+  vehicleSeats        Int?
+  commercialPermit    String? // YES | NO | APPLIED
+  availability        String // FULL_TIME | PART_TIME | WEEKENDS | SEASONAL
+  expectedDailyRate   Int?
+  message             String?
+  heardFrom           String?
+  consentAt           DateTime
+
+  // Staff verification (blueprint §24.3) — checked in person, never published
+  licenceChecked      Boolean       @default(false)
+  idChecked           Boolean       @default(false)
+  policeVerified      Boolean       @default(false)
+  vehicleDocsChecked  Boolean       @default(false)
+  agreementSigned     Boolean       @default(false)
+  verifiedAt          DateTime?
+  verifiedBy          String?
+  insuranceExpiry     String?
+  permitExpiry        String?
+  fitnessExpiry       String?
+  pucExpiry           String?
+  internalNotes       String?
+  createdAt           DateTime      @default(now())
+  updatedAt           DateTime      @updatedAt
+  events              DriverEvent[]
+
+  @@index([status])
+  @@index([phone])
+}
+
+model DriverEvent {
+  id       String        @id @default(cuid())
+  driverId String
+  driver   DriverPartner @relation(fields: [driverId], references: [id], onDelete: Cascade)
+  at       DateTime      @default(now())
+  actor    String
+  action   String
+  detail   String?
+
+  @@index([driverId, at])
+}

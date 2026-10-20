@@ -15,6 +15,7 @@ const staticPaths = [
   "/uttarakhand/haldwani-taxi-service/",
   "/uttarakhand/char-dham-yatra/",
   "/customise-my-trip/",
+  "/join-as-driver/",
   "/about-us/",
   "/contact/",
   "/faqs/",

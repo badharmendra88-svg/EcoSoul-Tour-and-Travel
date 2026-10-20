@@ -22,9 +22,10 @@ export default async function AdminLayout({ children }: { children: React.ReactN
       </main>
     );
 
-  const [newLeads, openQuotes] = await Promise.all([
+  const [newLeads, openQuotes, newDrivers] = await Promise.all([
     db.enquiry.count({ where: { status: "NEW" } }),
     db.quote.count({ where: { status: "DRAFT" } }),
+    db.driverPartner.count({ where: { status: "APPLIED" } }),
   ]);
 
   const groups: { group: string; items: NavDef[] }[] = [
@@ -34,6 +35,7 @@ export default async function AdminLayout({ children }: { children: React.ReactN
         { href: "/admin/", label: "Leads", icon: "inbox", perm: "leads.view", badge: newLeads },
         { href: "/admin/quotes/", label: "Quotes", icon: "quote", perm: "quotes.manage", badge: openQuotes },
         { href: "/admin/rates/", label: "Rate card", icon: "calculator", perm: "rates.edit" },
+        { href: "/admin/drivers/", label: "Drivers", icon: "car", perm: "drivers.view", badge: newDrivers },
       ],
     },
     {

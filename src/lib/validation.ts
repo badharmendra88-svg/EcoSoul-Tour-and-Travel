@@ -147,3 +147,55 @@ export function fieldErrors(error: z.ZodError): Record<string, string> {
   }
   return out;
 }
+
+// ---------- Driver partner registration ----------
+export const driverApplicationSchema = z
+  .object({
+    name: z.string().trim().min(2, "Please enter your full name").max(80),
+    phone: z.string().trim().regex(phoneRe, "Please enter a valid mobile number"),
+    email: z
+      .string()
+      .trim()
+      .optional()
+      .transform((v) => (v ? v : undefined))
+      .refine((v) => !v || z.string().email().safeParse(v).success, "Please enter a valid email"),
+    baseLocation: z.string().trim().min(2, "Where are you based?").max(80),
+    serviceAreas: z.array(z.string().max(60)).min(1, "Choose at least one area").max(10),
+    experienceYears: z.coerce.number({ invalid_type_error: "Enter years of experience" }).int().min(0).max(50),
+    hillExperienceYears: z.preprocess((x) => (x === "" || x == null ? undefined : Number(x)), z.number().int().min(0).max(50).optional()),
+    languages: z.array(z.string().max(30)).max(10).optional().default([]),
+    licenceType: z.enum(["LMV", "LMV_TR", "HMV"], { errorMap: () => ({ message: "Choose your licence type" }) }),
+    licenceNumber: z
+      .string()
+      .trim()
+      .transform((v) => v.toUpperCase().replace(/[\s-]/g, ""))
+      .refine((v) => /^[A-Z]{2}[0-9A-Z]{8,16}$/.test(v), "Enter the licence number as printed, e.g. UK0720190012345"),
+    licenceExpiry: z
+      .string()
+      .regex(dateRe, "Choose the licence valid-till date")
+      .refine((d) => d >= todayIST(), "Licence must be valid today"),
+    partnerType: z.enum(["DRIVER_ONLY", "WITH_VEHICLE"], { errorMap: () => ({ message: "Choose how you'd like to partner" }) }),
+    vehicleCategory: optionalText(40),
+    vehicleModel: optionalText(60),
+    vehicleRegNo: z
+      .string()
+      .trim()
+      .optional()
+      .transform((v) => (v ? v.toUpperCase().replace(/\s+/g, " ") : undefined)),
+    vehicleSeats: z.preprocess((x) => (x === "" || x == null ? undefined : Number(x)), z.number().int().min(2).max(30).optional()),
+    commercialPermit: z.enum(["YES", "NO", "APPLIED"]).optional().or(z.literal("").transform(() => undefined)),
+    availability: z.enum(["FULL_TIME", "PART_TIME", "WEEKENDS", "SEASONAL"], { errorMap: () => ({ message: "Choose your availability" }) }),
+    expectedDailyRate: z.preprocess((x) => (x === "" || x == null ? undefined : Number(x)), z.number().int().min(0).max(100000).optional()),
+    message: optionalText(1000),
+    heardFrom: optionalText(60),
+    consent: z.literal(true, { errorMap: () => ({ message: "Please accept the privacy notice and verification terms" }) }),
+    website: z.string().max(0).optional(),
+  })
+  .superRefine((v, ctx) => {
+    if (v.partnerType === "WITH_VEHICLE") {
+      if (!v.vehicleCategory) ctx.addIssue({ code: "custom", path: ["vehicleCategory"], message: "Choose your vehicle type" });
+      if (!v.vehicleRegNo || !/^(?=.*\d)(?=.*[A-Z])[A-Z0-9 ]{6,13}$/.test(v.vehicleRegNo))
+        ctx.addIssue({ code: "custom", path: ["vehicleRegNo"], message: "Enter the registration number, e.g. UK 04 TA 1234" });
+      if (!v.commercialPermit) ctx.addIssue({ code: "custom", path: ["commercialPermit"], message: "Tell us about the vehicle permit" });
+    }
+  });
