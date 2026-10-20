@@ -21,13 +21,14 @@ export function Logo({ light = false, size = "md" }: { light?: boolean; size?: "
 }
 
 /** Full illustrated logo (Option 1) — use on light backgrounds only. */
-export function FullLogo({ width = 260, className = "" }: { width?: number; className?: string }) {
+export function FullLogo({ width = 260, className = "", priority = false }: { width?: number; className?: string; priority?: boolean }) {
   return (
     <Image
       src="/brand/logo-full.png"
       alt="EcoSoul Uttarakhand Travel — Devbhoomi, Uttarakhand"
       width={width}
       height={Math.round(width * (478 / 588))}
+      priority={priority}
       className={className}
     />
   );

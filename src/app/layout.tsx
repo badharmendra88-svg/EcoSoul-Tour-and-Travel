@@ -8,8 +8,10 @@ import "./globals.css";
 
 const inter = Inter({ subsets: ["latin"], variable: "--font-inter", display: "swap" });
 // Brand fonts matching the logo: bold serif wordmark + script tagline
-const brandSerif = Merriweather({ subsets: ["latin"], weight: ["700", "900"], variable: "--font-brand-serif", display: "swap" });
-const brandScript = Dancing_Script({ subsets: ["latin"], weight: ["600"], variable: "--font-brand-script", display: "swap" });
+// Only weight 700 is used; the script face is decorative (footer tagline) so it isn't preloaded
+// and doesn't compete with the hero for bandwidth on slow mobile connections.
+const brandSerif = Merriweather({ subsets: ["latin"], weight: "700", variable: "--font-brand-serif", display: "swap" });
+const brandScript = Dancing_Script({ subsets: ["latin"], weight: "600", variable: "--font-brand-script", display: "swap", preload: false });
 
 export async function generateMetadata(): Promise<Metadata> {
   const s = await getSettings();

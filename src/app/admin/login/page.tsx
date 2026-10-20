@@ -52,7 +52,7 @@ export default async function LoginPage({ searchParams }: { searchParams: Promis
       <section className="flex items-center justify-center px-6 py-16">
         {needsSetup ? (
           <form action={setupSuperAdminAction} className="w-full max-w-sm space-y-4">
-            <FullLogo width={190} className="mx-auto mb-2" />
+            <FullLogo width={190} className="mx-auto mb-2" priority />
             <div>
               <p className="text-xs font-semibold tracking-[0.18em] text-forest-600 uppercase">First-time setup</p>
               <h2 className="mt-1 font-serif text-2xl font-bold text-forest-900">Create the Super Admin</h2>
@@ -74,7 +74,7 @@ export default async function LoginPage({ searchParams }: { searchParams: Promis
           </form>
         ) : (
           <form action={loginAction} className="w-full max-w-sm">
-            <FullLogo width={220} className="mx-auto mb-8" />
+            <FullLogo width={220} className="mx-auto mb-8" priority />
             <h2 className="font-serif text-2xl font-bold text-forest-900">Welcome back</h2>
             <p className="mt-1.5 text-sm text-slate-500">Sign in with your work email.</p>
 
