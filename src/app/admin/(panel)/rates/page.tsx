@@ -20,6 +20,22 @@ const localFields = [
   ["extraKm", "Extra km", "₹"],
 ] as const;
 
+const transferFields = [
+  ["oneWayPerKm", "One-way rate per km", "₹"],
+  ["transferBase", "Transfer fare", "₹"],
+  ["transferKm", "Transfer includes", "km"],
+] as const;
+
+const coverage = [
+  ["Car + driver (outstation)", "Outstation / round trip", "max(km, min km/day × days) × ₹/km + driver allowance/day + night halts + tolls"],
+  ["Round-trip taxi", "Outstation / round trip", "Same as outstation, using total return distance"],
+  ["Group / tempo traveller", "Outstation or Local + Tempo Traveller", "Tempo Traveller rates; add vehicles for larger groups"],
+  ["One-way transfer", "One-way drop", "max(km, one-way minimum) × one-way ₹/km + driver allowance + late-night charge"],
+  ["Airport / railway station transfer", "Airport / railway transfer", "Transfer fare (first N km) + extra km × one-way ₹/km + waiting + late-night"],
+  ["Local sightseeing taxi", "Local sightseeing", "Package/day (hrs/km) + extra hours + extra km"],
+  ["Driver only (your vehicle)", "Driver only", "Driver/day (local or outstation) + night allowance + overtime + return fare"],
+] as const;
+
 function Money({ name, label, unit, value }: { name: string; label: string; unit: string; value: number }) {
   return (
     <label className="block">
@@ -102,6 +118,14 @@ export default async function RatesPage({ searchParams }: { searchParams: Promis
                       ))}
                     </div>
                   </div>
+                  <div>
+                    <p className="mb-2 text-[11px] font-semibold tracking-wider text-forest-700 uppercase">One-way & airport / railway transfer</p>
+                    <div className="grid grid-cols-2 gap-3 sm:grid-cols-3">
+                      {transferFields.map(([key, label, unit]) => (
+                        <Money key={key} name={`v_${v.id}_${key}`} label={label} unit={unit} value={v[key]} />
+                      ))}
+                    </div>
+                  </div>
                 </div>
               </div>
             ))}
@@ -129,6 +153,53 @@ export default async function RatesPage({ searchParams }: { searchParams: Promis
             ))}
           </div>
         </section>
+
+        <Panel title="Driver only, one-way & transfer rules" icon="user" description="Rates that apply across vehicles">
+          <div className="grid gap-6 lg:grid-cols-2">
+            <div>
+              <p className="mb-3 text-[11px] font-semibold tracking-wider text-forest-700 uppercase">Driver only (customer&apos;s vehicle)</p>
+              <div className="grid grid-cols-2 gap-3">
+                <Money name="driverDayRate" label="Local, per day" unit="₹" value={settings.driverDayRate} />
+                <Money name="driverOutstationDayRate" label="Outstation, per day" unit="₹" value={settings.driverOutstationDayRate} />
+                <Money name="driverDayHours" label="Hours per day" unit="hrs" value={settings.driverDayHours} />
+                <Money name="driverOvertimeHour" label="Overtime per hour" unit="₹" value={settings.driverOvertimeHour} />
+                <Money name="driverNightAllowance" label="Night allowance (food & stay)" unit="₹" value={settings.driverNightAllowance} />
+              </div>
+            </div>
+            <div>
+              <p className="mb-3 text-[11px] font-semibold tracking-wider text-forest-700 uppercase">One-way & transfers</p>
+              <div className="grid grid-cols-2 gap-3">
+                <Money name="oneWayMinKm" label="One-way minimum" unit="km" value={settings.oneWayMinKm} />
+                <Money name="lateNightCharge" label="Late-night charge (10 pm–6 am)" unit="₹" value={settings.lateNightCharge} />
+                <Money name="freeWaitMinutes" label="Free waiting (transfers)" unit="min" value={settings.freeWaitMinutes} />
+              </div>
+              <p className="mt-3 text-xs text-slate-500">Waiting beyond the free time is charged at each vehicle&apos;s “Extra hour” rate.</p>
+            </div>
+          </div>
+        </Panel>
+
+        <Panel title="Service coverage" icon="check" description="How each transport service on the website is priced by the calculator">
+          <div className="overflow-x-auto">
+            <table className="w-full min-w-[640px] text-sm">
+              <thead>
+                <tr>
+                  <th className="admin-th pl-0">Website service</th>
+                  <th className="admin-th">Calculator mode</th>
+                  <th className="admin-th">Fare formula</th>
+                </tr>
+              </thead>
+              <tbody className="divide-y divide-slate-100">
+                {coverage.map(([service, mode, formula]) => (
+                  <tr key={service}>
+                    <td className="py-3 pr-4 font-medium text-slate-900"><span className="mr-2 text-emerald-600">✓</span>{service}</td>
+                    <td className="px-5 py-3 text-slate-600">{mode}</td>
+                    <td className="px-5 py-3 text-xs text-slate-500">{formula}</td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        </Panel>
 
         <Panel title="Quote defaults" icon="settings" description="Applied to every new quote — can be changed per quote">
           <div className="grid gap-5 sm:grid-cols-2 lg:grid-cols-4">

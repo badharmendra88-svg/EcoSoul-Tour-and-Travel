@@ -6,7 +6,7 @@ import { requireAdmin } from "@/lib/admin-auth";
 import { db } from "@/lib/db";
 import { formatDate, formatDateTime } from "@/lib/format";
 import { parseList } from "@/lib/json";
-import { addDaysISO, emptyCalc, rupees, type CalcInput, type QuoteItem } from "@/lib/quote";
+import { addDaysISO, emptyCalc, rupees, type CalcInput, type QuoteItem, type TransportMode } from "@/lib/quote";
 import { getRateCard } from "@/lib/rates";
 import { setQuoteStatusAction } from "../../../quote-actions";
 import { QuoteBuilder, type BuilderInitial } from "../QuoteBuilder";
@@ -15,6 +15,21 @@ import { getSettings, getWhatsAppApiConfig } from "@/lib/settings";
 import { Avatar, Icon, PageHeader, Panel, StatusBadge } from "../../ui";
 
 const defaultTransportInclusions = ["Vehicle as per category for the dates and route above", "Fuel and driver charges", "Driver allowance and night halts as listed"];
+const driverOnlyInclusions = ["Experienced driver for the dates above", "Driver allowance and night stay as listed"];
+const driverOnlyExclusions = ["Fuel, tolls, parking and permits for your vehicle", "Vehicle insurance, documents and maintenance (owner's responsibility)", "Anything not listed under inclusions"];
+const transferInclusions = ["Vehicle as per category with driver", "Fuel and driver charges", "Meet-up and waiting as per the free waiting time"];
+
+// Website service type -> calculator mode
+const serviceToMode: Record<string, TransportMode> = {
+  CAR_DRIVER: "OUTSTATION",
+  ROUND_TRIP: "OUTSTATION",
+  GROUP: "OUTSTATION",
+  ONE_WAY: "ONE_WAY",
+  AIRPORT_RAIL: "TRANSFER",
+  LOCAL: "LOCAL",
+  DRIVER_ONLY: "DRIVER_ONLY",
+};
+
 const defaultTransportExclusions = ["Tolls, parking and state entry taxes beyond the estimate (at actuals)", "Entry tickets, activities and meals", "Anything not listed under inclusions"];
 const defaultTripInclusions = ["Hotel stay in the category above with breakfast", "Private vehicle for transfers and sightseeing as per itinerary", "Driver allowance, fuel and night halts"];
 const defaultTripExclusions = ["Train / flight tickets", "Entry tickets, boating, ropeway and activity fees", "Lunch and dinner unless listed", "Personal expenses and anything not listed under inclusions"];
@@ -75,7 +90,8 @@ export default async function QuotePage({
     const vehicleId =
       lead?.vehicleCategory && vehicles.some((v) => v.id === lead.vehicleCategory)
         ? lead.vehicleCategory
-        : persons > 6 ? "TEMPO" : persons > 4 ? "SUV" : "SEDAN";
+        : lead?.serviceType === "GROUP" || persons > 6 ? "TEMPO" : persons > 4 ? "SUV" : "SEDAN";
+    const mode: TransportMode = (lead?.serviceType && serviceToMode[lead.serviceType]) || "OUTSTATION";
     const service = lead?.serviceType ? serviceTypes[lead.serviceType as keyof typeof serviceTypes] : null;
     const title = pkg
       ? `${pkg.title} — ${pkg.durationLabel}`
@@ -109,16 +125,18 @@ export default async function QuotePage({
       taxPct: settings.gstPct,
       taxLabel: settings.gstLabel,
       advancePct: settings.advancePct,
-      inclusions: (isTransport ? defaultTransportInclusions : defaultTripInclusions).join("\n"),
-      exclusions: (isTransport ? defaultTransportExclusions : defaultTripExclusions).join("\n"),
+      inclusions: (mode === "DRIVER_ONLY" ? driverOnlyInclusions : mode === "TRANSFER" ? transferInclusions : isTransport ? defaultTransportInclusions : defaultTripInclusions).join("\n"),
+      exclusions: (mode === "DRIVER_ONLY" ? driverOnlyExclusions : isTransport ? defaultTransportExclusions : defaultTripExclusions).join("\n"),
       terms: settings.terms,
       notes: "",
       calc: {
         ...emptyCalc,
         vehicleId,
-        mode: lead?.serviceType === "LOCAL" ? "LOCAL" : lead?.serviceType === "DRIVER_ONLY" ? "NONE" : "OUTSTATION",
+        mode,
+        lateNight: !!lead?.pickupTime && (lead.pickupTime >= "22:00" || lead.pickupTime < "06:00"),
+        driverOutstation: mode === "DRIVER_ONLY" && days > 1,
         days,
-        totalKm: Math.max(250, days * 200),
+        totalKm: mode === "TRANSFER" ? 40 : mode === "ONE_WAY" ? 100 : Math.max(250, days * 200),
         nights: Math.max(0, days - 1),
         vehicles: Math.max(1, Math.ceil(persons / (vehicles.find((v) => v.id === vehicleId)?.seats ?? 4))),
         hotelId: isTransport ? "" : "STANDARD",
@@ -195,6 +213,16 @@ export default async function QuotePage({
           vehicles={vehicles.filter((v) => v.active)}
           hotels={hotels}
           peakSurchargePct={settings.peakSurchargePct}
+          rules={{
+            oneWayMinKm: settings.oneWayMinKm,
+            lateNightCharge: settings.lateNightCharge,
+            freeWaitMinutes: settings.freeWaitMinutes,
+            driverDayRate: settings.driverDayRate,
+            driverOutstationDayRate: settings.driverOutstationDayRate,
+            driverDayHours: settings.driverDayHours,
+            driverOvertimeHour: settings.driverOvertimeHour,
+            driverNightAllowance: settings.driverNightAllowance,
+          }}
           initial={initial}
         />
         <aside className="space-y-4 xl:sticky xl:top-6 xl:h-fit">

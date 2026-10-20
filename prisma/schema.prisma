@@ -132,6 +132,9 @@ model VehicleRate {
   localKm         Int      @default(80)
   extraHour       Int
   extraKm         Int
+  oneWayPerKm     Int      @default(0) // one-way drop rate per km (covers empty return)
+  transferBase    Int      @default(0) // airport/railway transfer fare incl. transferKm
+  transferKm      Int      @default(40)
   active          Boolean  @default(true)
   sortOrder       Int      @default(100)
   updatedAt       DateTime @updatedAt
@@ -156,6 +159,16 @@ model QuoteSettings {
   validityDays     Int
   advancePct       Int
   peakSurchargePct Int
+  // One-way & transfer rules
+  oneWayMinKm             Int @default(80)
+  lateNightCharge         Int @default(300) // pickups/drops 10 pm – 6 am
+  freeWaitMinutes         Int @default(45)
+  // Driver-only (customer's own vehicle)
+  driverDayRate           Int @default(1000) // local, per day
+  driverOutstationDayRate Int @default(1300)
+  driverDayHours          Int @default(10)
+  driverOvertimeHour      Int @default(100)
+  driverNightAllowance    Int @default(300) // per night away from base
   terms            String // one per line
   updatedAt        DateTime @updatedAt
 }

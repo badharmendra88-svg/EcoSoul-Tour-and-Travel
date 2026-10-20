@@ -6,6 +6,8 @@ import {
   computeTotals,
   estimateHotel,
   estimateTransport,
+  transportModes,
+  type TransportRules,
   lineAmount,
   rupees,
   type CalcInput,
@@ -43,12 +45,13 @@ type Props = {
   vehicles: VehicleRateInput[];
   hotels: HotelRateInput[];
   peakSurchargePct: number;
+  rules: TransportRules;
   initial: BuilderInitial;
 };
 
 const lines = (s: string) => s.split(/\r?\n/).map((l) => l.trim()).filter(Boolean);
 
-export function QuoteBuilder({ quoteId, enquiryId, vehicles, hotels, peakSurchargePct, initial }: Props) {
+export function QuoteBuilder({ quoteId, enquiryId, vehicles, hotels, peakSurchargePct, rules, initial }: Props) {
   const router = useRouter();
   const [pending, startTransition] = useTransition();
   const [error, setError] = useState("");
@@ -62,11 +65,11 @@ export function QuoteBuilder({ quoteId, enquiryId, vehicles, hotels, peakSurchar
   const vehicle = vehicles.find((v) => v.id === calc.vehicleId);
   const hotel = hotels.find((h) => h.id === calc.hotelId);
   const preview = useMemo(
-    () => [...estimateTransport(calc, vehicle), ...estimateHotel(calc, hotel, peakSurchargePct)],
-    [calc, vehicle, hotel, peakSurchargePct],
+    () => [...estimateTransport(calc, vehicle, rules), ...estimateHotel(calc, hotel, peakSurchargePct)],
+    [calc, vehicle, hotel, peakSurchargePct, rules],
   );
   const totals = computeTotals(items, m.markupPct, m.taxPct);
-  const capacityWarn = vehicle && calc.mode !== "NONE" && calc.persons > vehicle.seats * Math.max(1, calc.vehicles);
+  const capacityWarn = vehicle && calc.mode !== "NONE" && calc.mode !== "DRIVER_ONLY" && calc.persons > vehicle.seats * Math.max(1, calc.vehicles);
 
   function applyCalculator(replace: boolean) {
     setItems((current) => (replace ? preview : [...current, ...preview]));
@@ -128,42 +131,94 @@ export function QuoteBuilder({ quoteId, enquiryId, vehicles, hotels, peakSurchar
       <section className="space-y-5 panel p-6 ring-forest-200 bg-gradient-to-br from-white to-forest-50/60">
         <Step n={2} title="Estimate calculator" text="Calculated from your rate card — review, then turn into line items" />
 
-        <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
-          <Labeled label="Transport">
-            <select className="admin-input" value={calc.mode} onChange={(e) => setC("mode", e.target.value as CalcInput["mode"])}>
-              <option value="OUTSTATION">Outstation</option>
-              <option value="LOCAL">Local package</option>
-              <option value="NONE">No transport</option>
-            </select>
-          </Labeled>
-          {calc.mode !== "NONE" && (
-            <>
-              <Labeled label="Vehicle">
-                <select className="admin-input" value={calc.vehicleId} onChange={(e) => setC("vehicleId", e.target.value)}>
-                  {vehicles.map((v) => (
-                    <option key={v.id} value={v.id}>{v.name} ({v.seats} seats)</option>
-                  ))}
-                </select>
-              </Labeled>
-              <Labeled label="Vehicles">{numInput(calc.vehicles, (v) => setC("vehicles", v), { min: 1 })}</Labeled>
-              <Labeled label="Days">{numInput(calc.days, (v) => setC("days", v), { min: 1 })}</Labeled>
-              {calc.mode === "OUTSTATION" ? (
-                <>
-                  <Labeled label="Estimated total km" hint={vehicle ? `Min billed: ${vehicle.minKmPerDay * Math.max(1, calc.days)} km` : undefined}>
-                    {numInput(calc.totalKm, (v) => setC("totalKm", v))}
-                  </Labeled>
-                  <Labeled label="Driver night halts">{numInput(calc.nights, (v) => setC("nights", v))}</Labeled>
-                </>
-              ) : (
-                <>
-                  <Labeled label="Extra hours (est.)">{numInput(calc.extraHours, (v) => setC("extraHours", v))}</Labeled>
-                  <Labeled label="Extra km (est.)">{numInput(calc.extraKm, (v) => setC("extraKm", v))}</Labeled>
-                </>
-              )}
-              <Labeled label="Tolls & parking (₹ est.)">{numInput(calc.tolls, (v) => setC("tolls", v))}</Labeled>
-            </>
-          )}
+        {/* Service type — one tile per website transport service */}
+        <div>
+          <span className="admin-label">Service type</span>
+          <div className="grid gap-2 sm:grid-cols-3">
+            {transportModes.map((m) => (
+              <button
+                key={m.id}
+                type="button"
+                onClick={() => setC("mode", m.id)}
+                aria-pressed={calc.mode === m.id}
+                className={`rounded-xl px-3.5 py-2.5 text-left text-sm transition-all ${
+                  calc.mode === m.id
+                    ? "bg-forest-700 text-white shadow-md shadow-forest-900/20"
+                    : "bg-white text-slate-700 ring-1 ring-slate-900/10 hover:ring-forest-300"
+                }`}
+              >
+                <span className="block font-semibold">{m.label}</span>
+                <span className={`block text-xs ${calc.mode === m.id ? "text-forest-100" : "text-slate-500"}`}>{m.covers}</span>
+              </button>
+            ))}
+          </div>
         </div>
+
+        {calc.mode !== "NONE" && (
+          <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+            {calc.mode !== "DRIVER_ONLY" && (
+              <>
+                <Labeled label="Vehicle" hint={calc.mode === "OUTSTATION" && calc.persons > 7 ? "Groups: choose Tempo Traveller" : undefined}>
+                  <select className="admin-input" value={calc.vehicleId} onChange={(e) => setC("vehicleId", e.target.value)}>
+                    {vehicles.map((v) => (
+                      <option key={v.id} value={v.id}>{v.name} ({v.seats} seats)</option>
+                    ))}
+                  </select>
+                </Labeled>
+                <Labeled label="Vehicles">{numInput(calc.vehicles, (v) => setC("vehicles", v), { min: 1 })}</Labeled>
+              </>
+            )}
+            {(calc.mode === "OUTSTATION" || calc.mode === "LOCAL" || calc.mode === "DRIVER_ONLY") && (
+              <Labeled label="Days">{numInput(calc.days, (v) => setC("days", v), { min: 1 })}</Labeled>
+            )}
+
+            {calc.mode === "OUTSTATION" && (
+              <>
+                <Labeled label="Estimated total km" hint={vehicle ? `Min billed: ${vehicle.minKmPerDay * Math.max(1, calc.days)} km` : undefined}>
+                  {numInput(calc.totalKm, (v) => setC("totalKm", v))}
+                </Labeled>
+                <Labeled label="Driver night halts">{numInput(calc.nights, (v) => setC("nights", v))}</Labeled>
+              </>
+            )}
+            {calc.mode === "ONE_WAY" && (
+              <>
+                <Labeled label="Distance (km)" hint={`Min billed: ${rules.oneWayMinKm} km · ${vehicle ? rupees(vehicle.oneWayPerKm) : ""}/km`}>
+                  {numInput(calc.totalKm, (v) => setC("totalKm", v))}
+                </Labeled>
+                <label className="flex items-center gap-2 self-end pb-3 text-sm"><input type="checkbox" className="h-4 w-4" checked={calc.driverAllowanceOneWay} onChange={(e) => setC("driverAllowanceOneWay", e.target.checked)} /> Add driver allowance</label>
+              </>
+            )}
+            {calc.mode === "TRANSFER" && (
+              <>
+                <Labeled label="Distance (km)" hint={vehicle ? `${rupees(vehicle.transferBase)} covers ${vehicle.transferKm} km` : undefined}>
+                  {numInput(calc.totalKm, (v) => setC("totalKm", v))}
+                </Labeled>
+                <Labeled label="Waiting hours (est.)" hint={`First ${rules.freeWaitMinutes} min free`}>{numInput(calc.waitingHours, (v) => setC("waitingHours", v), { step: 0.5 })}</Labeled>
+              </>
+            )}
+            {calc.mode === "LOCAL" && (
+              <>
+                <Labeled label="Extra hours (est.)">{numInput(calc.extraHours, (v) => setC("extraHours", v))}</Labeled>
+                <Labeled label="Extra km (est.)">{numInput(calc.extraKm, (v) => setC("extraKm", v))}</Labeled>
+              </>
+            )}
+            {calc.mode === "DRIVER_ONLY" && (
+              <>
+                <Labeled label="Nights away">{numInput(calc.nights, (v) => setC("nights", v))}</Labeled>
+                <Labeled label="Overtime hours (est.)" hint={`Beyond ${rules.driverDayHours} hrs/day`}>{numInput(calc.extraHours, (v) => setC("extraHours", v))}</Labeled>
+                <Labeled label="Driver return fare (₹)">{numInput(calc.driverReturnFare, (v) => setC("driverReturnFare", v))}</Labeled>
+                <label className="flex items-center gap-2 self-end pb-3 text-sm"><input type="checkbox" className="h-4 w-4" checked={calc.driverOutstation} onChange={(e) => setC("driverOutstation", e.target.checked)} /> Outstation trip</label>
+              </>
+            )}
+
+            {(calc.mode === "TRANSFER" || calc.mode === "ONE_WAY") && (
+              <label className="flex items-center gap-2 self-end pb-3 text-sm"><input type="checkbox" className="h-4 w-4" checked={calc.lateNight} onChange={(e) => setC("lateNight", e.target.checked)} /> Late night (10 pm–6 am)</label>
+            )}
+            {calc.mode !== "DRIVER_ONLY" && (
+              <Labeled label="Tolls & parking (₹ est.)">{numInput(calc.tolls, (v) => setC("tolls", v))}</Labeled>
+            )}
+          </div>
+        )}
 
         <div className="grid gap-4 border-t border-forest-100 pt-5 sm:grid-cols-2 lg:grid-cols-4">
           <Labeled label="Hotel">

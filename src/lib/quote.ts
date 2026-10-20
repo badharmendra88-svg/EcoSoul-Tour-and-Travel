@@ -17,20 +17,59 @@ export type VehicleRateInput = {
   localKm: number;
   extraHour: number;
   extraKm: number;
+  oneWayPerKm: number;
+  transferBase: number;
+  transferKm: number;
 };
 
 export type HotelRateInput = { id: string; name: string; description: string; perRoomNight: number; mealsPerPerson: number };
 
+/** Rate-card rules that are not specific to one vehicle. */
+export type TransportRules = {
+  oneWayMinKm: number;
+  lateNightCharge: number;
+  freeWaitMinutes: number;
+  driverDayRate: number;
+  driverOutstationDayRate: number;
+  driverDayHours: number;
+  driverOvertimeHour: number;
+  driverNightAllowance: number;
+};
+
+/**
+ * Calculator modes, mapped to the website's transport services:
+ *  OUTSTATION  → Car + driver (outstation), Round-trip taxi, Group / tempo traveller
+ *  ONE_WAY     → One-way transfer / drop
+ *  TRANSFER    → Airport / railway station transfer
+ *  LOCAL       → Local sightseeing taxi
+ *  DRIVER_ONLY → Driver only (customer's vehicle)
+ */
+export type TransportMode = "OUTSTATION" | "ONE_WAY" | "TRANSFER" | "LOCAL" | "DRIVER_ONLY" | "NONE";
+
+export const transportModes: { id: TransportMode; label: string; covers: string }[] = [
+  { id: "OUTSTATION", label: "Outstation / round trip", covers: "Car + driver (outstation), round-trip taxi, group / tempo traveller" },
+  { id: "ONE_WAY", label: "One-way drop", covers: "One-way transfer between towns" },
+  { id: "TRANSFER", label: "Airport / railway transfer", covers: "Pickup or drop at an airport or railway station" },
+  { id: "LOCAL", label: "Local sightseeing", covers: "Half / full-day local taxi" },
+  { id: "DRIVER_ONLY", label: "Driver only", covers: "Driver for the customer's own vehicle" },
+  { id: "NONE", label: "No transport", covers: "Hotel / services only" },
+];
+
 export type CalcInput = {
   vehicleId: string;
-  mode: "OUTSTATION" | "LOCAL" | "NONE";
+  mode: TransportMode;
   days: number;
   totalKm: number;
-  nights: number; // driver night halts
+  nights: number; // driver night halts / nights away
   vehicles: number;
   tolls: number; // estimated tolls + parking
-  extraHours: number; // local mode
+  extraHours: number; // local / driver-only overtime
   extraKm: number; // local mode
+  lateNight: boolean; // 10 pm – 6 am pickup or drop
+  waitingHours: number; // transfer waiting beyond the free time
+  driverAllowanceOneWay: boolean;
+  driverOutstation: boolean; // driver-only: away from base
+  driverReturnFare: number; // driver-only: bus/train fare back
   hotelId: string; // "" = no hotel
   rooms: number;
   hotelNights: number;
@@ -49,6 +88,11 @@ export const emptyCalc: CalcInput = {
   tolls: 0,
   extraHours: 0,
   extraKm: 0,
+  lateNight: false,
+  waitingHours: 0,
+  driverAllowanceOneWay: true,
+  driverOutstation: false,
+  driverReturnFare: 0,
   hotelId: "",
   rooms: 1,
   hotelNights: 2,
@@ -63,29 +107,60 @@ export function lineAmount(item: QuoteItem) {
   return Math.round(n(item.qty) * n(item.rate));
 }
 
-export function estimateTransport(c: CalcInput, v: VehicleRateInput | undefined): QuoteItem[] {
-  if (!v || c.mode === "NONE") return [];
-  const vehicles = Math.max(1, Math.round(n(c.vehicles)));
+export function estimateTransport(c: CalcInput, v: VehicleRateInput | undefined, rules: TransportRules): QuoteItem[] {
+  if (c.mode === "NONE") return [];
   const days = Math.max(1, Math.round(n(c.days)));
-  const each = vehicles > 1 ? ` × ${vehicles} vehicles` : "";
   const items: QuoteItem[] = [];
+
+  // Driver only — no vehicle rates involved
+  if (c.mode === "DRIVER_ONLY") {
+    const rate = c.driverOutstation ? rules.driverOutstationDayRate : rules.driverDayRate;
+    items.push({
+      label: `Driver for your vehicle — ${c.driverOutstation ? "outstation" : "local"}, up to ${rules.driverDayHours} hrs/day`,
+      qty: days,
+      unit: "day",
+      rate,
+    });
+    if (n(c.nights) > 0) items.push({ label: "Driver night allowance (food & stay)", qty: Math.round(n(c.nights)), unit: "night", rate: rules.driverNightAllowance });
+    if (n(c.extraHours) > 0) items.push({ label: "Driver overtime (estimate)", qty: Math.round(n(c.extraHours)), unit: "hour", rate: rules.driverOvertimeHour });
+    if (n(c.driverReturnFare) > 0) items.push({ label: "Driver's return travel fare", qty: 1, unit: "lump sum", rate: Math.round(n(c.driverReturnFare)) });
+    return items;
+  }
+
+  if (!v) return [];
+  const vehicles = Math.max(1, Math.round(n(c.vehicles)));
+  const each = vehicles > 1 ? ` × ${vehicles} vehicles` : "";
+  const name = `${v.name} (${v.example})`;
 
   if (c.mode === "OUTSTATION") {
     const minKm = v.minKmPerDay * days;
     const km = Math.max(Math.round(n(c.totalKm)), minKm);
     items.push({
-      label: `${v.name} (${v.example}) — ${km} km @ ${v.perKm}/km${km === minKm ? ` (min ${v.minKmPerDay} km/day)` : ""}${each}`,
+      label: `${name} — ${km} km @ ${v.perKm}/km${km === minKm ? ` (min ${v.minKmPerDay} km/day)` : ""}${each}`,
       qty: km * vehicles,
       unit: "km",
       rate: v.perKm,
     });
     items.push({ label: `Driver allowance${each}`, qty: days * vehicles, unit: "day", rate: v.driverAllowance });
-    if (n(c.nights) > 0) {
-      items.push({ label: `Driver night halt${each}`, qty: Math.round(n(c.nights)) * vehicles, unit: "night", rate: v.nightHalt });
-    }
+    if (n(c.nights) > 0) items.push({ label: `Driver night halt${each}`, qty: Math.round(n(c.nights)) * vehicles, unit: "night", rate: v.nightHalt });
+  } else if (c.mode === "ONE_WAY") {
+    const km = Math.max(Math.round(n(c.totalKm)), rules.oneWayMinKm);
+    items.push({
+      label: `${name} — one-way drop, ${km} km @ ${v.oneWayPerKm}/km${km === rules.oneWayMinKm ? ` (min ${rules.oneWayMinKm} km)` : ""}${each}`,
+      qty: km * vehicles,
+      unit: "km",
+      rate: v.oneWayPerKm,
+    });
+    if (c.driverAllowanceOneWay) items.push({ label: `Driver allowance${each}`, qty: vehicles, unit: "trip", rate: v.driverAllowance });
+  } else if (c.mode === "TRANSFER") {
+    items.push({ label: `${name} — airport / railway transfer (includes ${v.transferKm} km)${each}`, qty: vehicles, unit: "transfer", rate: v.transferBase });
+    const extra = Math.max(0, Math.round(n(c.totalKm)) - v.transferKm);
+    if (extra > 0) items.push({ label: `Distance beyond ${v.transferKm} km${each}`, qty: extra * vehicles, unit: "km", rate: v.oneWayPerKm });
+    if (n(c.waitingHours) > 0)
+      items.push({ label: `Waiting beyond ${rules.freeWaitMinutes} free minutes (estimate)${each}`, qty: Math.ceil(n(c.waitingHours)) * vehicles, unit: "hour", rate: v.extraHour });
   } else {
     items.push({
-      label: `${v.name} (${v.example}) — local package ${v.localHours} hrs / ${v.localKm} km per day${each}`,
+      label: `${name} — local package ${v.localHours} hrs / ${v.localKm} km per day${each}`,
       qty: days * vehicles,
       unit: "day",
       rate: v.localPackage,
@@ -94,6 +169,8 @@ export function estimateTransport(c: CalcInput, v: VehicleRateInput | undefined)
     if (n(c.extraKm) > 0) items.push({ label: "Extra km (estimate)", qty: Math.round(n(c.extraKm)) * vehicles, unit: "km", rate: v.extraKm });
   }
 
+  if (c.lateNight && (c.mode === "TRANSFER" || c.mode === "ONE_WAY"))
+    items.push({ label: `Late-night charge (10 pm – 6 am)${each}`, qty: vehicles, unit: "trip", rate: rules.lateNightCharge });
   if (n(c.tolls) > 0) items.push({ label: "Tolls & parking (estimate)", qty: 1, unit: "lump sum", rate: Math.round(n(c.tolls)) });
   return items;
 }
