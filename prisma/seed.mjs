@@ -14,6 +14,7 @@ const j = (v) => JSON.stringify(v);
 const destinations = [
   {
     slug: "nainital",
+    bestFor: "Families, First-timers, Couples",
     name: "Nainital",
     region: "Kumaon",
     cluster: "Lake & hill escapes",
@@ -46,6 +47,7 @@ const destinations = [
   },
   {
     slug: "bhimtal",
+    bestFor: "Families, Quiet stays",
     name: "Bhimtal",
     region: "Kumaon",
     cluster: "Lake & hill escapes",
@@ -64,6 +66,7 @@ const destinations = [
   },
   {
     slug: "mukteshwar",
+    bestFor: "Couples, Slow travel",
     name: "Mukteshwar",
     region: "Kumaon",
     cluster: "Lake & hill escapes",
@@ -81,6 +84,7 @@ const destinations = [
   },
   {
     slug: "almora",
+    bestFor: "Culture, Heritage",
     name: "Almora",
     region: "Kumaon",
     cluster: "Kumaon offbeat",
@@ -98,6 +102,7 @@ const destinations = [
   },
   {
     slug: "ranikhet",
+    bestFor: "Families, Slow travel",
     name: "Ranikhet",
     region: "Kumaon",
     cluster: "Lake & hill escapes",
@@ -115,6 +120,7 @@ const destinations = [
   },
   {
     slug: "binsar",
+    bestFor: "Nature, Birdwatching",
     name: "Binsar",
     region: "Kumaon",
     cluster: "Kumaon offbeat",
@@ -132,6 +138,7 @@ const destinations = [
   },
   {
     slug: "munsiyari",
+    bestFor: "Adventure, Long trips",
     name: "Munsiyari",
     region: "Kumaon",
     cluster: "Kumaon offbeat",
@@ -149,6 +156,7 @@ const destinations = [
   },
   {
     slug: "mussoorie",
+    bestFor: "Weekend, Families",
     name: "Mussoorie",
     region: "Garhwal",
     cluster: "Hill stations",
@@ -167,6 +175,7 @@ const destinations = [
   },
   {
     slug: "dhanaulti",
+    bestFor: "Couples, Weekend",
     name: "Dhanaulti",
     region: "Garhwal",
     cluster: "Hill stations",
@@ -184,6 +193,7 @@ const destinations = [
   },
   {
     slug: "rishikesh",
+    bestFor: "Wellness, Adventure, Spiritual",
     name: "Rishikesh",
     region: "Garhwal",
     cluster: "Yoga & river experiences",
@@ -206,6 +216,7 @@ const destinations = [
   },
   {
     slug: "haridwar",
+    bestFor: "Pilgrims, Families",
     name: "Haridwar",
     region: "Garhwal",
     cluster: "Yoga & river experiences",
@@ -223,6 +234,7 @@ const destinations = [
   },
   {
     slug: "jim-corbett",
+    bestFor: "Wildlife, Weekend",
     name: "Jim Corbett",
     region: "Kumaon",
     cluster: "Wildlife & nature",
@@ -244,6 +256,7 @@ const destinations = [
   },
   {
     slug: "auli",
+    bestFor: "Snow, Adventure",
     name: "Auli",
     region: "Garhwal",
     cluster: "Wildlife & nature",
@@ -261,6 +274,7 @@ const destinations = [
   },
   {
     slug: "valley-of-flowers",
+    bestFor: "Trekking, Nature",
     name: "Valley of Flowers",
     region: "Garhwal",
     cluster: "Wildlife & nature",

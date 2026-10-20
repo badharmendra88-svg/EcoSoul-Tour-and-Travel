@@ -3,7 +3,7 @@ import { db } from "./db";
 
 // Public read queries — only PUBLISHED content ever reaches visitors.
 
-const destSummary = { select: { slug: true, name: true, scene: true, region: true } } as const;
+const destSummary = { select: { slug: true, name: true, scene: true, region: true, imageUrl: true } } as const;
 
 export function getPublishedPackages(opts: { featured?: boolean; destination?: string; tripType?: string; maxDays?: number; minDays?: number } = {}) {
   return db.package.findMany({

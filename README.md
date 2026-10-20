@@ -2,7 +2,7 @@
 
 Mobile-first, enquiry-led travel website for Uttarakhand: tour packages, custom trips, Char Dham planning help and car / taxi / driver bookings, with a protected admin panel for leads and content.
 
-Built from `EcoSoul_Uttarakhand_Travel_Blueprint_with_SEO_Plan.docx` (v1.0, 20 Oct 2026).
+Built from `EcoSoul_Uttarakhand_Travel_Blueprint_with_SEO_Plan.docx` (v1.0, 20 Oct 2026). Review feedback lives in `docs/` — see `docs/review-1-implementation.md` for what was changed after the 1st review.
 
 **Stack:** Next.js 15 (App Router) · TypeScript · Tailwind CSS v4 · Prisma 6 · SQLite (dev) · Zod
 
@@ -79,6 +79,10 @@ Admin panel: <http://localhost:3200/admin/>. **First run:** the login page asks 
 - **Calculator:** open a lead → *Create quote*. Customer, dates, travellers, vehicle and days are prefilled. Outstation = max(actual km, min km/day × days) × ₹/km + driver allowance + night halts + tolls; local = package/day + extras; hotel = rooms × nights (+ dinner, + peak surcharge). Results become editable line items; totals (service charge → GST → total, advance, per person) update live and are recomputed on the server.
 - **Sending:** each saved quote gets a number (`Q-261020-7KQ4`), an A4 **PDF** and a private customer link (`/quote/<token>/`). *Send on WhatsApp* opens the customer's chat with a pre-filled summary + link; email via mail app. Sending marks the quote **Sent** and moves the lead to **Quote Sent** with an activity-log entry; record Accepted/Declined later.
 - WhatsApp links can't attach files — download the PDF and attach it manually, or integrate the WhatsApp Business API later. Customer links work only once the site is deployed with a public `NEXT_PUBLIC_SITE_URL`. PDFs use built-in fonts, so `₹` prints as `Rs.` and Hindi text is not supported yet.
+
+### Photos & reviews
+- Admins upload licensed photos for the homepage hero (Integrations), destinations and packages. Uploads are re-encoded to WebP (max 2000 px) with `sharp`, stored in `./uploads` (`MEDIA_DIR`, git-ignored — back it up) and served from `/media/...`; `next/image` delivers AVIF/WebP and lazy-loads. Use object storage (S3/R2/Blob) on serverless hosting.
+- **Reviews** (Admin → Reviews): genuine customer reviews only, with a permission record; the homepage section appears once a review is published.
 
 ### Users & roles (`/admin/users/`)
 - Individual accounts (email + password, scrypt-hashed). Roles: **Super Admin** (everything, incl. users), **Admin** (leads, quotes, CSV export, rate card, content, integrations), **Manager** (leads and quotes only). Permissions live in `src/lib/permissions.ts` and are enforced on every page, server action and the CSV export — not just by hiding menu items.

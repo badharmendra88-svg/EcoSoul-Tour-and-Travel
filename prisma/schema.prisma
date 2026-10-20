@@ -17,7 +17,11 @@ model Destination {
   name              String
   region            String // Kumaon | Garhwal
   cluster           String // e.g. "Lake & hill escapes"
-  scene             String    @default("mountain") // artwork variant
+  scene             String    @default("mountain") // artwork variant (fallback when no photo)
+  bestFor           String? // e.g. "Families, Couples, Weekend"
+  imageUrl          String? // uploaded, licensed photo (/media/...)
+  imageAlt          String?
+  imageCredit       String?
   summary           String
   intro             String
   bestTime          String
@@ -54,6 +58,9 @@ model Package {
   exclusions     String        @default("[]") // JSON string[]
   notes          String        @default("[]") // JSON string[]
   internalNotes  String? // "must clarify before sale" — never shown publicly
+  imageUrl       String?
+  imageAlt       String?
+  imageCredit    String?
   featured       Boolean       @default(false)
   status         String        @default("DRAFT") // DRAFT | PUBLISHED | PAUSED
   seoTitle       String?
@@ -99,6 +106,8 @@ model Enquiry {
   vehicleCategory String?
   fareType        String? // FIXED_QUOTE | ESTIMATE
   arrivalRef      String? // flight/train reference (optional)
+  tripDays        Int? // trip duration in days
+  transmission    String? // driver-only: MANUAL | AUTOMATIC
 
   consent         Boolean
   consentAt       DateTime
@@ -265,7 +274,30 @@ model SiteSettings {
   metaPixelId         String?
   googleVerification  String?
   notifyWebhookUrl    String?
+  // Homepage hero photo
+  heroImageUrl        String?
+  heroImageAlt        String?
+  // Business identity (trust)
+  legalName           String?
+  gstin               String?
+  tourismRegNo        String?
+  emergencyPhone      String?
   updatedAt           DateTime  @updatedAt
+}
+
+// Customer reviews — published only with the customer's recorded permission
+model Review {
+  id          String   @id @default(cuid())
+  name        String // as the customer agreed to be shown, e.g. "Priya S."
+  place       String? // e.g. "Delhi"
+  tripLabel   String? // e.g. "Nainital family trip, May 2026"
+  text        String
+  rating      Int? // 1-5, optional
+  consentNote String // how/when permission was given
+  published   Boolean  @default(false)
+  sortOrder   Int      @default(100)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
 }
 
 // Audit trail for status / assignment / note changes (§10 access rule, TR-10)

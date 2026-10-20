@@ -32,10 +32,10 @@ export type NavItem = { label: string; href: string };
 export const mainNav: NavItem[] = [
   { label: "Destinations", href: "/destinations/" },
   { label: "Tour Packages", href: "/uttarakhand/tour-packages/" },
-  { label: "Book a Car", href: "/uttarakhand/taxi-booking/" },
+  { label: "Book a Taxi", href: "/uttarakhand/taxi-booking/" },
   { label: "Book a Driver", href: "/uttarakhand/driver-booking/" },
   { label: "Transfers", href: "/uttarakhand/airport-transfers/" },
-  { label: "Char Dham", href: "/char-dham-yatra/" },
+  { label: "Char Dham", href: "/uttarakhand/char-dham-yatra/" },
   { label: "Travel Guide", href: "/travel-guides/" },
 ];
 
@@ -45,7 +45,7 @@ export const footerNav: { title: string; items: NavItem[] }[] = [
     items: [
       { label: "Destinations", href: "/destinations/" },
       { label: "Tour Packages", href: "/uttarakhand/tour-packages/" },
-      { label: "Char Dham & Yatra", href: "/char-dham-yatra/" },
+      { label: "Char Dham & Yatra", href: "/uttarakhand/char-dham-yatra/" },
       { label: "Customise My Trip", href: "/customise-my-trip/" },
       { label: "Travel Guide", href: "/travel-guides/" },
     ],
@@ -53,10 +53,11 @@ export const footerNav: { title: string; items: NavItem[] }[] = [
   {
     title: "Transport",
     items: [
-      { label: "Book a Car", href: "/uttarakhand/taxi-booking/" },
+      { label: "Book a Taxi", href: "/uttarakhand/taxi-booking/" },
       { label: "Book a Driver", href: "/uttarakhand/driver-booking/" },
       { label: "Airport / Railway Transfers", href: "/uttarakhand/airport-transfers/" },
       { label: "Local Sightseeing Taxi", href: "/uttarakhand/local-sightseeing-taxi/" },
+      { label: "Haldwani Taxi Service", href: "/uttarakhand/haldwani-taxi-service/" },
     ],
   },
   {

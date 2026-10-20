@@ -6,6 +6,7 @@ import { faqsToLines, jsonToLines } from "@/lib/json";
 import { formatDate } from "@/lib/format";
 import { saveDestinationAction } from "../../../actions";
 import { FormBanner, TextArea, TextField } from "../../AdminFields";
+import { ImageFields } from "../../ImageFields";
 import { Icon, PageHeader } from "../../ui";
 
 const scenes = ["mountain", "lake", "river", "forest", "snow", "temple", "meadow"];
@@ -53,6 +54,7 @@ export default async function EditDestinationPage({
               <option>Garhwal</option>
             </select>
           </div>
+          <TextField name="bestFor" label="Best for" defaultValue={d?.bestFor} hint="Comma separated, e.g. Families, Couples, Weekend" />
           <TextField name="cluster" label="Category" defaultValue={d?.cluster} hint="e.g. Lake & hill escapes, Hill stations, Wildlife & nature" />
           <div>
             <label htmlFor="scene" className="admin-label">Artwork style</label>
@@ -89,6 +91,11 @@ export default async function EditDestinationPage({
             I have checked this content against current sources — update “last reviewed” date
             {d && <span className="text-slate-500">(currently {formatDate(d.reviewedAt)})</span>}
           </label>
+        </section>
+
+        <section className="space-y-4 panel p-6">
+          <h2 className="text-[15px] font-semibold text-slate-900">Photo</h2>
+          <ImageFields imageUrl={d?.imageUrl} imageAlt={d?.imageAlt} imageCredit={d?.imageCredit} />
         </section>
 
         <section className="grid gap-4 panel p-6">

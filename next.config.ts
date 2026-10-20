@@ -14,6 +14,14 @@ const nextConfig: NextConfig = {
   // Matches the URL style in the SEO plan, e.g. /destinations/nainital/
   trailingSlash: true,
   poweredByHeader: false,
+  // Hide the dev-only Next.js "N" badge (review §5)
+  devIndicators: false,
+  images: { formats: ["image/avif", "image/webp"] },
+  // Admin photo uploads go through server actions
+  experimental: { serverActions: { bodySizeLimit: "10mb" } },
+  async redirects() {
+    return [{ source: "/char-dham-yatra/", destination: "/uttarakhand/char-dham-yatra/", permanent: true }];
+  },
   async headers() {
     return [{ source: "/:path*", headers: securityHeaders }];
   },

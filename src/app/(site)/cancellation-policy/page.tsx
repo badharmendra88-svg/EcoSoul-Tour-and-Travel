@@ -1,4 +1,5 @@
 import { PolicyPage } from "@/components/PolicyPage";
+import { getSettings } from "@/lib/settings";
 import { pageMeta } from "@/lib/seo";
 
 export const metadata = pageMeta({
@@ -7,7 +8,8 @@ export const metadata = pageMeta({
   path: "/cancellation-policy/",
 });
 
-export default function CancellationPolicyPage() {
+export default async function CancellationPolicyPage() {
+  const s = await getSettings();
   return (
     <PolicyPage title="Cancellation & Refund Policy" path="/cancellation-policy/">
       <h2>1. Where your cancellation terms are stated</h2>
@@ -37,7 +39,18 @@ export default function CancellationPolicyPage() {
         If travel is disrupted by weather, landslides, road closures or official orders, we will work with you on rescheduling or
         alternative plans. Refunds in such cases depend on what our partners are able to refund, and we will be transparent about it.
       </p>
-      <h2>6. Changes initiated by us</h2>
+      <h2>6. Rescheduling</h2>
+      <p>
+        To change dates, message us as early as possible with your booking ID. We check availability with our partners and share any
+        difference in price before making the change. Rescheduling is subject to partner terms and may count as a cancellation if
+        requested very close to travel.
+      </p>
+      <h2>7. Emergencies during your trip</h2>
+      <p>
+        For breakdowns, delays or urgent help during a confirmed trip, call {s.emergencyPhone || s.phone}. In a medical or safety
+        emergency, contact local emergency services first (dial 112).
+      </p>
+      <h2>8. Changes initiated by us</h2>
       <p>
         If we must cancel a confirmed service and cannot offer an acceptable alternative, you will receive a refund of the amount
         paid for that service.

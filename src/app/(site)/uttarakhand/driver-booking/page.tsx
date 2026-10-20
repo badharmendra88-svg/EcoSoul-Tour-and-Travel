@@ -4,7 +4,7 @@ import { pageMeta } from "@/lib/seo";
 export const metadata = pageMeta({
   title: "Hire a Driver in Uttarakhand — Driver for Your Own Car",
   description:
-    "Request an experienced driver for your own vehicle in Uttarakhand — for hill routes, outstation trips or daily shifts. Verified partner drivers, clear shift terms.",
+    "Request an experienced driver for your own vehicle in Uttarakhand — for hill routes, outstation trips or daily shifts. Experienced partner drivers, clear shift terms.",
   path: "/uttarakhand/driver-booking/",
 });
 
@@ -12,7 +12,7 @@ export default function DriverBookingPage() {
   return (
     <TransportLanding
       title="Book a Driver for Your Own Vehicle"
-      intro="Driving your own car to the hills but prefer an experienced mountain driver? Request a driver for a trip or a shift — we match you with a verified partner driver."
+      intro="Driving your own car to the hills but prefer an experienced mountain driver? Request a driver for a trip or a shift — we match you with an experienced driver from our partner network."
       path="/uttarakhand/driver-booking/"
       crumbLabel="Book a Driver"
       service="DRIVER_ONLY"

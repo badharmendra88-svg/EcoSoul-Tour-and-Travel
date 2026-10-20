@@ -111,7 +111,7 @@ export default async function LoginPage({ searchParams }: { searchParams: Promis
             <button type="submit" className="btn-admin-primary mt-6 w-full py-3">Sign in</button>
             <p className="mt-4 text-center text-xs text-slate-500">Forgot your password? Ask your Super Admin to reset it.</p>
             <p className="mt-6 text-center text-xs text-slate-400">
-              <Link href="/" className="inline-block py-1.5 hover:text-forest-700">← Back to website</Link>
+              <Link href="/" className="inline-block py-2 hover:text-forest-700">← Back to website</Link>
             </p>
           </form>
         )}

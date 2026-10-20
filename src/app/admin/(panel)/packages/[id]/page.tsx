@@ -6,6 +6,7 @@ import { db } from "@/lib/db";
 import { itineraryToLines, jsonToLines } from "@/lib/json";
 import { savePackageAction } from "../../../actions";
 import { FormBanner, TextArea, TextField } from "../../AdminFields";
+import { ImageFields } from "../../ImageFields";
 import { Icon, PageHeader } from "../../ui";
 
 export default async function EditPackagePage({
@@ -102,6 +103,11 @@ export default async function EditPackagePage({
           </div>
           <TextArea name="notes" label="Important notes (public)" rows={3} defaultValue={jsonToLines(pkg?.notes)} hint="One per line" />
           <TextArea name="internalNotes" label="Internal notes (never shown publicly)" rows={3} defaultValue={pkg?.internalNotes} hint="What must be clarified before sale, supplier notes…" />
+        </section>
+
+        <section className="space-y-4 panel p-6">
+          <h2 className="text-[15px] font-semibold text-slate-900">Photo</h2>
+          <ImageFields imageUrl={pkg?.imageUrl} imageAlt={pkg?.imageAlt} imageCredit={pkg?.imageCredit} />
         </section>
 
         <section className="grid gap-4 panel p-6">

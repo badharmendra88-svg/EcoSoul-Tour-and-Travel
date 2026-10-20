@@ -4,6 +4,7 @@ import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 import { requireAdmin } from "@/lib/admin-auth";
 import { db } from "@/lib/db";
+import { deleteUpload, handleImageFields } from "@/lib/media";
 import { encryptSecret } from "@/lib/secret-box";
 import { getWhatsAppApiConfig, socialNetworks } from "@/lib/settings";
 import { testConnection } from "@/lib/whatsapp-api";
@@ -61,6 +62,14 @@ export async function saveSettingsAction(formData: FormData) {
   if (waQuoteTemplate && !/^[a-z0-9_]+$/.test(waQuoteTemplate)) fail("whatsapp", "Template name: lowercase letters, numbers and underscores only");
   const token = text(formData, "waAccessToken", 1000);
 
+  const gstin = text(formData, "gstin", 20).toUpperCase();
+  if (gstin && !/^[0-9]{2}[A-Z0-9]{10}[0-9A-Z]{3}$/.test(gstin)) fail("business", "GSTIN should be 15 characters, e.g. 05ABCDE1234F1Z5");
+  const emergencyPhone = text(formData, "emergencyPhone", 30);
+  if (emergencyPhone && !/^\+?[0-9\s-]{10,16}$/.test(emergencyPhone)) fail("business", "Emergency number: enter a valid phone number");
+  const current = await db.siteSettings.findUnique({ where: { id: "default" }, select: { heroImageUrl: true } });
+  const hero = await handleImageFields(formData, { imageUrl: current?.heroImageUrl ?? null }, "homepage-hero");
+  if ("error" in hero) fail("business", hero.error);
+
   const social = Object.fromEntries(socialNetworks.map((n) => [n.key, optionalUrl(formData, n.key, n.label, "social")]));
 
   const data = {
@@ -83,9 +92,16 @@ export async function saveSettingsAction(formData: FormData) {
     metaPixelId: metaPixelId || null,
     googleVerification: googleVerification || null,
     notifyWebhookUrl: optionalUrl(formData, "notifyWebhookUrl", "Notification webhook", "tracking"),
+    heroImageUrl: hero.imageUrl,
+    heroImageAlt: hero.imageAlt,
+    legalName: text(formData, "legalName", 160) || null,
+    gstin: gstin || null,
+    tourismRegNo: text(formData, "tourismRegNo", 80) || null,
+    emergencyPhone: emergencyPhone || null,
   };
 
   await db.siteSettings.upsert({ where: { id: "default" }, create: { id: "default", ...data }, update: data });
+  if (hero.replaced && hero.replaced !== hero.imageUrl) await deleteUpload(hero.replaced);
   revalidatePath("/", "layout");
   redirect(`${BACK}?saved=1#${section}`);
 }

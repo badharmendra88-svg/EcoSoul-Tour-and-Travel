@@ -7,7 +7,7 @@ import { pageMeta } from "@/lib/seo";
 export const metadata = pageMeta({
   title: "About Us — Uttarakhand Travel Planners",
   description:
-    "EcoSoul Uttarakhand Travel plans tours, custom trips and car + driver bookings across Uttarakhand with verified local partners and transparent quotes.",
+    "EcoSoul Uttarakhand Travel plans tours, custom trips and car + driver bookings across Uttarakhand with local partners and transparent quotes.",
   path: "/about-us/",
 });
 
@@ -34,7 +34,7 @@ export default async function AboutPage() {
           <ul>
             <li><strong>Enquiry first.</strong> We never claim live availability. We check with partners, then send a written quote.</li>
             <li><strong>Transparent pricing.</strong> Every quote shows the price basis, inclusions, exclusions and validity.</li>
-            <li><strong>Verified partners.</strong> Drivers, vehicles and operators are checked before they are activated.</li>
+            <li><strong>Checked partners.</strong> Before a driver, vehicle or operator joins our network, our team checks their documents and agreements.</li>
             <li><strong>Responsible travel.</strong> We encourage low-waste travel, respect for local communities and following official advisories.</li>
           </ul>
           <h2>Our promise</h2>
@@ -50,6 +50,10 @@ export default async function AboutPage() {
             <div><dt className="text-slate-500">Email</dt><dd className="font-medium">{s.email}</dd></div>
             <div><dt className="text-slate-500">Service area</dt><dd className="font-medium">{s.address}</dd></div>
             <div><dt className="text-slate-500">Hours</dt><dd className="font-medium">{s.hours}</dd></div>
+            {s.legalName && <div><dt className="text-slate-500">Registered name</dt><dd className="font-medium">{s.legalName}</dd></div>}
+            {s.gstin && <div><dt className="text-slate-500">GSTIN</dt><dd className="font-medium">{s.gstin}</dd></div>}
+            {s.tourismRegNo && <div><dt className="text-slate-500">Uttarakhand Tourism registration</dt><dd className="font-medium">{s.tourismRegNo}</dd></div>}
+            {s.emergencyPhone && <div><dt className="text-slate-500">On-trip emergency</dt><dd className="font-medium">{s.emergencyPhone}</dd></div>}
           </dl>
           <Link href="/contact/" className="btn-primary mt-5 w-full">Contact us</Link>
         </aside>

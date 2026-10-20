@@ -9,7 +9,8 @@ import { db } from "@/lib/db";
 import { formatPrice } from "@/lib/format";
 import { parseItinerary, parseList } from "@/lib/json";
 import { getPackage } from "@/lib/queries";
-import { pageMeta } from "@/lib/seo";
+import { jsonLd, pageMeta } from "@/lib/seo";
+import { site } from "@/config/site";
 
 export const revalidate = 300;
 
@@ -44,10 +45,34 @@ export default async function PackagePage({ params }: { params: Promise<{ slug: 
   return (
     <>
       <TrackPackageView packageId={p.slug} />
+      {/* Offer markup only when a real, visible price exists (review §3) */}
+      {p.startingPrice != null && (
+        <script
+          type="application/ld+json"
+          dangerouslySetInnerHTML={jsonLd({
+            "@context": "https://schema.org",
+            "@type": "Product",
+            name: p.title,
+            description: p.summary,
+            ...(p.imageUrl ? { image: `${site.url}${p.imageUrl}` } : {}),
+            brand: { "@type": "Brand", name: site.name },
+            offers: {
+              "@type": "Offer",
+              price: p.startingPrice,
+              priceCurrency: p.currency,
+              url: `${site.url}/packages/${p.slug}/`,
+              availability: "https://schema.org/InStock",
+            },
+          })}
+        />
+      )}
       <PageHero
         title={p.title}
         intro={p.summary}
         eyebrow={`${p.durationLabel} · ${tripTypes[p.tripType as keyof typeof tripTypes] ?? p.tripType}`}
+        imageUrl={p.imageUrl}
+        imageAlt={p.imageAlt}
+        imageCredit={p.imageCredit}
         scene={scene}
         crumbs={[
           { label: "Tour Packages", href: "/uttarakhand/tour-packages/" },
@@ -137,7 +162,15 @@ export default async function PackagePage({ params }: { params: Promise<{ slug: 
           )}
 
           <section className="rounded-2xl bg-forest-50 p-6 text-sm text-slate-700">
-            <h2 className="font-semibold text-forest-900">Cancellation summary</h2>
+            <h2 className="font-semibold text-forest-900">How the price is worked out</h2>
+            <p className="mt-2">
+              {price
+                ? `The starting price is ${p.priceBasis ?? "per person"} for the lowest hotel category and off-peak dates.`
+                : "We don't show a fixed price until your trip details are known."}{" "}
+              Your final quote depends on travel dates, hotel category, vehicle type and group size, and lists every inclusion and
+              exclusion before you pay anything.
+            </p>
+            <h2 className="mt-4 font-semibold text-forest-900">Cancellation summary</h2>
             <p className="mt-2">
               Cancellation and refund terms depend on hotel and transport partners and are stated in your written quote before you
               pay. See our{" "}
@@ -171,7 +204,7 @@ export default async function PackagePage({ params }: { params: Promise<{ slug: 
               </>
             )}
             <div className="mt-5 grid gap-3">
-              <a href="#enquire" className="btn-primary w-full">Request a quote</a>
+              <a href="#enquire" className="btn-primary w-full">Get Package Quote</a>
               <WhatsAppButton
                 className="btn-outline w-full"
                 packageId={p.slug}

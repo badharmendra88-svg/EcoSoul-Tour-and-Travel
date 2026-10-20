@@ -86,7 +86,7 @@ export default async function QuotePage({
     const pkg = lead?.packageSlug ? await db.package.findUnique({ where: { slug: lead.packageSlug } }) : null;
     const persons = (lead?.adults ?? 2) + (lead?.children ?? 0);
     const isTransport = lead?.kind === "TRANSPORT";
-    const days = daysBetween(lead?.travelDate, lead?.returnDate) ?? pkg?.durationDays ?? (isTransport ? 1 : 3);
+    const days = daysBetween(lead?.travelDate, lead?.returnDate) ?? lead?.tripDays ?? pkg?.durationDays ?? (isTransport ? 1 : 3);
     const vehicleId =
       lead?.vehicleCategory && vehicles.some((v) => v.id === lead.vehicleCategory)
         ? lead.vehicleCategory

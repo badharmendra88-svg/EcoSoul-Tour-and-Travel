@@ -18,6 +18,12 @@ export type PublicSettings = {
   gaId: string;
   metaPixelId: string;
   googleVerification: string;
+  heroImageUrl: string;
+  heroImageAlt: string;
+  legalName: string;
+  gstin: string;
+  tourismRegNo: string;
+  emergencyPhone: string;
 };
 
 export const socialNetworks = [
@@ -56,6 +62,12 @@ export const getSettings = cache(async (): Promise<PublicSettings> => {
     gaId: s.gaId || site.gaId,
     metaPixelId: s.metaPixelId || "",
     googleVerification: s.googleVerification || "",
+    heroImageUrl: s.heroImageUrl || "",
+    heroImageAlt: s.heroImageAlt || "",
+    legalName: s.legalName || "",
+    gstin: s.gstin || "",
+    tourismRegNo: s.tourismRegNo || "",
+    emergencyPhone: s.emergencyPhone || "",
   };
 });
 

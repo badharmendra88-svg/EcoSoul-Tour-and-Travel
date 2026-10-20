@@ -92,6 +92,8 @@ export const transportEnquirySchema = base
     vehicleCategory: optionalText(40),
     fareType: z.enum(["FIXED_QUOTE", "ESTIMATE"]).optional(),
     arrivalRef: optionalText(40),
+    tripDays: z.preprocess((x) => (x === "" || x == null ? undefined : Number(x)), z.number().int().min(1, "At least 1 day").max(60).optional()),
+    transmission: z.enum(["MANUAL", "AUTOMATIC"]).optional().or(z.literal("").transform(() => undefined)),
     message: optionalText(1500),
   })
   .superRefine((v, ctx) => {

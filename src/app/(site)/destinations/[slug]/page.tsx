@@ -43,6 +43,9 @@ export default async function DestinationPage({ params }: { params: Promise<{ sl
         title={`${d.name} Travel Guide`}
         intro={d.summary}
         eyebrow={`${d.region} · ${d.cluster}`}
+        imageUrl={d.imageUrl}
+        imageAlt={d.imageAlt}
+        imageCredit={d.imageCredit}
         scene={d.scene}
         crumbs={[
           { label: "Destinations", href: "/destinations/" },

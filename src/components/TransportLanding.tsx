@@ -2,6 +2,7 @@ import Link from "next/link";
 import type { ServiceType } from "@/config/options";
 import { vehicleCategories } from "@/config/options";
 import type { Faq } from "@/lib/json";
+import { BookingSteps } from "./BookingSteps";
 import { WhatsAppButton } from "./ContactButtons";
 import { FaqList } from "./FaqList";
 import { TransportForm } from "./forms/TransportForm";
@@ -64,6 +65,11 @@ export function TransportLanding({
 
       <div className="container-page grid gap-10 py-12 lg:grid-cols-[1fr_340px]">
         <div className="min-w-0 space-y-12">
+          <section aria-labelledby="how-confirmed">
+            <h2 id="how-confirmed" className="text-lg font-semibold text-forest-900">How your booking is confirmed</h2>
+            <BookingSteps className="mt-4" />
+          </section>
+
           <section id="book" className="scroll-mt-24">
             <h2 className="h2">Request a quote</h2>
             <p className="mt-2 text-slate-600">Takes about a minute. We confirm availability and the final fare before anything is booked.</p>
@@ -144,6 +150,7 @@ export function TransportLanding({
               <li><Link className="inline-block py-1.5 text-forest-700 hover:underline" href="/uttarakhand/driver-booking/">Driver only (your vehicle)</Link></li>
               <li><Link className="inline-block py-1.5 text-forest-700 hover:underline" href="/uttarakhand/airport-transfers/">Airport / railway transfers</Link></li>
               <li><Link className="inline-block py-1.5 text-forest-700 hover:underline" href="/uttarakhand/local-sightseeing-taxi/">Local sightseeing taxi</Link></li>
+              <li><Link className="inline-block py-1.5 text-forest-700 hover:underline" href="/uttarakhand/haldwani-taxi-service/">Haldwani taxi service</Link></li>
             </ul>
           </div>
         </aside>
@@ -155,6 +162,6 @@ export function TransportLanding({
 export const commonTransportFaqs: Faq[] = [
   { q: "Is my booking confirmed when I submit the form?", a: "No. Your request is an enquiry. We confirm only after checking partner availability, sharing an itemised quote, and receiving your acceptance and any agreed advance." },
   { q: "Are tolls, parking and driver allowance included?", a: "It depends on the route and fare type. Your written quote clearly states whether each is included, estimated or payable at actuals." },
-  { q: "When will I get the driver's details?", a: "Driver name and contact are shared closer to the trip, once a verified driver is assigned." },
+  { q: "When will I get the driver's details?", a: "Driver name and contact are shared closer to the trip, once a driver from our partner network is assigned." },
   { q: "What if my plans change?", a: "Tell us as early as possible. Cancellation and change terms are listed in your quote and in our Cancellation Policy." },
 ];

@@ -9,7 +9,7 @@ export const metadata = pageMeta({
   title: "Char Dham Yatra Planning — Route, Registration & Travel Help",
   description:
     "Plan your Char Dham Yatra to Yamunotri, Gangotri, Kedarnath and Badrinath: route stages, official registration reminders, packing tips and travel assistance.",
-  path: "/char-dham-yatra/",
+  path: "/uttarakhand/char-dham-yatra/",
 });
 
 // Content review date — update whenever this page is re-checked against official sources
@@ -36,7 +36,7 @@ export default function CharDhamPage() {
       <PageHero
         title="Char Dham Yatra Planning"
         intro="Practical planning help for Yamunotri, Gangotri, Kedarnath and Badrinath — realistic routes, stays and transport, with clear reminders about official registration and advisories."
-        crumbs={[{ label: "Char Dham & Yatra", href: "/char-dham-yatra/" }]}
+        crumbs={[{ label: "Char Dham & Yatra", href: "/uttarakhand/char-dham-yatra/" }]}
         scene="temple"
         eyebrow="Pilgrimage"
       />

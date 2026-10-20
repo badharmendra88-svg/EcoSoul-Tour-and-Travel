@@ -1,7 +1,8 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { serviceTypes, vehicleCategories, type ServiceType } from "@/config/options";
+import { BookingSteps } from "../BookingSteps";
 import { WhatsAppButton } from "../ContactButtons";
 import {
   ConsentField,
@@ -32,6 +33,8 @@ export function TransportForm({ defaultService = "CAR_DRIVER", lockService = fal
     vehicleCategory: "",
     fareType: "FIXED_QUOTE",
     arrivalRef: "",
+    tripDays: "",
+    transmission: "",
     message: "",
     name: "",
     phone: "",
@@ -42,11 +45,20 @@ export function TransportForm({ defaultService = "CAR_DRIVER", lockService = fal
   });
   const set = (key: string, value: unknown) => setV((prev) => ({ ...prev, [key]: value }));
 
+  // Prefill from links like ?pickup=Haldwani&drop=Nainital (popular routes)
+  useEffect(() => {
+    const q = new URLSearchParams(window.location.search);
+    const pickup = q.get("pickup")?.slice(0, 120);
+    const drop = q.get("drop")?.slice(0, 120);
+    if (pickup || drop) setV((prev) => ({ ...prev, pickup: pickup ?? prev.pickup, drop: drop ?? prev.drop }));
+  }, []);
+
   const st = v.serviceType as ServiceType;
   const needsDrop = st !== "LOCAL" && st !== "DRIVER_ONLY";
   const isRoundTrip = st === "ROUND_TRIP" || st === "CAR_DRIVER" || st === "GROUP";
   const isArrival = st === "AIRPORT_RAIL";
   const isDriverOnly = st === "DRIVER_ONLY";
+  const asksDays = st === "CAR_DRIVER" || st === "LOCAL" || st === "DRIVER_ONLY" || st === "GROUP";
 
   const travellers = Number(v.adults) || 0;
   const selectedVehicle = vehicleCategories.find((c) => c.id === v.vehicleCategory);
@@ -65,6 +77,7 @@ export function TransportForm({ defaultService = "CAR_DRIVER", lockService = fal
     if (st === "ROUND_TRIP" && !v.returnDate) e.returnDate = "Please choose a return date";
     if (v.returnDate && v.travelDate && v.returnDate < v.travelDate) e.returnDate = "Return date must be after the travel date";
     if (!(travellers >= 1)) e.adults = "At least 1 traveller";
+    if (asksDays && v.tripDays && !(Number(v.tripDays) >= 1)) e.tripDays = "At least 1 day";
     if (v.name.trim().length < 2) e.name = "Please enter your name";
     if (!v.phone.trim() && !v.email.trim()) e.phone = "Please share a phone number or email so we can reply";
     if (!v.consent) e.consent = "Please accept the privacy notice and booking terms";
@@ -82,6 +95,8 @@ export function TransportForm({ defaultService = "CAR_DRIVER", lockService = fal
         drop: needsDrop ? v.drop : "",
         returnDate: isRoundTrip ? v.returnDate : "",
         arrivalRef: isArrival ? v.arrivalRef : "",
+        tripDays: asksDays ? v.tripDays : "",
+        transmission: isDriverOnly ? v.transmission : "",
         adults: travellers,
       },
       { enquiry_type: "transport", service_type: v.serviceType },
@@ -91,6 +106,7 @@ export function TransportForm({ defaultService = "CAR_DRIVER", lockService = fal
   if (status === "success") {
     return (
       <SuccessPanel refId={ref}>
+        <BookingSteps current={0} className="w-full" />
         <WhatsAppButton label="Follow up on WhatsApp" message={`Hi EcoSoul, I just sent transport request ${ref}.`} />
       </SuccessPanel>
     );
@@ -159,7 +175,12 @@ export function TransportForm({ defaultService = "CAR_DRIVER", lockService = fal
             <input {...inputProps("arrivalRef")} value={v.arrivalRef} onChange={(e) => set("arrivalRef", e.target.value)} />
           </Field>
         )}
-        <Field id="adults" label="Travellers" error={errors.adults} required>
+        {asksDays && (
+          <Field id="tripDays" label={isDriverOnly ? "Number of days" : "Trip duration (days)"} error={errors.tripDays} hint="Approximate is fine">
+            <input {...inputProps("tripDays", errors.tripDays)} type="number" min={1} max={60} inputMode="numeric" value={v.tripDays} onChange={(e) => set("tripDays", e.target.value)} />
+          </Field>
+        )}
+        <Field id="adults" label={isDriverOnly ? "People travelling" : "Travellers"} error={errors.adults} required>
           <input {...inputProps("adults", errors.adults)} type="number" min={1} max={60} value={v.adults} onChange={(e) => set("adults", e.target.value)} />
         </Field>
         {!isDriverOnly && (
@@ -171,6 +192,28 @@ export function TransportForm({ defaultService = "CAR_DRIVER", lockService = fal
               <option>Heavy (large suitcases)</option>
             </select>
           </Field>
+        )}
+        {isDriverOnly && (
+          <>
+            <Field id="vehicleCategory" label="Your vehicle type" hint="So we send a driver experienced with it">
+              <select {...inputProps("vehicleCategory")} value={v.vehicleCategory} onChange={(e) => set("vehicleCategory", e.target.value)}>
+                <option value="">Select</option>
+                <option>Hatchback</option>
+                <option>Sedan</option>
+                <option>SUV / MUV</option>
+                <option>Premium / luxury car</option>
+                <option>Tempo traveller / van</option>
+                <option>Other</option>
+              </select>
+            </Field>
+            <Field id="transmission" label="Transmission">
+              <select {...inputProps("transmission")} value={v.transmission} onChange={(e) => set("transmission", e.target.value)}>
+                <option value="">Select</option>
+                <option value="MANUAL">Manual</option>
+                <option value="AUTOMATIC">Automatic</option>
+              </select>
+            </Field>
+          </>
         )}
         {!isDriverOnly && (
           <div className="sm:col-span-2">
@@ -212,7 +255,7 @@ export function TransportForm({ defaultService = "CAR_DRIVER", lockService = fal
 
       <div className="flex flex-wrap items-center gap-3">
         <button type="submit" className="btn-primary" disabled={status === "submitting"}>
-          {status === "submitting" ? "Sending…" : "Request a quote"}
+          {status === "submitting" ? "Sending…" : isDriverOnly ? "Request a Driver" : "Get Taxi Quote"}
         </button>
         <p className="text-xs text-slate-500">This is a request — availability and fare are confirmed by our team.</p>
       </div>

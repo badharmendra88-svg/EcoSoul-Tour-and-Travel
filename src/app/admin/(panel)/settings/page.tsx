@@ -6,9 +6,11 @@ import { getSettingsRow, socialNetworks } from "@/lib/settings";
 import { SocialIcon } from "@/components/SocialIcons";
 import { removeWhatsAppTokenAction, saveSettingsAction, testWhatsAppAction } from "../../settings-actions";
 import { Badge, Icon, PageHeader, StatCard, type IconName } from "../ui";
+import { ImageFields } from "../ImageFields";
 
 const sections: { id: string; label: string; icon: IconName }[] = [
   { id: "contact", label: "Business contact", icon: "phone" },
+  { id: "business", label: "Homepage & identity", icon: "hotel" },
   { id: "whatsapp", label: "WhatsApp", icon: "message" },
   { id: "social", label: "Social media", icon: "users" },
   { id: "tracking", label: "Tracking & alerts", icon: "trend" },
@@ -145,6 +147,17 @@ export default async function SettingsPage({ searchParams }: { searchParams: Pro
               <div className="sm:col-span-2">
                 <Field name="address" label="Address / service area" defaultValue={s.address} placeholder={site.address} prefix={<Icon name="map" />} />
               </div>
+            </div>
+          </SectionCard>
+
+          {/* ---------------- Homepage photo & business identity ---------------- */}
+          <SectionCard id="business" icon="hotel" title="Homepage photo & business identity" description="Real photo for the homepage hero, and business details shown in the footer and About page to build trust.">
+            <ImageFields imageUrl={s.heroImageUrl} imageAlt={s.heroImageAlt} label="Hero photo" hint="Landscape photo, 1920 px+ wide recommended (e.g. Naini Lake, Himalayan view). Converted to WebP automatically." />
+            <div className="grid gap-5 border-t border-slate-100 pt-5 sm:grid-cols-2">
+              <Field name="legalName" label="Registered business name" defaultValue={s.legalName} placeholder="e.g. EcoSoul Travels Pvt. Ltd." hint="Shown in the footer and About page." />
+              <Field name="gstin" label="GSTIN (optional)" defaultValue={s.gstin} placeholder="15-character GSTIN" />
+              <Field name="tourismRegNo" label="Uttarakhand Tourism registration no. (optional)" defaultValue={s.tourismRegNo} placeholder="Only if registered" />
+              <Field name="emergencyPhone" label="Emergency / on-trip support number" defaultValue={s.emergencyPhone} placeholder="+91 …" prefix={<Icon name="phone" />} hint="Shown to travellers in policies and the footer." />
             </div>
           </SectionCard>
 

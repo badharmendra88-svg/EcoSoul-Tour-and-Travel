@@ -100,6 +100,8 @@ export async function POST(request: Request) {
       vehicleCategory: str("vehicleCategory"),
       fareType: str("fareType"),
       arrivalRef: str("arrivalRef"),
+      tripDays: num("tripDays"),
+      transmission: str("transmission"),
       consent: true,
       consentAt: new Date(),
       events: { create: { actor: "website", action: "created", detail: `Submitted from ${str("sourcePage") ?? "website"}` } },

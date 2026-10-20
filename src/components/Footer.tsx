@@ -20,6 +20,9 @@ export async function Footer() {
             <a href={`mailto:${s.email}`} className="block py-1.5 hover:text-white">{s.email}</a>
             <span className="block text-forest-200">{s.address}</span>
             <span className="block text-forest-200">{s.hours}</span>
+            {s.emergencyPhone && (
+              <a href={telLink(s.emergencyPhone)} className="block py-1.5 font-medium text-accent hover:text-white">On-trip emergency: {s.emergencyPhone}</a>
+            )}
           </address>
           <SocialLinks links={s.social} className="pt-2" />
         </div>
@@ -40,7 +43,11 @@ export async function Footer() {
       </div>
       <div className="border-t border-white/10">
         <div className="container-page flex flex-col gap-2 py-6 text-xs text-forest-300 md:flex-row md:items-center md:justify-between">
-          <p>© {year} {site.name}. Not an official government website.</p>
+          <p>
+            © {year} {s.legalName || site.name}. Not an official government website.
+            {s.gstin && <> · GSTIN {s.gstin}</>}
+            {s.tourismRegNo && <> · Uttarakhand Tourism Reg. {s.tourismRegNo}</>}
+          </p>
           <p>
             Official info:{" "}
             <a href={officialLinks.tourism} target="_blank" rel="noopener noreferrer" className="underline hover:text-white">

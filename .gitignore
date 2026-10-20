@@ -47,3 +47,6 @@ next-env.d.ts
 
 # stray default scaffold (not part of this project)
 /web/
+
+# admin-uploaded photos (back these up separately)
+/uploads/
