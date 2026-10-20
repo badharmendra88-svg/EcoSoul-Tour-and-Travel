@@ -1,0 +1,128 @@
+// EcoSoul Uttarakhand Travel — data model (blueprint §10, §24.7)
+// SQLite for the MVP. Arrays/objects are stored as JSON strings because
+// SQLite has no native list type; see src/lib/json.ts for helpers.
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = env("DATABASE_URL")
+}
+
+model Destination {
+  id                String    @id @default(cuid())
+  slug              String    @unique
+  name              String
+  region            String // Kumaon | Garhwal
+  cluster           String // e.g. "Lake & hill escapes"
+  scene             String    @default("mountain") // artwork variant
+  summary           String
+  intro             String
+  bestTime          String
+  howToReach        String
+  suggestedDuration String
+  experiences       String    @default("[]") // JSON string[]
+  practical         String    @default("[]") // JSON string[]
+  faqs              String    @default("[]") // JSON {q,a}[]
+  seoTitle          String?
+  seoDescription    String?
+  status            String    @default("PUBLISHED") // DRAFT | PUBLISHED
+  sortOrder         Int       @default(100)
+  reviewedAt        DateTime  @default(now())
+  createdAt         DateTime  @default(now())
+  updatedAt         DateTime  @updatedAt
+  packages          Package[]
+}
+
+model Package {
+  id             String        @id @default(cuid())
+  slug           String        @unique
+  title          String
+  summary        String
+  durationDays   Int
+  durationLabel  String // "3 days / 2 nights"
+  tripType       String // FAMILY | WEEKEND | PILGRIMAGE | NATURE | WELLNESS | CUSTOM
+  audience       String
+  startingPrice  Int? // null => "Price on request"
+  currency       String        @default("INR")
+  priceBasis     String? // per person / per couple / per vehicle ...
+  season         String
+  itinerary      String        @default("[]") // JSON {day,title,detail}[]
+  inclusions     String        @default("[]") // JSON string[]
+  exclusions     String        @default("[]") // JSON string[]
+  notes          String        @default("[]") // JSON string[]
+  internalNotes  String? // "must clarify before sale" — never shown publicly
+  featured       Boolean       @default(false)
+  status         String        @default("DRAFT") // DRAFT | PUBLISHED | PAUSED
+  seoTitle       String?
+  seoDescription String?
+  sortOrder      Int           @default(100)
+  createdAt      DateTime      @default(now())
+  updatedAt      DateTime      @updatedAt
+  destinations   Destination[]
+}
+
+// One lead table for every enquiry type so the team works a single queue
+// (blueprint §26: route all unconfirmed requests to the same process).
+model Enquiry {
+  id              String         @id @default(cuid())
+  ref             String         @unique // public enquiry ID, e.g. ES-261020-7KQ4
+  kind            String // TRIP | PACKAGE | TRANSPORT | CONTACT
+  status          String         @default("NEW")
+  name            String
+  phone           String?
+  email           String?
+  sourcePage      String?
+  heardFrom       String?
+  utm             String? // JSON {source,medium,campaign}
+
+  // Trip / package
+  packageSlug     String?
+  destination     String?
+  travelDate      String? // ISO date (yyyy-mm-dd)
+  dateFlexible    Boolean        @default(false)
+  adults          Int?
+  children        Int?
+  interests       String? // comma separated
+  budgetBand      String?
+  message         String?
+
+  // Transport (§24.4)
+  serviceType     String? // CAR_DRIVER | DRIVER_ONLY | LOCAL | ONE_WAY | ROUND_TRIP | AIRPORT_RAIL | GROUP
+  pickup          String?
+  drop            String?
+  pickupTime      String? // HH:mm
+  returnDate      String?
+  luggage         String?
+  vehicleCategory String?
+  fareType        String? // FIXED_QUOTE | ESTIMATE
+  arrivalRef      String? // flight/train reference (optional)
+
+  consent         Boolean
+  consentAt       DateTime
+  assignedTo      String?
+  internalNotes   String?
+  notifyStatus    String         @default("PENDING") // PENDING | SENT | FAILED | SKIPPED
+  notifyError     String?
+  createdAt       DateTime       @default(now())
+  updatedAt       DateTime       @updatedAt
+  events          EnquiryEvent[]
+
+  @@index([status])
+  @@index([kind, createdAt])
+}
+
+// Audit trail for status / assignment / note changes (§10 access rule, TR-10)
+model EnquiryEvent {
+  id        String   @id @default(cuid())
+  enquiryId String
+  enquiry   Enquiry  @relation(fields: [enquiryId], references: [id], onDelete: Cascade)
+  at        DateTime @default(now())
+  actor     String
+  action    String
+  detail    String?
+
+  @@index([enquiryId, at])
+}

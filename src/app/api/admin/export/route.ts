@@ -1,0 +1,46 @@
+import { cookies } from "next/headers";
+import type { Prisma } from "@prisma/client";
+import { enquiryKinds } from "@/config/options";
+import { db } from "@/lib/db";
+import { SESSION_COOKIE, verifySessionToken } from "@/lib/session";
+
+// CSV export of leads for reporting / backup (blueprint §11 data export).
+
+const columns = [
+  "ref", "createdAt", "kind", "status", "name", "phone", "email", "packageSlug", "destination", "serviceType",
+  "pickup", "drop", "travelDate", "dateFlexible", "pickupTime", "returnDate", "adults", "children", "luggage",
+  "vehicleCategory", "fareType", "interests", "budgetBand", "heardFrom", "sourcePage", "assignedTo", "message", "internalNotes",
+] as const;
+
+function cell(value: unknown) {
+  if (value == null) return "";
+  let s = value instanceof Date ? value.toISOString() : String(value);
+  // Neutralise spreadsheet formula injection
+  if (/^[=+\-@\t\r]/.test(s)) s = `'${s}`;
+  return /[",\n\r]/.test(s) ? `"${s.replace(/"/g, '""')}"` : s;
+}
+
+export async function GET(request: Request) {
+  if (!(await verifySessionToken((await cookies()).get(SESSION_COOKIE)?.value))) {
+    return new Response("Unauthorized", { status: 401 });
+  }
+  const sp = new URL(request.url).searchParams;
+  const kind = sp.get("kind");
+  const status = sp.get("status");
+  const where: Prisma.EnquiryWhereInput = {
+    ...(kind && kind in enquiryKinds ? { kind } : {}),
+    ...(status ? { status } : {}),
+  };
+
+  const rows = await db.enquiry.findMany({ where, orderBy: { createdAt: "desc" } });
+  const csv = [columns.join(","), ...rows.map((r) => columns.map((c) => cell(r[c])).join(","))].join("\r\n");
+  const date = new Date().toISOString().slice(0, 10);
+
+  return new Response("﻿" + csv, {
+    headers: {
+      "Content-Type": "text/csv; charset=utf-8",
+      "Content-Disposition": `attachment; filename="ecosoul-leads-${date}.csv"`,
+      "Cache-Control": "no-store",
+    },
+  });
+}

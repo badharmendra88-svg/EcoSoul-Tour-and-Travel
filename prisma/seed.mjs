@@ -1,0 +1,484 @@
+// Seed starter content (blueprint §5 and §6).
+// Run: npm run db:seed — safe to re-run; existing records are NOT overwritten,
+// so edits made in the admin panel are kept.
+//
+// IMPORTANT: package entries are product concepts. Verify routes, suppliers,
+// hotel categories, inclusions and costing before accepting bookings, and
+// re-check all seasonal / access notes against official sources.
+
+import { PrismaClient } from "@prisma/client";
+
+const db = new PrismaClient();
+const j = (v) => JSON.stringify(v);
+
+const destinations = [
+  {
+    slug: "nainital",
+    name: "Nainital",
+    region: "Kumaon",
+    cluster: "Lake & hill escapes",
+    scene: "lake",
+    sortOrder: 1,
+    summary: "Kumaon's best-known lake town — boating, ridge-top viewpoints and an easy first trip to the hills.",
+    intro:
+      "Nainital wraps around a pear-shaped lake in the Kumaon hills. It suits first-time visitors and families who want a walkable town centre, short sightseeing drives and plenty of stay options. Weekends and peak holidays get busy, so plan arrival times and parking in advance.",
+    bestTime:
+      "March to June and September to November usually offer the most comfortable weather. December to February is cold, with occasional snowfall on higher points. July and August bring heavy rain and a higher chance of road disruption — keep buffer time.",
+    howToReach:
+      "Kathgodam is the nearest major railhead (roughly 35 km by road). Pantnagar is the nearest airport. Most travellers continue by taxi; check current train and flight schedules before booking.",
+    suggestedDuration: "2–3 days on its own, or combine with Bhimtal and Mukteshwar for 4–5 days.",
+    experiences: [
+      "Boating on Naini Lake (subject to local operating hours)",
+      "Evening walk along Mall Road",
+      "Snow View and Tiffin Top viewpoints",
+      "Naina Devi temple",
+      "Day trips to Bhimtal, Sattal and Naukuchiatal",
+    ],
+    practical: [
+      "Carry a light jacket even in summer; evenings are cool.",
+      "Peak-season traffic and parking can add significant time — start early.",
+      "Use refillable bottles and carry your waste back; the lake is fragile.",
+    ],
+    faqs: [
+      { q: "How many days are enough for Nainital?", a: "Two days covers the lake and main viewpoints. Add a day for Bhimtal and nearby lakes at a relaxed pace." },
+      { q: "Does it snow in Nainital?", a: "Snowfall is occasional and unpredictable, typically between late December and February. It cannot be guaranteed on specific dates." },
+    ],
+  },
+  {
+    slug: "bhimtal",
+    name: "Bhimtal",
+    region: "Kumaon",
+    cluster: "Lake & hill escapes",
+    scene: "lake",
+    sortOrder: 2,
+    summary: "A quieter lake base near Nainital, good for families who prefer calm stays.",
+    intro:
+      "Bhimtal is a larger, calmer lake a short drive from Nainital. It works well as a base for travellers who want less crowding while still reaching Nainital, Sattal and Naukuchiatal on day trips.",
+    bestTime:
+      "March to June and September to November are generally pleasant. Winters are cold but usually less crowded; monsoon months need flexible plans.",
+    howToReach: "About 22 km from Nainital and roughly an hour's drive from Kathgodam railway station, depending on traffic.",
+    suggestedDuration: "1–2 nights, often combined with Nainital.",
+    experiences: ["Lakeside walks and boating", "Sattal's cluster of forest lakes", "Naukuchiatal", "Birdwatching around Sattal"],
+    practical: ["Stays range from homestays to resorts — confirm room category in your quote.", "Evenings are quiet; plan dinners in advance."],
+    faqs: [{ q: "Is Bhimtal better than Nainital for families?", a: "If you prefer a quieter stay, Bhimtal is a good base; Nainital has more shops and activities within walking distance." }],
+  },
+  {
+    slug: "mukteshwar",
+    name: "Mukteshwar",
+    region: "Kumaon",
+    cluster: "Lake & hill escapes",
+    scene: "mountain",
+    sortOrder: 3,
+    summary: "Orchards, forest walks and Himalayan views on clear days — a slow, peaceful hill stay.",
+    intro:
+      "Mukteshwar sits on a ridge above fruit orchards, roughly two hours beyond Nainital. It suits couples and families looking for quiet stays, short walks and mountain views when the sky is clear.",
+    bestTime: "October to June. Clear Himalayan views are most likely on crisp autumn and winter mornings; monsoon brings cloud cover.",
+    howToReach: "Usually reached by road via Nainital or Bhowali; Kathgodam is the nearest major railhead.",
+    suggestedDuration: "2 nights to enjoy it at a relaxed pace.",
+    experiences: ["Mukteshwar Dham temple", "Chauli ki Jali rock viewpoint", "Orchard and village walks", "Sunrise views over the Himalaya (weather permitting)"],
+    practical: ["Limited shops and ATMs — carry essentials and some cash.", "Mountain views depend entirely on weather and are not guaranteed."],
+    faqs: [],
+  },
+  {
+    slug: "almora",
+    name: "Almora",
+    region: "Kumaon",
+    cluster: "Kumaon offbeat",
+    scene: "mountain",
+    sortOrder: 4,
+    summary: "A historic Kumaoni town with old bazaars, temples and access to Kasar Devi and Jageshwar.",
+    intro:
+      "Almora is one of Kumaon's cultural centres, with an old market street, temples and ridge-top neighbourhoods. It is a good stop on a Kumaon circuit and a gateway to Kasar Devi, Jageshwar and Binsar.",
+    bestTime: "March to June and September to November; winters are cold but generally clear.",
+    howToReach: "By road from Kathgodam (around 3 hours) or via Nainital as part of a circuit.",
+    suggestedDuration: "1–2 nights on a Kumaon circuit.",
+    experiences: ["Lal Bazaar old market street", "Kasar Devi ridge", "Jageshwar temple complex (day trip)", "Local Kumaoni food and crafts"],
+    practical: ["Roads are narrow and winding — travellers prone to motion sickness should plan breaks."],
+    faqs: [],
+  },
+  {
+    slug: "ranikhet",
+    name: "Ranikhet",
+    region: "Kumaon",
+    cluster: "Lake & hill escapes",
+    scene: "forest",
+    sortOrder: 5,
+    summary: "A tidy cantonment town with pine forests, orchards and easy walks.",
+    intro:
+      "Ranikhet is a calm cantonment hill town known for its pine and oak forests. It suits travellers looking for clean, quiet surroundings and gentle sightseeing rather than a busy itinerary.",
+    bestTime: "March to June and September to November.",
+    howToReach: "By road from Kathgodam (around 3 hours) or Nainital.",
+    suggestedDuration: "1–2 nights.",
+    experiences: ["Jhula Devi temple", "Chaubatia orchards", "Forest walks", "Day trip to Majkhali for valley views"],
+    practical: ["Parts of the town are cantonment areas — follow local rules on photography and access."],
+    faqs: [],
+  },
+  {
+    slug: "binsar",
+    name: "Binsar",
+    region: "Kumaon",
+    cluster: "Kumaon offbeat",
+    scene: "forest",
+    sortOrder: 6,
+    summary: "A forested wildlife sanctuary near Almora known for birdlife and Himalayan panoramas.",
+    intro:
+      "Binsar is a protected forest area on a ridge north of Almora. Stays are limited and simple, which keeps the experience quiet. It suits nature lovers, birdwatchers and travellers who enjoy forest walks.",
+    bestTime: "October to June. Clear-weather mountain views are most likely in autumn and winter.",
+    howToReach: "By road via Almora. Sanctuary entry fees and rules apply — check current conditions before travel.",
+    suggestedDuration: "1–2 nights.",
+    experiences: ["Zero Point viewpoint walk", "Birdwatching", "Forest trails with a local guide"],
+    practical: ["Electricity and network coverage can be limited inside the sanctuary area.", "Follow sanctuary rules; do not feed wildlife."],
+    faqs: [],
+  },
+  {
+    slug: "munsiyari",
+    name: "Munsiyari",
+    region: "Kumaon",
+    cluster: "Kumaon offbeat",
+    scene: "snow",
+    sortOrder: 7,
+    summary: "A remote mountain town facing the Panchachuli peaks — for longer, slower journeys.",
+    intro:
+      "Munsiyari lies deep in Pithoragarh district with close views of the Panchachuli range. Getting there takes a long day on mountain roads, so it suits travellers with time who value remote landscapes over convenience.",
+    bestTime: "March to June and September to November. Winters can bring snow and road closures; monsoon raises landslide risk.",
+    howToReach: "A long full-day drive from Kathgodam; many travellers break the journey at Chaukori or Almora.",
+    suggestedDuration: "Allow at least 6–8 days for a Kumaon trip that includes Munsiyari.",
+    experiences: ["Panchachuli views (weather permitting)", "Khaliya Top hike with a local guide", "Tribal heritage museum", "Village walks"],
+    practical: ["Expect long driving days and basic facilities.", "Carry warm layers in every season.", "Check road status a day before travel."],
+    faqs: [],
+  },
+  {
+    slug: "mussoorie",
+    name: "Mussoorie",
+    region: "Garhwal",
+    cluster: "Hill stations",
+    scene: "mountain",
+    sortOrder: 10,
+    summary: "The classic Garhwal hill station above Dehradun — Mall Road, Landour and valley views.",
+    intro:
+      "Mussoorie sits on a ridge above Dehradun and is one of the easiest hill escapes from Delhi/NCR. It suits weekend travellers and families. Landour, just above the main town, offers quieter lanes and heritage walks.",
+    bestTime: "March to June and September to November. Winter is cold with occasional snow; monsoon brings fog and road delays.",
+    howToReach:
+      "Around 35 km from Dehradun railway station by road. Dehradun's Jolly Grant airport is the nearest airport. Verify current schedules before booking.",
+    suggestedDuration: "2–3 days; add Dhanaulti for a relaxed extra day.",
+    experiences: ["Mall Road and Camel's Back Road walks", "Landour heritage lanes", "Gun Hill and Lal Tibba viewpoints", "Kempty Falls (busy in peak season)"],
+    practical: ["Weekend traffic between Dehradun and Mussoorie can be heavy — start early.", "Parking in town is limited; a driver-led taxi is often easier."],
+    faqs: [{ q: "Mussoorie or Nainital for a family trip?", a: "Both suit families. Mussoorie is easier from Dehradun and Delhi via the Dehradun route; Nainital offers lake activities and nearby lakes. Choose based on your starting city and preferred pace." }],
+  },
+  {
+    slug: "dhanaulti",
+    name: "Dhanaulti",
+    region: "Garhwal",
+    cluster: "Hill stations",
+    scene: "forest",
+    sortOrder: 11,
+    summary: "Deodar forests and open meadows beyond Mussoorie — a calm add-on to a Mussoorie trip.",
+    intro:
+      "Dhanaulti is a small forest settlement beyond Mussoorie with eco-parks and quiet stays. It is ideal for travellers who want greenery and fresh air without the crowds of Mall Road.",
+    bestTime: "March to June and September to November; snowfall is possible in winter.",
+    howToReach: "About an hour beyond Mussoorie by road, depending on traffic and weather.",
+    suggestedDuration: "1 night or a day trip from Mussoorie.",
+    experiences: ["Eco-park forest walks", "Surkanda Devi temple (uphill walk or ropeway when operating)", "Picnics in deodar forests"],
+    practical: ["Facilities are limited; carry snacks and water.", "Roads can be icy in winter — follow driver guidance."],
+    faqs: [],
+  },
+  {
+    slug: "rishikesh",
+    name: "Rishikesh",
+    region: "Garhwal",
+    cluster: "Yoga & river experiences",
+    scene: "river",
+    sortOrder: 20,
+    summary: "Riverside yoga, Ganga aarti and café lanes at the foothills of the Himalaya.",
+    intro:
+      "Rishikesh sits where the Ganga leaves the mountains. It is known for yoga and wellness, riverside ashrams and evening aarti. River rafting is offered seasonally by licensed operators, subject to water levels and current rules.",
+    bestTime:
+      "September to April is generally comfortable. Rafting typically runs outside the monsoon months — confirm current dates with the operator. Summers are hot.",
+    howToReach:
+      "Jolly Grant airport (Dehradun) is roughly 20 km away. Rishikesh and Haridwar both have railway stations; Haridwar has wider train connectivity.",
+    suggestedDuration: "2–3 days, often combined with Haridwar.",
+    experiences: ["Triveni Ghat or Parmarth Niketan evening aarti", "Yoga and meditation sessions", "Ram Jhula riverside walk", "Rafting with a licensed operator (seasonal)"],
+    practical: [
+      "Rafting and adventure activities have age and health rules — share medical conditions honestly.",
+      "Respect local customs; Rishikesh is a vegetarian, alcohol-restricted town.",
+    ],
+    faqs: [{ q: "Is rafting safe for families?", a: "Licensed operators offer shorter, gentler stretches for beginners, subject to age limits, water level and weather. We arrange activities only through authorised operators." }],
+  },
+  {
+    slug: "haridwar",
+    name: "Haridwar",
+    region: "Garhwal",
+    cluster: "Yoga & river experiences",
+    scene: "temple",
+    sortOrder: 21,
+    summary: "One of India's holiest cities — Har Ki Pauri aarti and gateway to the Char Dham routes.",
+    intro:
+      "Haridwar is a major pilgrimage city on the Ganga and the starting point for many Char Dham journeys. The evening aarti at Har Ki Pauri is the highlight for most visitors.",
+    bestTime: "October to April is comfortable. Major festival dates draw very large crowds — plan well ahead.",
+    howToReach: "Haridwar Junction has wide rail connectivity. Jolly Grant airport (Dehradun) is the nearest airport.",
+    suggestedDuration: "1–2 days, often combined with Rishikesh.",
+    experiences: ["Ganga aarti at Har Ki Pauri", "Mansa Devi and Chandi Devi temples (ropeway when operating)", "Old market lanes"],
+    practical: ["Keep valuables secure in crowds.", "Arrive early for a good spot at the aarti."],
+    faqs: [],
+  },
+  {
+    slug: "jim-corbett",
+    name: "Jim Corbett",
+    region: "Kumaon",
+    cluster: "Wildlife & nature",
+    scene: "forest",
+    sortOrder: 30,
+    summary: "India's oldest national park — jeep safaris, riverside resorts and a good weekend escape.",
+    intro:
+      "Jim Corbett National Park, around Ramnagar, offers jeep and canopy safaris across several zones. Tiger sightings are never guaranteed; the forest, birdlife and river landscapes are the real experience.",
+    bestTime:
+      "Roughly mid-October to June for most zones; some zones stay open longer. Zone opening dates are set by the park authority — confirm before booking.",
+    howToReach: "Ramnagar is the gateway town and has a railway station. Pantnagar is the nearest airport.",
+    suggestedDuration: "2 days / 1 night is a common weekend plan; add a night for a second safari.",
+    experiences: ["Jeep safari in an open zone (permit required)", "Riverside walks along the Kosi", "Corbett Museum at Kaladhungi", "Birdwatching"],
+    practical: [
+      "Safari permits are issued through the official park system and require ID for every traveller.",
+      "Follow park rules — no loud music, littering or leaving the vehicle.",
+    ],
+    faqs: [{ q: "Will we see a tiger?", a: "Sightings are a matter of chance. We never promise wildlife sightings." }],
+  },
+  {
+    slug: "auli",
+    name: "Auli",
+    region: "Garhwal",
+    cluster: "Wildlife & nature",
+    scene: "snow",
+    sortOrder: 31,
+    summary: "High meadows and winter ski slopes above Joshimath with wide Himalayan views.",
+    intro:
+      "Auli is a high-altitude meadow area above Joshimath, known for skiing in winter and green slopes in summer. Reaching it involves a long mountain drive, and conditions vary sharply by season.",
+    bestTime: "January to March for snow (not guaranteed); April to June and September to November for meadows and clear views.",
+    howToReach: "A long road journey from Rishikesh or Dehradun via Joshimath; plan an overnight halt on the way.",
+    suggestedDuration: "5–6 days including travel from the plains.",
+    experiences: ["Skiing and snow play in season (with certified instructors)", "Gorson Bugyal meadow walk", "Himalayan panoramas on clear days"],
+    practical: ["High altitude — ascend gradually and stay hydrated.", "Road and access conditions change; check current advisories before travel."],
+    faqs: [],
+  },
+  {
+    slug: "valley-of-flowers",
+    name: "Valley of Flowers",
+    region: "Garhwal",
+    cluster: "Wildlife & nature",
+    scene: "meadow",
+    sortOrder: 32,
+    summary: "A UNESCO-listed alpine valley that blooms during the monsoon — a moderate trek.",
+    intro:
+      "The Valley of Flowers National Park is a high-altitude valley famous for its monsoon wildflowers. Access involves trekking from Govindghat via Ghangaria and is seasonal. It suits reasonably fit travellers comfortable with long walks.",
+    bestTime:
+      "The park typically opens from June to October; peak blooms are usually July to August. Opening dates and trail conditions are set by authorities each year.",
+    howToReach: "Drive to Govindghat, then trek (with an optional shared vehicle section where operating) to Ghangaria, the base for the valley.",
+    suggestedDuration: "6–7 days from Rishikesh/Haridwar, often combined with Hemkund Sahib.",
+    experiences: ["Day trek into the valley from Ghangaria", "Hemkund Sahib (separate steep trek)", "Alpine flowers and streams"],
+    practical: [
+      "Entry permits are required and overnight stays inside the valley are not allowed.",
+      "Monsoon means rain and possible landslides — keep buffer days and carry rain gear.",
+    ],
+    faqs: [],
+  },
+];
+
+const packages = [
+  {
+    slug: "nainital-bhimtal-3-days",
+    title: "Nainital–Bhimtal Lake Break",
+    summary: "An easy three-day lake holiday covering Nainital's viewpoints and the calmer lakes around Bhimtal.",
+    durationDays: 3,
+    durationLabel: "3 days / 2 nights",
+    tripType: "FAMILY",
+    audience: "Families and first-time visitors",
+    season: "Best March–June and September–November",
+    featured: true,
+    sortOrder: 1,
+    destinations: ["nainital", "bhimtal"],
+    itinerary: [
+      { day: 1, title: "Arrive Kathgodam → Nainital", detail: "Pickup from Kathgodam, drive to Nainital (roughly 1.5 hours, traffic-dependent). Check in, evening walk on Mall Road and the lake." },
+      { day: 2, title: "Nainital sightseeing", detail: "Morning viewpoints such as Snow View and Tiffin Top, Naina Devi temple and lake boating at your own cost. Free evening." },
+      { day: 3, title: "Bhimtal lakes → departure", detail: "Visit Bhimtal and Sattal en route, then drop at Kathgodam for your onward journey." },
+    ],
+    inclusions: ["Hotel stay for 2 nights (category confirmed in quote)", "Daily breakfast", "Private vehicle for transfers and listed sightseeing", "Driver allowance, tolls and parking for listed route"],
+    exclusions: ["Train/flight tickets", "Boating, ropeway and entry fees", "Lunch and dinner unless stated", "Personal expenses", "Anything not listed under inclusions"],
+    notes: ["Driving times are estimates and depend on traffic and weather.", "Hotel and vehicle are confirmed only after your quote is accepted."],
+    internalNotes: "Clarify: starting city, hotel category, transfer vehicle, meals plan, sightseeing hour/km limits.",
+  },
+  {
+    slug: "mussoorie-dhanaulti-3-days",
+    title: "Mussoorie–Dhanaulti Escape",
+    summary: "A weekend in the Garhwal hills — Mussoorie's walks and viewpoints plus a forest day in Dhanaulti.",
+    durationDays: 3,
+    durationLabel: "3 days / 2 nights",
+    tripType: "WEEKEND",
+    audience: "Weekend travellers and couples",
+    season: "Best March–June and September–November",
+    featured: true,
+    sortOrder: 2,
+    destinations: ["mussoorie", "dhanaulti"],
+    itinerary: [
+      { day: 1, title: "Dehradun → Mussoorie", detail: "Pickup from Dehradun railway station or airport, drive to Mussoorie. Evening on Mall Road or Camel's Back Road." },
+      { day: 2, title: "Landour & Dhanaulti", detail: "Morning heritage walk in Landour, afternoon drive to Dhanaulti's eco-parks; return to Mussoorie." },
+      { day: 3, title: "Viewpoints → departure", detail: "Gun Hill or Lal Tibba viewpoint, then drop at Dehradun." },
+    ],
+    inclusions: ["Hotel stay for 2 nights (category confirmed in quote)", "Daily breakfast", "Private vehicle for listed route", "Driver allowance, tolls and parking for listed route"],
+    exclusions: ["Train/flight tickets", "Ropeway, entry and activity fees", "Lunch and dinner unless stated", "Personal expenses"],
+    notes: ["Peak-weekend traffic can add hours to the Dehradun–Mussoorie drive.", "Winter road conditions may change the plan."],
+    internalNotes: "Clarify: traffic/seasonal access, vehicle hours, stay category.",
+  },
+  {
+    slug: "rishikesh-haridwar-3-days",
+    title: "Rishikesh–Haridwar Culture & Wellness",
+    summary: "Ganga aartis, yoga sessions and riverside walks across Uttarakhand's two holy river towns.",
+    durationDays: 3,
+    durationLabel: "3 days / 2 nights",
+    tripType: "WELLNESS",
+    audience: "Families, culture and wellness travellers",
+    season: "Best September–April",
+    featured: true,
+    sortOrder: 3,
+    destinations: ["rishikesh", "haridwar"],
+    itinerary: [
+      { day: 1, title: "Arrive Haridwar", detail: "Pickup from Haridwar station or Dehradun airport. Evening Ganga aarti at Har Ki Pauri." },
+      { day: 2, title: "Rishikesh", detail: "Drive to Rishikesh. Optional morning yoga session, Ram Jhula riverside walk and evening aarti. Optional rafting with a licensed operator (seasonal, own cost)." },
+      { day: 3, title: "Departure", detail: "Free morning, then drop at Haridwar, Rishikesh or Dehradun." },
+    ],
+    inclusions: ["Hotel / ashram-style stay for 2 nights (category confirmed in quote)", "Daily breakfast", "Private vehicle for listed route"],
+    exclusions: ["Rafting and other activities", "Yoga class fees unless stated", "Lunch and dinner", "Personal expenses"],
+    notes: ["Adventure activities are subject to age, health rules and operator approval.", "Festival dates can bring heavy crowds and higher rates."],
+    internalNotes: "Clarify: activity age/health rules, operator credentials, activity exclusions.",
+  },
+  {
+    slug: "kumaon-scenic-circuit-6-days",
+    title: "Kumaon Scenic Circuit",
+    summary: "Six unhurried days through Nainital, Almora, Binsar and Mukteshwar — lakes, forests and Himalayan views.",
+    durationDays: 6,
+    durationLabel: "6 days / 5 nights",
+    tripType: "NATURE",
+    audience: "Nature lovers and slow travellers",
+    season: "Best March–June and September–November",
+    featured: true,
+    sortOrder: 4,
+    destinations: ["nainital", "almora", "binsar", "mukteshwar"],
+    itinerary: [
+      { day: 1, title: "Kathgodam → Nainital", detail: "Pickup and drive to Nainital. Evening by the lake." },
+      { day: 2, title: "Nainital & lakes", detail: "Nainital viewpoints in the morning, Bhimtal and Sattal in the afternoon." },
+      { day: 3, title: "Nainital → Almora", detail: "Drive to Almora (around 2.5–3 hours). Old bazaar and Kasar Devi ridge." },
+      { day: 4, title: "Binsar", detail: "Short drive to Binsar. Forest walk to Zero Point with a local guide, weather permitting." },
+      { day: 5, title: "Binsar → Mukteshwar", detail: "Drive to Mukteshwar via Jageshwar temples (optional detour). Sunset at Chauli ki Jali." },
+      { day: 6, title: "Mukteshwar → Kathgodam", detail: "Morning orchard walk, then drop at Kathgodam." },
+    ],
+    inclusions: ["Hotel / homestay stays for 5 nights (category confirmed in quote)", "Daily breakfast", "Private vehicle for the full circuit", "Driver allowance and night halts"],
+    exclusions: ["Train/flight tickets", "Sanctuary and entry fees", "Guide fees unless stated", "Lunch and dinner unless stated"],
+    notes: ["Long drives on mountain roads — motion-sickness-prone travellers should mention it.", "Mountain views depend on weather and are never guaranteed."],
+    internalNotes: "Clarify: long drives, road conditions, hotel availability, acclimatisation needs.",
+  },
+  {
+    slug: "jim-corbett-weekend-2-days",
+    title: "Jim Corbett Weekend",
+    summary: "A short wildlife break with a riverside stay and a jeep safari in an open zone.",
+    durationDays: 2,
+    durationLabel: "2 days / 1 night",
+    tripType: "NATURE",
+    audience: "Weekend travellers and families",
+    season: "Most zones roughly mid-October to June",
+    featured: false,
+    sortOrder: 5,
+    destinations: ["jim-corbett"],
+    itinerary: [
+      { day: 1, title: "Arrive Ramnagar", detail: "Pickup from Ramnagar station, check in at a resort near the park. Evening walk by the Kosi river." },
+      { day: 2, title: "Safari → departure", detail: "Early-morning jeep safari (subject to permit availability), breakfast, then drop at Ramnagar." },
+    ],
+    inclusions: ["Resort stay for 1 night (category confirmed in quote)", "Breakfast", "Station transfers"],
+    exclusions: ["Safari permit and jeep charges unless stated in quote", "Lunch and dinner unless stated", "Personal expenses"],
+    notes: ["Safari permits are limited and require traveller IDs; they are booked only after confirmation.", "Wildlife sightings are never guaranteed."],
+    internalNotes: "Clarify: zone availability by date, permit process and lead time, resort category.",
+  },
+  {
+    slug: "char-dham-planning-assistance",
+    title: "Char Dham Yatra Planning Assistance",
+    summary: "Route planning, stays and transport for Yamunotri, Gangotri, Kedarnath and Badrinath — built around your dates and fitness.",
+    durationDays: 10,
+    durationLabel: "Route-specific (often 9–12 days)",
+    tripType: "PILGRIMAGE",
+    audience: "Pilgrims and families",
+    season: "Yatra season — roughly late April/May to October/November; dates are announced each year",
+    featured: true,
+    sortOrder: 6,
+    destinations: ["haridwar"],
+    itinerary: [
+      { day: 1, title: "Consultation", detail: "We discuss dates, which dhams you wish to visit, fitness, pace and budget." },
+      { day: 2, title: "Route & stay plan", detail: "A day-wise route with realistic driving times, halts and stay options is shared in writing." },
+      { day: 3, title: "Before you travel", detail: "We remind you to complete official yatra registration and review current health and weather advisories." },
+    ],
+    inclusions: ["Day-wise route planning", "Hotel and transport arrangements as quoted", "On-trip support contact"],
+    exclusions: ["Official yatra registration (done by the traveller on the official portal)", "Helicopter tickets unless separately confirmed", "Pony, palki and porter charges", "Temple offerings and special puja fees"],
+    notes: [
+      "We are not a government portal. Registration must be completed by travellers on the official portal.",
+      "Routes can close due to weather or landslides; plans may change at short notice.",
+    ],
+    internalNotes: "Clarify: current registration, route, medical/fitness advisories, supplier and permit status.",
+  },
+  {
+    slug: "custom-uttarakhand-family-trip",
+    title: "Custom Uttarakhand Family Trip",
+    summary: "Tell us your dates, pace and interests — we plan an Uttarakhand itinerary that fits your family.",
+    durationDays: 5,
+    durationLabel: "Flexible",
+    tripType: "CUSTOM",
+    audience: "Families and groups",
+    season: "Year-round, based on destination",
+    featured: false,
+    sortOrder: 7,
+    destinations: [],
+    itinerary: [
+      { day: 1, title: "Share your plan", detail: "Dates, travellers, budget, accessibility needs and interests." },
+      { day: 2, title: "Receive a tailored itinerary", detail: "A written itinerary and itemised quote with validity period." },
+      { day: 3, title: "Confirm & travel", detail: "Confirm details, pay the agreed advance and travel with our support." },
+    ],
+    inclusions: ["As per your confirmed quote"],
+    exclusions: ["Anything not listed in your written quote"],
+    notes: ["Accessibility, child and elder needs are planned case by case."],
+    internalNotes: "Clarify: budget, dates, pace, accessibility, hotel/vehicle choices.",
+  },
+];
+
+async function main() {
+  for (const d of destinations) {
+    const data = {
+      ...d,
+      experiences: j(d.experiences),
+      practical: j(d.practical),
+      faqs: j(d.faqs),
+    };
+    await db.destination.upsert({ where: { slug: d.slug }, update: {}, create: data });
+  }
+
+  for (const p of packages) {
+    const { destinations: destSlugs, ...rest } = p;
+    await db.package.upsert({
+      where: { slug: p.slug },
+      update: {},
+      create: {
+        ...rest,
+        status: "PUBLISHED",
+        priceBasis: "Quoted per person on twin sharing, or per vehicle for transport",
+        itinerary: j(p.itinerary),
+        inclusions: j(p.inclusions),
+        exclusions: j(p.exclusions),
+        notes: j(p.notes),
+        destinations: { connect: destSlugs.map((slug) => ({ slug })) },
+      },
+    });
+  }
+
+  console.log(`Seeded ${destinations.length} destinations and ${packages.length} packages.`);
+}
+
+main()
+  .catch((e) => {
+    console.error(e);
+    process.exit(1);
+  })
+  .finally(() => db.$disconnect());

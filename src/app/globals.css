@@ -1,0 +1,94 @@
+@import "tailwindcss";
+
+/* Brand direction (blueprint §13): forest green + warm off-white + slate,
+   one marigold accent reserved for primary CTAs (dark text for contrast). */
+@theme {
+  --color-forest-50: #eef5f0;
+  --color-forest-100: #d6e8dc;
+  --color-forest-200: #aed1ba;
+  --color-forest-300: #7fb394;
+  --color-forest-500: #2f6b47;
+  --color-forest-600: #25583a;
+  --color-forest-700: #1d4630;
+  --color-forest-800: #163626;
+  --color-forest-900: #0f261b;
+  --color-cream: #faf7f0;
+  --color-sand: #f1ebdd;
+  --color-accent: #f0a53c;
+  --color-accent-strong: #e39222;
+
+  --font-sans: var(--font-inter), ui-sans-serif, system-ui, sans-serif;
+}
+
+html {
+  scroll-behavior: smooth;
+}
+
+body {
+  background: var(--color-cream);
+  color: var(--color-slate-800);
+  -webkit-font-smoothing: antialiased;
+}
+
+/* Visible focus for keyboard users (FR-12) */
+:focus-visible {
+  outline: 3px solid var(--color-accent-strong);
+  outline-offset: 2px;
+}
+
+@layer components {
+  .container-page {
+    @apply mx-auto w-full max-w-6xl px-4 sm:px-6;
+  }
+  .btn-primary {
+    @apply inline-flex items-center justify-center gap-2 rounded-full px-5 py-2.5 text-sm font-semibold transition-colors disabled:cursor-not-allowed disabled:opacity-60 bg-accent text-forest-900 hover:bg-accent-strong;
+  }
+  .btn-secondary {
+    @apply inline-flex items-center justify-center gap-2 rounded-full px-5 py-2.5 text-sm font-semibold transition-colors disabled:cursor-not-allowed disabled:opacity-60 bg-forest-700 text-white hover:bg-forest-800;
+  }
+  .btn-outline {
+    @apply inline-flex items-center justify-center gap-2 rounded-full px-5 py-2.5 text-sm font-semibold transition-colors disabled:cursor-not-allowed disabled:opacity-60 border border-forest-700 text-forest-800 hover:bg-forest-50;
+  }
+  .btn-ghost-light {
+    @apply inline-flex items-center justify-center gap-2 rounded-full px-5 py-2.5 text-sm font-semibold transition-colors disabled:cursor-not-allowed disabled:opacity-60 border border-white/60 text-white hover:bg-white/10;
+  }
+  .card {
+    @apply rounded-2xl border border-slate-200 bg-white shadow-sm;
+  }
+  .eyebrow {
+    @apply text-xs font-semibold tracking-widest text-forest-600 uppercase;
+  }
+  .h1 {
+    @apply text-3xl font-bold tracking-tight text-forest-900 sm:text-4xl;
+  }
+  .h2 {
+    @apply text-2xl font-bold tracking-tight text-forest-900 sm:text-3xl;
+  }
+  .prose-body {
+    @apply space-y-4 leading-relaxed text-slate-700;
+  }
+  .prose-body h2 {
+    @apply pt-4 text-xl font-semibold text-forest-900;
+  }
+  .prose-body ul {
+    @apply list-disc space-y-1 pl-5;
+  }
+  .prose-body a {
+    @apply font-medium text-forest-700 underline underline-offset-2;
+  }
+  .label {
+    @apply mb-1 block text-sm font-medium text-slate-700;
+  }
+  .input {
+    @apply w-full rounded-lg border border-slate-300 bg-white px-3 py-2.5 text-base text-slate-900 placeholder:text-slate-400 focus:border-forest-500 focus:ring-2 focus:ring-forest-200 focus:outline-none sm:text-sm;
+  }
+  .input-error {
+    @apply border-red-500 focus:border-red-500 focus:ring-red-200;
+  }
+  .field-error {
+    @apply mt-1 text-sm text-red-700;
+  }
+  .chip {
+    @apply inline-flex items-center rounded-full bg-forest-50 px-2.5 py-1 text-xs font-medium text-forest-700;
+  }
+}
