@@ -4,30 +4,71 @@ import { cookies, headers } from "next/headers";
 import { redirect } from "next/navigation";
 import { revalidatePath } from "next/cache";
 import { db } from "@/lib/db";
-import { requireAdmin } from "@/lib/admin-auth";
+import { requireAdmin, requireUser } from "@/lib/admin-auth";
 import { notifyNewEnquiry } from "@/lib/notify";
 import { clientIp, rateLimit } from "@/lib/rate-limit";
-import { SESSION_COOKIE, SESSION_TTL_MS, createSessionToken, passwordMatches } from "@/lib/session";
+import { hashPassword, passwordProblem, verifyPassword } from "@/lib/password";
+import { SESSION_COOKIE, SESSION_TTL_MS, createSessionToken, setupKeyMatches } from "@/lib/session";
 import { statusesFor, tripTypes } from "@/config/options";
 import { linesToFaqs, linesToItinerary, linesToJson } from "@/lib/json";
 
 // ---------- Auth ----------
 
-export async function loginAction(formData: FormData) {
-  const ip = clientIp(await headers());
-  if (!rateLimit(`login:${ip}`, 8, 15 * 60 * 1000).ok) redirect("/admin/login/?error=rate");
+const emailRe = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
-  const password = String(formData.get("password") ?? "");
-  if (!(await passwordMatches(password))) redirect("/admin/login/?error=1");
-
-  const store = await cookies();
-  store.set(SESSION_COOKIE, await createSessionToken(), {
+async function startSession(user: { id: string; tokenVersion: number }) {
+  (await cookies()).set(SESSION_COOKIE, await createSessionToken(user.id, user.tokenVersion), {
     httpOnly: true,
     secure: process.env.NODE_ENV === "production",
     sameSite: "lax",
     path: "/",
     maxAge: SESSION_TTL_MS / 1000,
   });
+}
+
+// Same work whether or not the email exists, so response time doesn't reveal accounts
+const DUMMY_HASH = "scrypt$16384$8$1$AAAAAAAAAAAAAAAAAAAAAA$" + "A".repeat(86);
+
+export async function loginAction(formData: FormData) {
+  const ip = clientIp(await headers());
+  const email = String(formData.get("email") ?? "").trim().toLowerCase().slice(0, 120);
+  const password = String(formData.get("password") ?? "").slice(0, 200);
+  if (!rateLimit(`login:${ip}`, 10, 15 * 60 * 1000).ok || !rateLimit(`login-user:${email}`, 6, 15 * 60 * 1000).ok) {
+    redirect("/admin/login/?error=rate");
+  }
+
+  const user = await db.adminUser.findUnique({ where: { email } });
+  const ok = await verifyPassword(password, user?.passwordHash ?? DUMMY_HASH).catch(() => false);
+  if (!user || !ok) redirect(`/admin/login/?error=1&email=${encodeURIComponent(email)}`);
+  if (!user.active) redirect("/admin/login/?error=inactive");
+
+  await db.adminUser.update({ where: { id: user.id }, data: { lastLoginAt: new Date() } });
+  await startSession(user);
+  redirect("/admin/");
+}
+
+/** One-time setup: create the first Super Admin. Requires the ADMIN_PASSWORD env value as a setup key. */
+export async function setupSuperAdminAction(formData: FormData) {
+  const ip = clientIp(await headers());
+  if (!rateLimit(`setup:${ip}`, 5, 15 * 60 * 1000).ok) redirect("/admin/login/?error=rate");
+  if ((await db.adminUser.count()) > 0) redirect("/admin/login/");
+
+  const name = String(formData.get("name") ?? "").trim().slice(0, 80);
+  const email = String(formData.get("email") ?? "").trim().toLowerCase().slice(0, 120);
+  const password = String(formData.get("password") ?? "");
+  const fail = (m: string): never => redirect(`/admin/login/?setupError=${encodeURIComponent(m)}`);
+
+  if (!(await setupKeyMatches(String(formData.get("setupKey") ?? "")))) fail("Setup key is incorrect.");
+  if (name.length < 2) fail("Enter your name.");
+  if (!emailRe.test(email)) fail("Enter a valid email.");
+  const problem = passwordProblem(password, email);
+  if (problem) fail(problem);
+  if (password !== String(formData.get("confirm") ?? "")) fail("Passwords do not match.");
+
+  const user = await db.adminUser.create({
+    data: { name, email, passwordHash: await hashPassword(password), role: "SUPER_ADMIN", lastLoginAt: new Date() },
+  });
+  await startSession(user);
   redirect("/admin/");
 }
 
@@ -36,10 +77,44 @@ export async function logoutAction() {
   redirect("/admin/login/");
 }
 
+/** Returns an error message, or null after the password was changed. */
+async function changeOwnPassword(formData: FormData): Promise<string | null> {
+  const me = await requireUser();
+  const current = String(formData.get("current") ?? "");
+  const next = String(formData.get("password") ?? "");
+
+  const user = await db.adminUser.findUniqueOrThrow({ where: { id: me.id } });
+  if (!(await verifyPassword(current, user.passwordHash))) return "Current password is incorrect.";
+  const problem = passwordProblem(next, user.email);
+  if (problem) return problem;
+  if (next !== String(formData.get("confirm") ?? "")) return "New passwords do not match.";
+  if (current === next) return "Choose a password different from the current one.";
+
+  // New tokenVersion signs out every other device; this device gets a fresh session
+  const updated = await db.adminUser.update({
+    where: { id: user.id },
+    data: { passwordHash: await hashPassword(next), tokenVersion: { increment: 1 }, mustChangePassword: false },
+  });
+  await startSession(updated);
+  return null;
+}
+
+export async function changeOwnPasswordAction(formData: FormData) {
+  const error = await changeOwnPassword(formData);
+  redirect(error ? `/admin/account/?error=${encodeURIComponent(error)}` : "/admin/account/?saved=1");
+}
+
+/** Variant for the first-login screen, which shows errors inline. */
+export async function setFirstPasswordAction(_prev: string | null, formData: FormData): Promise<string | null> {
+  const error = await changeOwnPassword(formData);
+  if (!error) redirect("/admin/");
+  return error;
+}
+
 // ---------- Leads ----------
 
 export async function updateEnquiryAction(formData: FormData) {
-  const actor = await requireAdmin();
+  const actor = await requireAdmin("leads.edit");
   const id = String(formData.get("id"));
   const enquiry = await db.enquiry.findUnique({ where: { id } });
   if (!enquiry) redirect("/admin/");
@@ -66,7 +141,7 @@ export async function updateEnquiryAction(formData: FormData) {
 }
 
 export async function retryNotificationAction(formData: FormData) {
-  const actor = await requireAdmin();
+  const actor = await requireAdmin("leads.edit");
   const id = String(formData.get("id"));
   const enquiry = await db.enquiry.findUnique({ where: { id } });
   if (!enquiry) return;
@@ -96,7 +171,7 @@ function slugify(s: string) {
 }
 
 export async function savePackageAction(formData: FormData) {
-  await requireAdmin();
+  await requireAdmin("content.edit");
   const id = str(formData, "id");
   const title = str(formData, "title", 160);
   const slug = slugify(str(formData, "slug") || title);
@@ -151,7 +226,7 @@ export async function savePackageAction(formData: FormData) {
 }
 
 export async function saveDestinationAction(formData: FormData) {
-  await requireAdmin();
+  await requireAdmin("content.edit");
   const id = str(formData, "id");
   const name = str(formData, "name", 120);
   const slug = slugify(str(formData, "slug") || name);

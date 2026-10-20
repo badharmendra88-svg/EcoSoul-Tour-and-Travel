@@ -210,6 +210,24 @@ model Quote {
   @@index([enquiryId])
 }
 
+// ---------- Admin users & roles ----------
+// role: SUPER_ADMIN | ADMIN | MANAGER (see src/lib/permissions.ts)
+model AdminUser {
+  id           String    @id @default(cuid())
+  name         String
+  email        String    @unique // stored lower-case
+  passwordHash String // scrypt
+  role         String    @default("MANAGER")
+  active       Boolean   @default(true)
+  // Bumped on password change / reset / deactivation to revoke existing sessions
+  tokenVersion Int       @default(1)
+  mustChangePassword Boolean @default(false)
+  lastLoginAt  DateTime?
+  createdById  String?
+  createdAt    DateTime  @default(now())
+  updatedAt    DateTime  @updatedAt
+}
+
 // ---------- Site settings & integrations (admin "Settings") ----------
 // Empty contact fields fall back to the NEXT_PUBLIC_* env values.
 model SiteSettings {

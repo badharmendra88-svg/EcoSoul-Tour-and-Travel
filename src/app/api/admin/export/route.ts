@@ -1,8 +1,8 @@
-import { cookies } from "next/headers";
 import type { Prisma } from "@prisma/client";
 import { enquiryKinds } from "@/config/options";
 import { db } from "@/lib/db";
-import { SESSION_COOKIE, verifySessionToken } from "@/lib/session";
+import { getCurrentUser } from "@/lib/admin-auth";
+import { can } from "@/lib/permissions";
 
 // CSV export of leads for reporting / backup (blueprint §11 data export).
 
@@ -21,9 +21,10 @@ function cell(value: unknown) {
 }
 
 export async function GET(request: Request) {
-  if (!(await verifySessionToken((await cookies()).get(SESSION_COOKIE)?.value))) {
-    return new Response("Unauthorized", { status: 401 });
-  }
+  const user = await getCurrentUser();
+  if (!user) return new Response("Unauthorized", { status: 401 });
+  if (user.mustChangePassword) return new Response("Set your own password first", { status: 403 });
+  if (!can(user.role, "leads.export")) return new Response("Forbidden", { status: 403 });
   const sp = new URL(request.url).searchParams;
   const kind = sp.get("kind");
   const status = sp.get("status");

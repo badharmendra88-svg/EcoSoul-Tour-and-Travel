@@ -18,7 +18,7 @@ const num = (fd: FormData, key: string) => Math.max(0, Number(fd.get(key)) || 0)
 const text = (fd: FormData, key: string, max = 200) => String(fd.get(key) ?? "").trim().slice(0, max);
 
 export async function saveRatesAction(formData: FormData) {
-  await requireAdmin();
+  await requireAdmin("rates.edit");
   const { vehicles, hotels } = await getRateCard();
 
   await db.$transaction([
@@ -128,7 +128,7 @@ function token() {
 }
 
 export async function saveQuoteAction(payload: QuotePayload): Promise<{ ok: true; id: string } | { ok: false; error: string }> {
-  const actor = await requireAdmin();
+  const actor = await requireAdmin("quotes.manage");
   const parsed = quoteSchema.safeParse(payload);
   if (!parsed.success) return { ok: false, error: parsed.error.issues[0]?.message ?? "Invalid quote" };
   const q = parsed.data;
@@ -179,7 +179,7 @@ export async function saveQuoteAction(payload: QuotePayload): Promise<{ ok: true
 }
 
 export async function markQuoteSentAction(id: string, via: "WHATSAPP" | "WHATSAPP_API" | "EMAIL" | "LINK") {
-  const actor = await requireAdmin();
+  const actor = await requireAdmin("quotes.manage");
   const quote = await db.quote.findUnique({ where: { id } });
   if (!quote) return;
   await db.quote.update({ where: { id }, data: { status: quote.status === "DRAFT" ? "SENT" : quote.status, sentAt: new Date(), sentVia: via } });
@@ -209,7 +209,7 @@ export async function markQuoteSentAction(id: string, via: "WHATSAPP" | "WHATSAP
 
 /** Uploads the quote PDF and sends it to the customer through the WhatsApp Cloud API. */
 export async function sendQuoteViaWhatsAppApiAction(id: string): Promise<{ ok: true } | { ok: false; error: string }> {
-  await requireAdmin();
+  await requireAdmin("quotes.manage");
   const quote = await db.quote.findUnique({ where: { id } });
   if (!quote) return { ok: false, error: "Quote not found" };
   if (!quote.customerPhone) return { ok: false, error: "Add the customer's WhatsApp number to the quote first." };
@@ -234,7 +234,7 @@ export async function sendQuoteViaWhatsAppApiAction(id: string): Promise<{ ok: t
 }
 
 export async function setQuoteStatusAction(formData: FormData) {
-  const actor = await requireAdmin();
+  const actor = await requireAdmin("quotes.manage");
   const id = String(formData.get("id"));
   const status = String(formData.get("status"));
   if (!["DRAFT", "SENT", "ACCEPTED", "DECLINED"].includes(status)) return;

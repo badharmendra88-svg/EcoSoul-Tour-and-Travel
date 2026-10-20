@@ -7,7 +7,16 @@ import { logoutAction } from "../actions";
 
 type NavItem = { href: string; label: string; icon: ReactNode; badge?: number };
 
-export function AdminShell({ nav, children }: { nav: { group: string; items: NavItem[] }[]; children: ReactNode }) {
+export function AdminShell({
+  nav,
+  user,
+  children,
+}: {
+  nav: { group: string; items: NavItem[] }[];
+  user: { name: string; role: string };
+  children: ReactNode;
+}) {
+  const initials = user.name.split(/\s+/).filter(Boolean).slice(0, 2).map((p) => p[0]?.toUpperCase()).join("");
   const pathname = usePathname();
   const [open, setOpen] = useState(false);
   useEffect(() => setOpen(false), [pathname]);
@@ -62,6 +71,17 @@ export function AdminShell({ nav, children }: { nav: { group: string; items: Nav
       </nav>
 
       <div className="m-3 space-y-1 rounded-2xl bg-white/[0.04] p-2 ring-1 ring-white/5">
+        <Link
+          href="/admin/account/"
+          aria-current={pathname.startsWith("/admin/account") ? "page" : undefined}
+          className="flex items-center gap-3 rounded-xl px-2 py-2 hover:bg-white/[0.05]"
+        >
+          <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-accent text-xs font-bold text-forest-900">{initials}</span>
+          <span className="min-w-0 leading-tight">
+            <span className="block truncate text-sm font-semibold text-white">{user.name}</span>
+            <span className="block text-[11px] text-forest-300">{user.role} · My account</span>
+          </span>
+        </Link>
         <a href="/" target="_blank" rel="noopener" className="flex items-center gap-3 rounded-xl px-3 py-2 text-sm font-medium text-forest-200 hover:bg-white/[0.05] hover:text-white">
           <svg viewBox="0 0 24 24" className="h-4 w-4" fill="none" stroke="currentColor" strokeWidth="1.8" aria-hidden="true"><path d="M15 3h6v6M10 14 21 3M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6" /></svg>
           View website

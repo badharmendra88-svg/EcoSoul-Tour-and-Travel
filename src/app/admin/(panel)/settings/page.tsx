@@ -77,7 +77,7 @@ function SectionCard({ id, icon, title, description, children }: { id: string; i
 }
 
 export default async function SettingsPage({ searchParams }: { searchParams: Promise<{ saved?: string; error?: string; tested?: string }> }) {
-  await requireAdmin();
+  await requireAdmin("settings.manage");
   const { saved, error, tested } = await searchParams;
   const s = await getSettingsRow();
   const token = decryptSecret(s.waAccessTokenEnc);

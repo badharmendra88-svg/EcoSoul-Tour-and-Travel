@@ -1,5 +1,6 @@
 import Link from "next/link";
-import { requireAdmin } from "@/lib/admin-auth";
+import { requireUser } from "@/lib/admin-auth";
+import { can } from "@/lib/permissions";
 import { db } from "@/lib/db";
 import { formatDate } from "@/lib/format";
 import { rupees } from "@/lib/quote";
@@ -14,7 +15,7 @@ const filters = [
 ];
 
 export default async function QuotesPage({ searchParams }: { searchParams: Promise<{ status?: string }> }) {
-  await requireAdmin();
+  const me = await requireUser("quotes.manage");
   const { status } = await searchParams;
   const valid = filters.some((f) => f.id === status) ? status : undefined;
   const today = new Date(Date.now() + 5.5 * 3600 * 1000).toISOString().slice(0, 10);
@@ -41,7 +42,7 @@ export default async function QuotesPage({ searchParams }: { searchParams: Promi
         subtitle="Estimates built with the calculator — send them as PDF, link or WhatsApp."
         actions={
           <>
-            <Link href="/admin/rates/" className="btn-admin-ghost"><Icon name="calculator" /> Rate card</Link>
+            {can(me.role, "rates.edit") && <Link href="/admin/rates/" className="btn-admin-ghost"><Icon name="calculator" /> Rate card</Link>}
             <Link href="/admin/quotes/new/" className="btn-admin-primary"><Icon name="plus" /> New quote</Link>
           </>
         }

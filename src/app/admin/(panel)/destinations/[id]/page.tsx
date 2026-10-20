@@ -17,7 +17,7 @@ export default async function EditDestinationPage({
   params: Promise<{ id: string }>;
   searchParams: Promise<{ saved?: string; error?: string }>;
 }) {
-  await requireAdmin();
+  await requireAdmin("content.edit");
   const { id } = await params;
   const { saved, error } = await searchParams;
   const isNew = id === "new";

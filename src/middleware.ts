@@ -7,7 +7,8 @@ export async function middleware(request: NextRequest) {
   const { pathname } = request.nextUrl;
   if (pathname.startsWith("/admin/login")) return NextResponse.next();
 
-  const ok = await verifySessionToken(request.cookies.get(SESSION_COOKIE)?.value);
+  // Signature/expiry only here (edge); user status is checked server-side
+  const ok = (await verifySessionToken(request.cookies.get(SESSION_COOKIE)?.value)) !== null;
   if (ok) {
     const res = NextResponse.next();
     res.headers.set("X-Robots-Tag", "noindex, nofollow");

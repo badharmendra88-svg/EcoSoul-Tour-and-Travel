@@ -27,7 +27,7 @@ const eventIcon: Record<string, IconName> = {
 };
 
 export default async function LeadDetailPage({ params }: { params: Promise<{ id: string }> }) {
-  await requireAdmin();
+  await requireAdmin("leads.view");
   const { id } = await params;
   const e = await db.enquiry.findUnique({
     where: { id },

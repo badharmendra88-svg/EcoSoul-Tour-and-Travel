@@ -31,7 +31,7 @@ function optionalUrl(fd: FormData, key: string, label: string, section: string) 
 }
 
 export async function saveSettingsAction(formData: FormData) {
-  await requireAdmin();
+  await requireAdmin("settings.manage");
   const section = text(formData, "_section", 40) || "contact";
 
   const phone = text(formData, "phone", 30);
@@ -91,7 +91,7 @@ export async function saveSettingsAction(formData: FormData) {
 }
 
 export async function testWhatsAppAction() {
-  await requireAdmin();
+  await requireAdmin("settings.manage");
   const row = await db.siteSettings.findUnique({ where: { id: "default" } });
   if (!row?.waPhoneNumberId || !row.waAccessTokenEnc) fail("whatsapp", "Save the phone number ID and access token first.");
   if (!row.waApiEnabled) fail("whatsapp", "Turn on “Enable WhatsApp Cloud API” and save first.");
@@ -113,7 +113,7 @@ export async function testWhatsAppAction() {
 }
 
 export async function removeWhatsAppTokenAction() {
-  await requireAdmin();
+  await requireAdmin("settings.manage");
   await db.siteSettings.update({
     where: { id: "default" },
     data: { waAccessTokenEnc: null, waApiEnabled: false, waLastTestAt: null, waLastTestOk: null, waLastTestResult: null },

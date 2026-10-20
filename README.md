@@ -17,7 +17,7 @@ npx prisma migrate dev        # creates prisma/dev.db and seeds starter content
 npm run dev                   # http://localhost:3200
 ```
 
-Admin panel: <http://localhost:3200/admin/> — sign in with `ADMIN_PASSWORD` from `.env`.
+Admin panel: <http://localhost:3200/admin/>. **First run:** the login page asks you to create the Super Admin — enter the `ADMIN_PASSWORD` value from `.env` as the setup key, then your name, email and password. After that everyone signs in with their own email + password.
 
 | Script | What it does |
 | --- | --- |
@@ -79,6 +79,11 @@ Admin panel: <http://localhost:3200/admin/> — sign in with `ADMIN_PASSWORD` fr
 - **Calculator:** open a lead → *Create quote*. Customer, dates, travellers, vehicle and days are prefilled. Outstation = max(actual km, min km/day × days) × ₹/km + driver allowance + night halts + tolls; local = package/day + extras; hotel = rooms × nights (+ dinner, + peak surcharge). Results become editable line items; totals (service charge → GST → total, advance, per person) update live and are recomputed on the server.
 - **Sending:** each saved quote gets a number (`Q-261020-7KQ4`), an A4 **PDF** and a private customer link (`/quote/<token>/`). *Send on WhatsApp* opens the customer's chat with a pre-filled summary + link; email via mail app. Sending marks the quote **Sent** and moves the lead to **Quote Sent** with an activity-log entry; record Accepted/Declined later.
 - WhatsApp links can't attach files — download the PDF and attach it manually, or integrate the WhatsApp Business API later. Customer links work only once the site is deployed with a public `NEXT_PUBLIC_SITE_URL`. PDFs use built-in fonts, so `₹` prints as `Rs.` and Hindi text is not supported yet.
+
+### Users & roles (`/admin/users/`)
+- Individual accounts (email + password, scrypt-hashed). Roles: **Super Admin** (everything, incl. users), **Admin** (leads, quotes, CSV export, rate card, content, integrations), **Manager** (leads and quotes only). Permissions live in `src/lib/permissions.ts` and are enforced on every page, server action and the CSV export — not just by hiding menu items.
+- Only Super Admins create users, change roles, deactivate accounts and reset passwords. New/reset users get a one-time temporary password and must set their own at first sign-in. Deactivation and password changes sign the user out everywhere immediately. At least one active Super Admin is always kept; you can't demote or deactivate yourself.
+- Everyone can change their own password under **My account**. Activity-log entries show the staff member's name.
 
 ### Integrations & settings (`/admin/settings/`)
 - **Business contact:** phone, WhatsApp number, email, address and hours — used site-wide (buttons, footer, contact page, JSON-LD, PDFs). Empty fields fall back to the `NEXT_PUBLIC_*` env values.

@@ -7,7 +7,7 @@ import { formatPrice } from "@/lib/format";
 import { Badge, EmptyState, Icon, PageHeader, StatusBadge, timeAgo } from "../ui";
 
 export default async function AdminPackagesPage() {
-  await requireAdmin();
+  await requireAdmin("content.edit");
   const packages = await db.package.findMany({
     orderBy: [{ sortOrder: "asc" }, { title: "asc" }],
     include: { destinations: { select: { scene: true, name: true } } },

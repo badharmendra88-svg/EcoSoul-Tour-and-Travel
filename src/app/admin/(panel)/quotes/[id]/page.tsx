@@ -47,7 +47,7 @@ export default async function QuotePage({
   params: Promise<{ id: string }>;
   searchParams: Promise<{ lead?: string; saved?: string }>;
 }) {
-  await requireAdmin();
+  await requireAdmin("quotes.manage");
   const { id } = await params;
   const { lead: leadId, saved } = await searchParams;
   const { vehicles, hotels, settings } = await getRateCard();

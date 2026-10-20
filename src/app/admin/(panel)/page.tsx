@@ -1,18 +1,19 @@
 import Link from "next/link";
 import type { Prisma } from "@prisma/client";
 import { enquiryKinds, serviceTypes, statusLabel, transportStatuses, tripStatuses } from "@/config/options";
-import { requireAdmin } from "@/lib/admin-auth";
+import { requireUser } from "@/lib/admin-auth";
+import { can } from "@/lib/permissions";
 import { db } from "@/lib/db";
 import { Avatar, EmptyState, Icon, PageHeader, StatCard, StatusBadge, compactRupees, timeAgo, type IconName } from "./ui";
 
-type Search = { kind?: string; status?: string; q?: string; page?: string };
+type Search = { kind?: string; status?: string; q?: string; page?: string; denied?: string };
 
 const PAGE_SIZE = 50;
 
 const kindIcon: Record<string, IconName> = { TRIP: "sparkles", PACKAGE: "package", TRANSPORT: "car", CONTACT: "message" };
 
 export default async function LeadsPage({ searchParams }: { searchParams: Promise<Search> }) {
-  await requireAdmin();
+  const me = await requireUser("leads.view");
   const sp = await searchParams;
   const page = Math.max(1, Number(sp.page) || 1);
   const q = sp.q?.trim();
@@ -55,31 +56,40 @@ export default async function LeadsPage({ searchParams }: { searchParams: Promis
   const allStatuses = { ...tripStatuses, ...transportStatuses };
 
   const link = (patch: Partial<Search>) => {
-    const p = new URLSearchParams(Object.entries({ ...sp, page: undefined, ...patch }).filter(([, v]) => v) as [string, string][]);
+    const p = new URLSearchParams(Object.entries({ ...sp, page: undefined, denied: undefined, ...patch }).filter(([, v]) => v) as [string, string][]);
     const s = p.toString();
     return `/admin/${s ? `?${s}` : ""}`;
   };
-  const exportQuery = new URLSearchParams(Object.entries(sp).filter(([k, v]) => v && k !== "page") as [string, string][]).toString();
+  const exportQuery = new URLSearchParams(Object.entries(sp).filter(([k, v]) => v && k !== "page" && k !== "denied") as [string, string][]).toString();
   const hour = Number(new Date().toLocaleString("en-IN", { hour: "numeric", hour12: false, timeZone: "Asia/Kolkata" }));
   const greeting = hour < 12 ? "Good morning" : hour < 17 ? "Good afternoon" : "Good evening";
 
   return (
     <>
       <PageHeader
-        eyebrow={greeting}
+        eyebrow={`${greeting}, ${me.name.split(" ")[0]}`}
         title="Leads dashboard"
         subtitle="Every enquiry from the website — trips, packages, taxis and contact messages — in one queue."
         actions={
           <>
-            <a href={`/api/admin/export/?${exportQuery}`} className="btn-admin-ghost">
-              <Icon name="download" /> Export CSV
-            </a>
+            {can(me.role, "leads.export") && (
+              <a href={`/api/admin/export/?${exportQuery}`} className="btn-admin-ghost">
+                <Icon name="download" /> Export CSV
+              </a>
+            )}
             <Link href="/admin/quotes/new/" className="btn-admin-primary">
               <Icon name="plus" /> New quote
             </Link>
           </>
         }
       />
+
+      {sp.denied && (
+        <div role="alert" className="mb-6 flex items-center gap-3 rounded-2xl bg-amber-50 px-5 py-3 text-sm text-amber-900 ring-1 ring-amber-100">
+          <Icon name="bell" className="h-4 w-4" />
+          Your role doesn&apos;t have access to that page. Ask a Super Admin if you need it.
+        </div>
+      )}
 
       {failedNotify > 0 && (
         <div className="mb-6 flex items-center gap-3 rounded-2xl bg-rose-50 px-5 py-3 text-sm text-rose-800 ring-1 ring-rose-100">

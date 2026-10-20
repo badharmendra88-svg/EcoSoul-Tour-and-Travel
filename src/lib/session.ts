@@ -1,5 +1,7 @@
-// Admin session token: "<expiresAtMs>.<hmac>" signed with SESSION_SECRET.
-// Uses Web Crypto so it works in both middleware (edge) and server code.
+// Admin session token: "<userId>.<tokenVersion>.<expiresAtMs>.<hmac>" signed
+// with SESSION_SECRET. Web Crypto only, so it works in middleware (edge) and
+// on the server. Middleware checks the signature; requireAdmin() then loads the
+// user and also checks `active` and `tokenVersion` (instant revocation).
 
 export const SESSION_COOKIE = "ecosoul_admin";
 export const SESSION_TTL_MS = 12 * 60 * 60 * 1000; // 12 hours
@@ -13,44 +15,44 @@ function secret() {
 }
 
 async function hmac(data: string) {
-  const key = await crypto.subtle.importKey(
-    "raw",
-    encoder.encode(secret()),
-    { name: "HMAC", hash: "SHA-256" },
-    false,
-    ["sign"],
-  );
+  const key = await crypto.subtle.importKey("raw", encoder.encode(secret()), { name: "HMAC", hash: "SHA-256" }, false, ["sign"]);
   const sig = await crypto.subtle.sign("HMAC", key, encoder.encode(data));
   return Array.from(new Uint8Array(sig), (b) => b.toString(16).padStart(2, "0")).join("");
 }
 
-function safeEqual(a: string, b: string) {
+export function safeEqual(a: string, b: string) {
   if (a.length !== b.length) return false;
   let diff = 0;
   for (let i = 0; i < a.length; i++) diff |= a.charCodeAt(i) ^ b.charCodeAt(i);
   return diff === 0;
 }
 
-export async function createSessionToken() {
+export async function createSessionToken(userId: string, tokenVersion: number) {
   const expires = String(Date.now() + SESSION_TTL_MS);
-  return `${expires}.${await hmac(`admin:${expires}`)}`;
+  const payload = `${userId}.${tokenVersion}.${expires}`;
+  return `${payload}.${await hmac(`admin:${payload}`)}`;
 }
 
-export async function verifySessionToken(token: string | undefined | null) {
-  if (!token) return false;
-  const [expires, sig] = token.split(".");
-  if (!expires || !sig || !/^\d+$/.test(expires)) return false;
-  if (Number(expires) < Date.now()) return false;
+export type SessionClaims = { userId: string; tokenVersion: number; expires: number };
+
+export async function verifySessionToken(token: string | undefined | null): Promise<SessionClaims | null> {
+  if (!token) return null;
+  const parts = token.split(".");
+  if (parts.length !== 4) return null;
+  const [userId, version, expires, sig] = parts;
+  if (!/^[a-z0-9]{10,40}$/.test(userId) || !/^\d+$/.test(version) || !/^\d+$/.test(expires)) return null;
+  if (Number(expires) < Date.now()) return null;
   try {
-    return safeEqual(sig, await hmac(`admin:${expires}`));
+    const ok = safeEqual(sig, await hmac(`admin:${userId}.${version}.${expires}`));
+    return ok ? { userId, tokenVersion: Number(version), expires: Number(expires) } : null;
   } catch {
-    return false;
+    return null;
   }
 }
 
-export async function passwordMatches(input: string) {
+/** Constant-time check of the one-time setup key (the ADMIN_PASSWORD env value). */
+export async function setupKeyMatches(input: string) {
   const expected = process.env.ADMIN_PASSWORD;
   if (!expected || expected.length < 8) return false;
-  // Compare HMACs so the comparison time does not depend on the password
-  return safeEqual(await hmac(`pw:${input}`), await hmac(`pw:${expected}`));
+  return safeEqual(await hmac(`setup:${input}`), await hmac(`setup:${expected}`));
 }

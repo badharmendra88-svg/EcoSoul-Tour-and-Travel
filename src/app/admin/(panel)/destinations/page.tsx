@@ -6,7 +6,7 @@ import { formatDate } from "@/lib/format";
 import { Badge, Icon, PageHeader, StatusBadge } from "../ui";
 
 export default async function AdminDestinationsPage() {
-  await requireAdmin();
+  await requireAdmin("content.edit");
   const destinations = await db.destination.findMany({
     orderBy: [{ sortOrder: "asc" }, { name: "asc" }],
     include: { _count: { select: { packages: true } } },

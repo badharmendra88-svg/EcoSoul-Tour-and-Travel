@@ -50,7 +50,7 @@ function Money({ name, label, unit, value }: { name: string; label: string; unit
 }
 
 export default async function RatesPage({ searchParams }: { searchParams: Promise<{ saved?: string }> }) {
-  await requireAdmin();
+  await requireAdmin("rates.edit");
   const { saved } = await searchParams;
   const { vehicles, hotels, settings } = await getRateCard();
   const lastUpdated = [...vehicles.map((v) => v.updatedAt), ...hotels.map((h) => h.updatedAt), settings.updatedAt].sort((a, b) => +b - +a)[0];
