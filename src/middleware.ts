@@ -19,6 +19,10 @@ export async function middleware(request: NextRequest) {
   if (pathname.startsWith("/api/")) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
+  // Server actions (form saves) re-check the session themselves via requireUser() and answer
+  // with a redirect the client understands; a plain 307 here would crash the page instead
+  // when a session expires while a form is open.
+  if (request.method === "POST" && request.headers.has("next-action")) return NextResponse.next();
   const url = request.nextUrl.clone();
   url.pathname = "/admin/login/";
   url.search = "";

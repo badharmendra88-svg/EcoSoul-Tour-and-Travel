@@ -1,11 +1,20 @@
 "use client";
 
 import Link from "next/link";
-import { useState, type ReactNode } from "react";
+import { useRef, useState, type ReactNode } from "react";
 import { track } from "@/lib/analytics";
 import { heardFromOptions } from "@/config/options";
 
 export type Errors = Record<string, string>;
+
+/** Give up on a form request that hasn't answered after this long. */
+export const SUBMIT_TIMEOUT_MS = 20_000;
+
+export function networkErrorMessage(err: unknown) {
+  return err instanceof DOMException && err.name === "TimeoutError"
+    ? "The server is taking too long to respond. Please try again, or contact us on WhatsApp."
+    : "We couldn't reach the server. Please check your connection or contact us on WhatsApp.";
+}
 
 /**
  * Shared submit logic for all enquiry forms: client validation hook-in,
@@ -16,20 +25,24 @@ export function useEnquirySubmit() {
   const [status, setStatus] = useState<"idle" | "submitting" | "success" | "error">("idle");
   const [formError, setFormError] = useState("");
   const [ref, setRef] = useState("");
+  // State updates are async, so rapid repeat clicks need a synchronous guard
+  const inFlight = useRef(false);
 
   async function submit(
     payload: Record<string, unknown>,
     analytics: Record<string, string | undefined>,
   ): Promise<{ ok: boolean; errors: Errors }> {
-    if (status === "submitting") return { ok: false, errors: {} };
+    if (inFlight.current) return { ok: false, errors: {} };
+    inFlight.current = true;
     setStatus("submitting");
     setFormError("");
     setErrors({});
     try {
-      const res = await fetch("/api/enquiries", {
+      const res = await fetch("/api/enquiries/", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ ...payload, sourcePage: window.location.pathname }),
+        signal: AbortSignal.timeout(SUBMIT_TIMEOUT_MS),
       });
       const data = await res.json().catch(() => ({}));
       if (res.ok && data.ok) {
@@ -42,9 +55,11 @@ export function useEnquirySubmit() {
       setFormError(data.error || (data.errors ? "Please check the highlighted fields." : "Something went wrong. Please try again."));
       setStatus("error");
       return { ok: false, errors: data.errors ?? {} };
-    } catch {
-      setFormError("We couldn't reach the server. Please check your connection or contact us on WhatsApp.");
+    } catch (err) {
+      setFormError(networkErrorMessage(err));
       setStatus("error");
+    } finally {
+      inFlight.current = false;
     }
     return { ok: false, errors: {} };
   }

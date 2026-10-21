@@ -6,7 +6,7 @@ import { revalidatePath } from "next/cache";
 import { db } from "@/lib/db";
 import { requireAdmin, requireUser } from "@/lib/admin-auth";
 import { notifyNewEnquiry } from "@/lib/notify";
-import { clientIp, rateLimit } from "@/lib/rate-limit";
+import { clearLimit, clientIp, ipRateLimit, isLimited, rateLimit } from "@/lib/rate-limit";
 import { hashPassword, passwordProblem, verifyPassword } from "@/lib/password";
 import { SESSION_COOKIE, SESSION_TTL_MS, createSessionToken, setupKeyMatches } from "@/lib/session";
 import { statusesFor, tripTypes } from "@/config/options";
@@ -30,18 +30,30 @@ async function startSession(user: { id: string; tokenVersion: number }) {
 // Same work whether or not the email exists, so response time doesn't reveal accounts
 const DUMMY_HASH = "scrypt$16384$8$1$AAAAAAAAAAAAAAAAAAAAAA$" + "A".repeat(86);
 
+const LOGIN_WINDOW_MS = 15 * 60 * 1000;
+const MAX_FAILED_PER_ACCOUNT = 6;
+
 export async function loginAction(formData: FormData) {
   const ip = clientIp(await headers());
   const email = String(formData.get("email") ?? "").trim().toLowerCase().slice(0, 120);
   const password = String(formData.get("password") ?? "").slice(0, 200);
-  if (!rateLimit(`login:${ip}`, 10, 15 * 60 * 1000).ok || !rateLimit(`login-user:${email}`, 6, 15 * 60 * 1000).ok) {
+  // Only failed attempts count, so staff signing in normally are never locked out
+  const ipKey = `login:${ip ?? "shared"}`;
+  const ipMax = ip ? 10 : 200;
+  const userKey = `login-user:${email}`;
+  if (isLimited(ipKey, ipMax) || isLimited(userKey, MAX_FAILED_PER_ACCOUNT)) {
     redirect("/admin/login/?error=rate");
   }
 
   const user = await db.adminUser.findUnique({ where: { email } });
   const ok = await verifyPassword(password, user?.passwordHash ?? DUMMY_HASH).catch(() => false);
-  if (!user || !ok) redirect(`/admin/login/?error=1&email=${encodeURIComponent(email)}`);
+  if (!user || !ok) {
+    rateLimit(ipKey, ipMax, LOGIN_WINDOW_MS);
+    rateLimit(userKey, MAX_FAILED_PER_ACCOUNT, LOGIN_WINDOW_MS);
+    redirect(`/admin/login/?error=1&email=${encodeURIComponent(email)}`);
+  }
   if (!user.active) redirect("/admin/login/?error=inactive");
+  clearLimit(userKey);
 
   await db.adminUser.update({ where: { id: user.id }, data: { lastLoginAt: new Date() } });
   await startSession(user);
@@ -51,7 +63,7 @@ export async function loginAction(formData: FormData) {
 /** One-time setup: create the first Super Admin. Requires the ADMIN_PASSWORD env value as a setup key. */
 export async function setupSuperAdminAction(formData: FormData) {
   const ip = clientIp(await headers());
-  if (!rateLimit(`setup:${ip}`, 5, 15 * 60 * 1000).ok) redirect("/admin/login/?error=rate");
+  if (!ipRateLimit("setup", ip, 5, 15 * 60 * 1000).ok) redirect("/admin/login/?error=rate");
   if ((await db.adminUser.count()) > 0) redirect("/admin/login/");
 
   const name = String(formData.get("name") ?? "").trim().slice(0, 80);
@@ -120,9 +132,16 @@ export async function updateEnquiryAction(formData: FormData) {
   const enquiry = await db.enquiry.findUnique({ where: { id } });
   if (!enquiry) redirect("/admin/");
 
-  const status = String(formData.get("status") ?? enquiry.status);
-  const assignedTo = String(formData.get("assignedTo") ?? "").trim().slice(0, 80) || null;
-  const internalNotes = String(formData.get("internalNotes") ?? "").slice(0, 5000) || null;
+  // Keep the stored value for any field this person didn't touch, so two people
+  // working on the same lead don't silently overwrite each other's changes.
+  const edited = (field: string, value: string | null) =>
+    !formData.has(`was_${field}`) || (value ?? "") !== String(formData.get(`was_${field}`) ?? "");
+  const statusIn = String(formData.get("status") ?? enquiry.status);
+  const assignedIn = String(formData.get("assignedTo") ?? "").trim().slice(0, 80) || null;
+  const notesIn = String(formData.get("internalNotes") ?? "").slice(0, 5000) || null;
+  const status = edited("status", statusIn) ? statusIn : enquiry.status;
+  const assignedTo = edited("assignedTo", assignedIn) ? assignedIn : enquiry.assignedTo;
+  const internalNotes = edited("internalNotes", notesIn) ? notesIn : enquiry.internalNotes;
   const note = String(formData.get("note") ?? "").trim().slice(0, 1000);
 
   if (!(status in statusesFor(enquiry.kind))) redirect(`/admin/leads/${id}/`);

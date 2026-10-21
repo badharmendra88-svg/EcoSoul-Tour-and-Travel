@@ -1,4 +1,5 @@
 import Image from "next/image";
+import { ImageFileInput } from "./ImageFileInput";
 
 // Photo upload block for admin forms (works with lib/media handleImageFields).
 export function ImageFields({
@@ -28,12 +29,7 @@ export function ImageFields({
       <div className="space-y-4">
         <label className="block">
           <span className="admin-label">{imageUrl ? `Replace ${label.toLowerCase()}` : `Upload ${label.toLowerCase()}`}</span>
-          <input
-            type="file"
-            name="image"
-            accept="image/jpeg,image/png,image/webp,image/avif"
-            className="block w-full text-base text-slate-600 lg:text-sm file:mr-3 file:rounded-lg file:border-0 file:bg-forest-50 file:px-4 file:py-2.5 file:text-sm file:font-semibold file:text-forest-700 hover:file:bg-forest-100"
-          />
+          <ImageFileInput className="block w-full text-base text-slate-600 lg:text-sm file:mr-3 file:rounded-lg file:border-0 file:bg-forest-50 file:px-4 file:py-2.5 file:text-sm file:font-semibold file:text-forest-700 hover:file:bg-forest-100" />
           <span className="mt-1.5 block text-xs text-slate-500">{hint}</span>
         </label>
         <div className="grid gap-4 sm:grid-cols-2">

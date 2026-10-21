@@ -39,6 +39,7 @@ Admin panel: <http://localhost:3200/admin/>. **First run:** the login page asks 
 | `ADMIN_PASSWORD` | Admin sign-in password (long and random) |
 | `SESSION_SECRET` | 64-char random hex used to sign admin sessions |
 | `NOTIFY_WEBHOOK_URL` | Optional webhook (Slack / Google Chat / Zapier / Make) for new-lead alerts |
+| `MEDIA_DIR` | Optional folder for admin photo uploads (default `./uploads`) |
 | `NEXT_PUBLIC_GA_ID` | Optional Google Analytics 4 ID |
 
 ---

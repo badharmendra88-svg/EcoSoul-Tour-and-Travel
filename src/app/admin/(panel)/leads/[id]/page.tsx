@@ -178,6 +178,10 @@ export default async function LeadDetailPage({ params }: { params: Promise<{ id:
           <Panel title="Manage lead" icon="settings">
             <form action={updateEnquiryAction} className="space-y-4">
               <input type="hidden" name="id" value={e.id} />
+              {/* Values as loaded, so saving only writes what this person changed */}
+              <input type="hidden" name="was_status" value={e.status} />
+              <input type="hidden" name="was_assignedTo" value={e.assignedTo ?? ""} />
+              <input type="hidden" name="was_internalNotes" value={e.internalNotes ?? ""} />
               <div>
                 <label htmlFor="status" className="admin-label">Status</label>
                 <select id="status" name="status" defaultValue={e.status} className="admin-input">

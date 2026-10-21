@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { useState } from "react";
+import { useRef, useState } from "react";
 import {
   availabilityOptions,
   commercialPermitOptions,
@@ -13,7 +13,7 @@ import {
 import { heardFromOptions, vehicleCategories } from "@/config/options";
 import { track } from "@/lib/analytics";
 import { WhatsAppButton } from "../ContactButtons";
-import { Field, FormAlert, Honeypot, inputProps, todayISO, type Errors } from "./shared";
+import { Field, FormAlert, Honeypot, SUBMIT_TIMEOUT_MS, inputProps, networkErrorMessage, todayISO, type Errors } from "./shared";
 
 type Values = Record<string, string | boolean | string[]>;
 
@@ -78,6 +78,8 @@ export function DriverRegistrationForm() {
     website: "",
   });
   const [errors, setErrors] = useState<Errors>({});
+  // State updates are async, so rapid repeat clicks need a synchronous guard
+  const inFlight = useRef(false);
   const [status, setStatus] = useState<"idle" | "submitting" | "done">("idle");
   const [formError, setFormError] = useState("");
   const [result, setResult] = useState<{ ref: string; duplicate?: boolean } | null>(null);
@@ -116,18 +118,20 @@ export function DriverRegistrationForm() {
 
   async function onSubmit(ev: React.FormEvent) {
     ev.preventDefault();
-    if (status === "submitting") return;
+    if (inFlight.current) return;
     if (!validate()) {
       setFormError("Please check the highlighted fields.");
       return;
     }
+    inFlight.current = true;
     setStatus("submitting");
     setFormError("");
     try {
-      const res = await fetch("/api/driver-applications", {
+      const res = await fetch("/api/driver-applications/", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(v),
+        signal: AbortSignal.timeout(SUBMIT_TIMEOUT_MS),
       });
       const data = await res.json().catch(() => ({}));
       if (res.ok && data.ok) {
@@ -138,8 +142,10 @@ export function DriverRegistrationForm() {
       }
       if (data.errors) setErrors(data.errors);
       setFormError(data.error || "Please check the highlighted fields.");
-    } catch {
-      setFormError("We couldn't reach the server. Please check your connection or contact us on WhatsApp.");
+    } catch (err) {
+      setFormError(networkErrorMessage(err));
+    } finally {
+      inFlight.current = false;
     }
     setStatus("idle");
   }

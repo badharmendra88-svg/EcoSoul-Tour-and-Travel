@@ -20,7 +20,11 @@ const nextConfig: NextConfig = {
   // Admin photo uploads go through server actions
   experimental: { serverActions: { bodySizeLimit: "10mb" } },
   async redirects() {
-    return [{ source: "/char-dham-yatra/", destination: "/uttarakhand/char-dham-yatra/", permanent: true }];
+    return [
+      { source: "/char-dham-yatra/", destination: "/uttarakhand/char-dham-yatra/", permanent: true },
+      // Package pages live at /packages/<slug>/; the listing itself is the tour-packages page
+      { source: "/packages/", destination: "/uttarakhand/tour-packages/", permanent: true },
+    ];
   },
   async headers() {
     return [{ source: "/:path*", headers: securityHeaders }];
