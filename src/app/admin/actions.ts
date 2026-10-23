@@ -11,7 +11,6 @@ import { hashPassword, passwordProblem, verifyPassword } from "@/lib/password";
 import { SESSION_COOKIE, SESSION_TTL_MS, createSessionToken, setupKeyMatches } from "@/lib/session";
 import { statusesFor, tripTypes } from "@/config/options";
 import { linesToFaqs, linesToItinerary, linesToJson } from "@/lib/json";
-import { deleteUpload, handleImageFields } from "@/lib/media";
 
 // ---------- Auth ----------
 
@@ -212,10 +211,6 @@ export async function savePackageAction(formData: FormData) {
   const clash = await db.package.findFirst({ where: { slug, NOT: id ? { id } : undefined } });
   if (clash) fail(back, "Another package already uses this slug");
 
-  const existing = id ? await db.package.findUnique({ where: { id }, select: { imageUrl: true } }) : null;
-  const img = await handleImageFields(formData, { imageUrl: existing?.imageUrl ?? null }, slug);
-  if ("error" in img) fail(back, img.error);
-
   const destinationSlugs = formData.getAll("destinations").map(String);
   const data = {
     title,
@@ -238,16 +233,12 @@ export async function savePackageAction(formData: FormData) {
     seoTitle: str(formData, "seoTitle", 70) || null,
     seoDescription: str(formData, "seoDescription", 170) || null,
     sortOrder: Number(formData.get("sortOrder")) || 100,
-    imageUrl: img.imageUrl,
-    imageAlt: img.imageAlt,
-    imageCredit: img.imageCredit,
   };
 
   const destinations = { set: destinationSlugs.map((s) => ({ slug: s })) };
   const saved = id
     ? await db.package.update({ where: { id }, data: { ...data, destinations } })
     : await db.package.create({ data: { ...data, destinations: { connect: destinationSlugs.map((s) => ({ slug: s })) } } });
-  if (img.replaced && img.replaced !== img.imageUrl) await deleteUpload(img.replaced);
 
   revalidatePublic();
   redirect(`/admin/packages/${saved.id}/?saved=1`);
@@ -265,9 +256,6 @@ export async function saveDestinationAction(formData: FormData) {
   const clash = await db.destination.findFirst({ where: { slug, NOT: id ? { id } : undefined } });
   if (clash) fail(back, "Another destination already uses this slug");
 
-  const existing = id ? await db.destination.findUnique({ where: { id }, select: { imageUrl: true } }) : null;
-  const img = await handleImageFields(formData, { imageUrl: existing?.imageUrl ?? null }, slug);
-  if ("error" in img) fail(back, img.error);
 
   const data = {
     name,
@@ -276,9 +264,6 @@ export async function saveDestinationAction(formData: FormData) {
     cluster: str(formData, "cluster", 80),
     scene: str(formData, "scene", 20) || "mountain",
     bestFor: str(formData, "bestFor", 120) || null,
-    imageUrl: img.imageUrl,
-    imageAlt: img.imageAlt,
-    imageCredit: img.imageCredit,
     summary: str(formData, "summary", 300),
     intro: str(formData, "intro"),
     bestTime: str(formData, "bestTime", 1000),
@@ -295,7 +280,6 @@ export async function saveDestinationAction(formData: FormData) {
   };
 
   const saved = id ? await db.destination.update({ where: { id }, data }) : await db.destination.create({ data });
-  if (img.replaced && img.replaced !== img.imageUrl) await deleteUpload(img.replaced);
   revalidatePublic();
   redirect(`/admin/destinations/${saved.id}/?saved=1`);
 }

@@ -18,6 +18,7 @@ const permissionLabels: Record<keyof typeof permissions, string> = {
   "drivers.view": "View driver partners",
   "drivers.manage": "Verify & manage drivers",
   "users.manage": "Manage users",
+  "media.manage": "Change website photos",
 };
 
 export default async function UsersPage() {

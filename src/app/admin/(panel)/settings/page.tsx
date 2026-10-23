@@ -6,7 +6,6 @@ import { getSettingsRow, socialNetworks } from "@/lib/settings";
 import { SocialIcon } from "@/components/SocialIcons";
 import { removeWhatsAppTokenAction, saveSettingsAction, testWhatsAppAction } from "../../settings-actions";
 import { Badge, Icon, PageHeader, StatCard, type IconName } from "../ui";
-import { ImageFields } from "../ImageFields";
 
 const sections: { id: string; label: string; icon: IconName }[] = [
   { id: "contact", label: "Business contact", icon: "phone" },
@@ -150,10 +149,9 @@ export default async function SettingsPage({ searchParams }: { searchParams: Pro
             </div>
           </SectionCard>
 
-          {/* ---------------- Homepage photo & business identity ---------------- */}
-          <SectionCard id="business" icon="hotel" title="Homepage photo & business identity" description="Real photo for the homepage hero, and business details shown in the footer and About page to build trust.">
-            <ImageFields imageUrl={s.heroImageUrl} imageAlt={s.heroImageAlt} label="Hero photo" hint="Landscape photo, 1920 px+ wide recommended (e.g. Naini Lake, Himalayan view). Converted to WebP automatically." />
-            <div className="grid gap-5 border-t border-slate-100 pt-5 sm:grid-cols-2">
+          {/* ---------------- Business identity ---------------- */}
+          <SectionCard id="business" icon="hotel" title="Business identity" description="Business details shown in the footer and About page to build trust. The homepage photo is managed on the Photos page (Super Admin).">
+            <div className="grid gap-5 sm:grid-cols-2">
               <Field name="legalName" label="Registered business name" defaultValue={s.legalName} placeholder="e.g. EcoSoul Travels Pvt. Ltd." hint="Shown in the footer and About page." />
               <Field name="gstin" label="GSTIN (optional)" defaultValue={s.gstin} placeholder="15-character GSTIN" />
               <Field name="tourismRegNo" label="Uttarakhand Tourism registration no. (optional)" defaultValue={s.tourismRegNo} placeholder="Only if registered" />

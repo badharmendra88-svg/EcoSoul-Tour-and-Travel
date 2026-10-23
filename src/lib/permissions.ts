@@ -20,6 +20,8 @@ export const permissions = {
   "drivers.view": ["SUPER_ADMIN", "ADMIN", "MANAGER"],
   "drivers.manage": ["SUPER_ADMIN", "ADMIN"],
   "users.manage": ["SUPER_ADMIN"],
+  // Website photos (hero, destinations, packages) — Super Admin only
+  "media.manage": ["SUPER_ADMIN"],
 } as const satisfies Record<string, readonly Role[]>;
 export type Permission = keyof typeof permissions;
 

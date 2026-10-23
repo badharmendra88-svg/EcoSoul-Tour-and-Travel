@@ -1,12 +1,13 @@
 import Link from "next/link";
 import { notFound } from "next/navigation";
-import { requireAdmin } from "@/lib/admin-auth";
+import { requireUser } from "@/lib/admin-auth";
+import { can } from "@/lib/permissions";
 import { db } from "@/lib/db";
 import { faqsToLines, jsonToLines } from "@/lib/json";
 import { formatDate } from "@/lib/format";
 import { saveDestinationAction } from "../../../actions";
 import { FormBanner, TextArea, TextField } from "../../AdminFields";
-import { ImageFields } from "../../ImageFields";
+import { PhotoNote } from "../../ImageFields";
 import { Icon, PageHeader } from "../../ui";
 
 const scenes = ["mountain", "lake", "river", "forest", "snow", "temple", "meadow"];
@@ -18,7 +19,7 @@ export default async function EditDestinationPage({
   params: Promise<{ id: string }>;
   searchParams: Promise<{ saved?: string; error?: string }>;
 }) {
-  await requireAdmin("content.edit");
+  const me = await requireUser("content.edit");
   const { id } = await params;
   const { saved, error } = await searchParams;
   const isNew = id === "new";
@@ -95,7 +96,7 @@ export default async function EditDestinationPage({
 
         <section className="space-y-4 panel p-6">
           <h2 className="text-[15px] font-semibold text-slate-900">Photo</h2>
-          <ImageFields imageUrl={d?.imageUrl} imageAlt={d?.imageAlt} imageCredit={d?.imageCredit} />
+          <PhotoNote imageUrl={d?.imageUrl} imageAlt={d?.imageAlt} anchor={d ? `destination-${d.id}` : undefined} canManage={can(me.role, "media.manage")} />
         </section>
 
         <section className="grid gap-4 panel p-6">

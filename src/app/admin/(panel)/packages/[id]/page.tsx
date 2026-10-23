@@ -1,12 +1,13 @@
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { tripTypes } from "@/config/options";
-import { requireAdmin } from "@/lib/admin-auth";
+import { requireUser } from "@/lib/admin-auth";
+import { can } from "@/lib/permissions";
 import { db } from "@/lib/db";
 import { itineraryToLines, jsonToLines } from "@/lib/json";
 import { savePackageAction } from "../../../actions";
 import { FormBanner, TextArea, TextField } from "../../AdminFields";
-import { ImageFields } from "../../ImageFields";
+import { PhotoNote } from "../../ImageFields";
 import { Icon, PageHeader } from "../../ui";
 
 export default async function EditPackagePage({
@@ -16,7 +17,7 @@ export default async function EditPackagePage({
   params: Promise<{ id: string }>;
   searchParams: Promise<{ saved?: string; error?: string }>;
 }) {
-  await requireAdmin("content.edit");
+  const me = await requireUser("content.edit");
   const { id } = await params;
   const { saved, error } = await searchParams;
   const isNew = id === "new";
@@ -107,7 +108,7 @@ export default async function EditPackagePage({
 
         <section className="space-y-4 panel p-6">
           <h2 className="text-[15px] font-semibold text-slate-900">Photo</h2>
-          <ImageFields imageUrl={pkg?.imageUrl} imageAlt={pkg?.imageAlt} imageCredit={pkg?.imageCredit} />
+          <PhotoNote imageUrl={pkg?.imageUrl} imageAlt={pkg?.imageAlt} anchor={pkg ? `package-${pkg.id}` : undefined} canManage={can(me.role, "media.manage")} />
         </section>
 
         <section className="grid gap-4 panel p-6">
