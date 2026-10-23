@@ -21,8 +21,11 @@ export function SitePhoto({
   className?: string;
   imgClassName?: string;
 }) {
+  // next/image `fill` needs a positioned parent; keep the caller's position (e.g. `absolute inset-0`
+  // for full-bleed heroes) instead of adding `relative`, which would collapse the box to zero height
+  const positioned = /(^|\s)(absolute|fixed|relative|sticky)(\s|$)/.test(className);
   return (
-    <div className={`relative overflow-hidden ${className}`}>
+    <div className={`${positioned ? "" : "relative "}overflow-hidden ${className}`}>
       {url ? (
         <Image src={url} alt={alt ?? ""} fill sizes={sizes} priority={priority} className={`object-cover ${imgClassName}`} />
       ) : (
