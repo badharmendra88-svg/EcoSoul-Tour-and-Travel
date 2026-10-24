@@ -50,6 +50,11 @@ export default async function RootLayout({ children }: Readonly<{ children: Reac
         <Script id="strip-extension-attrs" strategy="beforeInteractive">
           {`(function(){var A=${JSON.stringify(EXTENSION_ATTRS)};function c(e){for(var i=0;i<A.length;i++){if(e.hasAttribute&&e.hasAttribute(A[i]))e.removeAttribute(A[i]);}}function all(){for(var i=0;i<A.length;i++){var n=document.querySelectorAll('['+A[i]+']');for(var j=0;j<n.length;j++)c(n[j]);}}all();var o=new MutationObserver(function(m){for(var i=0;i<m.length;i++)c(m[i].target);});o.observe(document.documentElement,{attributes:true,subtree:true,attributeFilter:A});document.addEventListener('DOMContentLoaded',all);setTimeout(function(){o.disconnect();},10000);})();`}
         </Script>
+        {/* A page refresh always starts at the top. Browsers otherwise restore the old scroll position
+            (or jump back to a #section from an earlier click). Back/forward keep their normal restore. */}
+        <Script id="reload-to-top" strategy="beforeInteractive">
+          {`(function(){try{var n=performance.getEntriesByType('navigation')[0];if(!n||n.type!=='reload')return;history.scrollRestoration='manual';if(location.hash)history.replaceState(history.state,'',location.pathname+location.search);var top=function(){window.scrollTo(0,0)};top();addEventListener('DOMContentLoaded',top);addEventListener('load',function(){top();setTimeout(function(){history.scrollRestoration='auto'},0)})}catch(e){}})();`}
+        </Script>
         {children}
         <ServiceWorker />
         {gaId && (
