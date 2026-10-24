@@ -203,8 +203,16 @@ export default async function RatesPage({ searchParams }: { searchParams: Promis
 
         <Panel title="Quote defaults" icon="settings" description="Applied to every new quote — can be changed per quote">
           <div className="grid gap-5 sm:grid-cols-2 lg:grid-cols-4">
-            <label className="block"><span className="admin-label">Service charge label</span><input name="markupLabel" defaultValue={settings.markupLabel} className="admin-input" /></label>
-            <label className="block"><span className="admin-label">Service charge %</span><input name="markupPct" type="number" step="0.5" min={0} defaultValue={settings.markupPct} className="admin-input" /></label>
+            <label className="block">
+              <span className="admin-label">Your margin % (service charge)</span>
+              <input name="markupPct" type="number" step="0.5" min={0} max={100} defaultValue={settings.markupPct} className="admin-input" />
+              <span className="mt-1 block text-xs text-slate-500">Your profit, added on top of the rates above. Shown on quotes as a separate line and included in the website fare estimates.</span>
+            </label>
+            <label className="block">
+              <span className="admin-label">Margin label on quotes</span>
+              <input name="markupLabel" defaultValue={settings.markupLabel} className="admin-input" placeholder="Service & planning charges" />
+              <span className="mt-1 block text-xs text-slate-500">What the customer sees on the quote and PDF.</span>
+            </label>
             <label className="block"><span className="admin-label">Tax label</span><input name="gstLabel" defaultValue={settings.gstLabel} className="admin-input" /></label>
             <label className="block">
               <span className="admin-label">GST %</span>

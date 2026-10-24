@@ -316,8 +316,8 @@ export function QuoteBuilder({ quoteId, enquiryId, vehicles, hotels, peakSurchar
 
         <div className="mt-6 grid gap-6 border-t border-slate-100 pt-6 lg:grid-cols-[1fr_340px]">
           <div className="grid gap-4 sm:grid-cols-2">
-            <Labeled label="Service charge label"><input className="admin-input" value={m.markupLabel} onChange={(e) => setMeta("markupLabel", e.target.value)} /></Labeled>
-            <Labeled label="Service charge %">{numInput(m.markupPct, (v) => setMeta("markupPct", v), { step: 0.5 })}</Labeled>
+            <Labeled label="Your margin % (this quote)">{numInput(m.markupPct, (v) => setMeta("markupPct", v), { step: 0.5 })}</Labeled>
+            <Labeled label="Margin label on quote"><input className="admin-input" value={m.markupLabel} onChange={(e) => setMeta("markupLabel", e.target.value)} /></Labeled>
             <Labeled label="Tax label"><input className="admin-input" value={m.taxLabel} onChange={(e) => setMeta("taxLabel", e.target.value)} /></Labeled>
             <Labeled label="Tax %">{numInput(m.taxPct, (v) => setMeta("taxPct", v), { step: 0.5 })}</Labeled>
             <Labeled label="Advance to confirm %">{numInput(m.advancePct, (v) => setMeta("advancePct", v))}</Labeled>
