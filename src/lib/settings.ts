@@ -20,10 +20,13 @@ export type PublicSettings = {
   googleVerification: string;
   heroImageUrl: string;
   heroImageAlt: string;
+  serviceImages: Record<ServiceKey, { url: string; alt: string }>;
   legalName: string;
   gstin: string;
   tourismRegNo: string;
   emergencyPhone: string;
+  upiId: string;
+  upiPayeeName: string;
 };
 
 export const socialNetworks = [
@@ -36,6 +39,15 @@ export const socialNetworks = [
   { key: "tripadvisor", label: "Tripadvisor" },
 ] as const;
 export type SocialKey = (typeof socialNetworks)[number]["key"];
+
+// Photos on the homepage "Choose your travel service" cards (Admin → Photos)
+export const serviceSlots = [
+  { key: "tours", name: "Tour Packages", url: "serviceToursImageUrl", alt: "serviceToursImageAlt" },
+  { key: "taxi", name: "Book a Taxi", url: "serviceTaxiImageUrl", alt: "serviceTaxiImageAlt" },
+  { key: "driver", name: "Book a Driver", url: "serviceDriverImageUrl", alt: "serviceDriverImageAlt" },
+  { key: "custom", name: "Custom Trip", url: "serviceCustomImageUrl", alt: "serviceCustomImageAlt" },
+] as const;
+export type ServiceKey = (typeof serviceSlots)[number]["key"];
 
 export const getSettingsRow = cache(async (): Promise<SiteSettings> => {
   const row = await db.siteSettings.findUnique({ where: { id: "default" } });
@@ -64,10 +76,15 @@ export const getSettings = cache(async (): Promise<PublicSettings> => {
     googleVerification: s.googleVerification || "",
     heroImageUrl: s.heroImageUrl || "",
     heroImageAlt: s.heroImageAlt || "",
+    serviceImages: Object.fromEntries(
+      serviceSlots.map((sl) => [sl.key, { url: s[sl.url] || "", alt: s[sl.alt] || "" }]),
+    ) as PublicSettings["serviceImages"],
     legalName: s.legalName || "",
     gstin: s.gstin || "",
     tourismRegNo: s.tourismRegNo || "",
     emergencyPhone: s.emergencyPhone || "",
+    upiId: s.upiId || "",
+    upiPayeeName: s.upiPayeeName || "",
   };
 });
 

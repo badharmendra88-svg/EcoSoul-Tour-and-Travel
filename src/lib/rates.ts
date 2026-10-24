@@ -1,5 +1,7 @@
 import "server-only";
+import { cache } from "react";
 import { db } from "./db";
+import type { EstimatorRates } from "./fare-estimate";
 import { defaultHotelRates, defaultQuoteSettings, defaultVehicleRates } from "@/config/rate-defaults";
 
 /** Loads the rate card, creating market-standard defaults the first time. */
@@ -40,3 +42,27 @@ export async function getRateCard() {
   }
   return { vehicles, hotels, settings };
 }
+
+/** The subset of the rate card the public fare estimator needs (no hotel or margin details beyond totals). */
+export const getEstimatorRates = cache(async (): Promise<EstimatorRates> => {
+  const { vehicles, settings } = await getRateCard();
+  return {
+    vehicles: vehicles
+      .filter((v) => v.active)
+      .map(({ id, name, example, seats, perKm, minKmPerDay, driverAllowance, nightHalt, localPackage, localHours, localKm, extraHour, extraKm, oneWayPerKm, transferBase, transferKm }) => ({
+        id, name, example, seats, perKm, minKmPerDay, driverAllowance, nightHalt, localPackage, localHours, localKm, extraHour, extraKm, oneWayPerKm, transferBase, transferKm,
+      })),
+    rules: {
+      oneWayMinKm: settings.oneWayMinKm,
+      lateNightCharge: settings.lateNightCharge,
+      freeWaitMinutes: settings.freeWaitMinutes,
+      driverDayRate: settings.driverDayRate,
+      driverOutstationDayRate: settings.driverOutstationDayRate,
+      driverDayHours: settings.driverDayHours,
+      driverOvertimeHour: settings.driverOvertimeHour,
+      driverNightAllowance: settings.driverNightAllowance,
+    },
+    markupPct: settings.markupPct,
+    taxPct: settings.gstPct,
+  };
+});

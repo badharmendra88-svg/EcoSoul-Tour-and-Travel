@@ -14,6 +14,7 @@ export default function TaxiBookingPage() {
       title="Book a Taxi in Uttarakhand"
       intro="Outstation trips, round trips, one-way drops and group vehicles across Kumaon and Garhwal — with experienced hill drivers from local partners we work with directly."
       path="/uttarakhand/taxi-booking/"
+      estimator={{ from: "delhi", to: "nainital" }}
       crumbLabel="Book a Taxi"
       service="CAR_DRIVER"
       highlights={["Hill-route drivers", "Itemised quotes", "Sedan · SUV · Tempo traveller"]}

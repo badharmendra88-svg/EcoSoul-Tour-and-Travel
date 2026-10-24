@@ -144,6 +144,17 @@ body {
   .chip {
     @apply inline-flex min-h-8 items-center rounded-full bg-forest-50 px-3 py-1 text-xs font-medium text-forest-700;
   }
+  /* Mobile: one swipeable row of cards (peeking next card); md+: the grid classes on the element take over */
+  .snap-row {
+    @apply -mx-4 flex snap-x snap-mandatory gap-4 overflow-x-auto scroll-px-4 px-4 pb-2 sm:-mx-6 sm:scroll-px-6 sm:px-6 md:mx-0 md:overflow-visible md:px-0 md:pb-0;
+    scrollbar-width: none;
+  }
+  .snap-row::-webkit-scrollbar {
+    display: none;
+  }
+  .snap-row > * {
+    @apply w-[82%] shrink-0 snap-start sm:w-[46%] md:w-auto;
+  }
 }
 
 /* ---- Dropdowns (all public + admin <select>s) ----
@@ -161,6 +172,9 @@ select.admin-input {
   background-size: 1rem;
   cursor: pointer;
   text-overflow: ellipsis;
+  /* Customizable selects (base-select) wrap long labels; keep one line like native selects */
+  white-space: nowrap;
+  overflow: hidden;
 }
 select.input:disabled,
 select.admin-input:disabled {

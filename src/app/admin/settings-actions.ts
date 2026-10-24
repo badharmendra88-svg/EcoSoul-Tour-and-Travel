@@ -66,6 +66,9 @@ export async function saveSettingsAction(formData: FormData) {
   const emergencyPhone = text(formData, "emergencyPhone", 30);
   if (emergencyPhone && !/^\+?[0-9\s-]{10,16}$/.test(emergencyPhone)) fail("business", "Emergency number: enter a valid phone number");
 
+  const upiId = text(formData, "upiId", 80).toLowerCase();
+  if (upiId && !/^[a-z0-9._-]{2,256}@[a-z][a-z0-9.-]{1,64}$/.test(upiId)) fail("payments", "UPI ID should look like name@bank");
+
   const social = Object.fromEntries(socialNetworks.map((n) => [n.key, optionalUrl(formData, n.key, n.label, "social")]));
 
   const data = {
@@ -92,6 +95,8 @@ export async function saveSettingsAction(formData: FormData) {
     gstin: gstin || null,
     tourismRegNo: text(formData, "tourismRegNo", 80) || null,
     emergencyPhone: emergencyPhone || null,
+    upiId: upiId || null,
+    upiPayeeName: text(formData, "upiPayeeName", 80) || null,
   };
 
   await db.siteSettings.upsert({ where: { id: "default" }, create: { id: "default", ...data }, update: data });

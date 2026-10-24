@@ -14,6 +14,8 @@ export const permissions = {
   "leads.edit": ["SUPER_ADMIN", "ADMIN", "MANAGER"],
   "leads.export": ["SUPER_ADMIN", "ADMIN"],
   "quotes.manage": ["SUPER_ADMIN", "ADMIN", "MANAGER"],
+  // Recording UPI / bank / cash receipts against a quote (online payments record themselves)
+  "payments.record": ["SUPER_ADMIN", "ADMIN"],
   "rates.edit": ["SUPER_ADMIN", "ADMIN"],
   "content.edit": ["SUPER_ADMIN", "ADMIN"],
   "settings.manage": ["SUPER_ADMIN", "ADMIN"],

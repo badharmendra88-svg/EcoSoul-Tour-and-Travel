@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { requireAdmin } from "@/lib/admin-auth";
 import { db } from "@/lib/db";
+import { serviceSlots } from "@/lib/settings";
 import { savePhotoAction } from "../../photos-actions";
 import { ImageFields } from "../ImageFields";
 import { Badge, Icon, PageHeader, Panel } from "../ui";
@@ -9,7 +10,7 @@ export const metadata = { title: "Photos" };
 
 type Slot = {
   anchor: string;
-  target: "hero" | "destination" | "package";
+  target: "hero" | "service" | "destination" | "package";
   id: string;
   name: string;
   meta: string;
@@ -23,15 +24,16 @@ export default async function PhotosPage({ searchParams }: { searchParams: Promi
   await requireAdmin("media.manage");
   const { saved, error, at } = await searchParams;
   const [settings, destinations, packages] = await Promise.all([
-    db.siteSettings.findUnique({ where: { id: "default" }, select: { heroImageUrl: true, heroImageAlt: true } }),
+    db.siteSettings.findUnique({ where: { id: "default" } }),
     db.destination.findMany({ orderBy: [{ sortOrder: "asc" }, { name: "asc" }], select: { id: true, slug: true, name: true, region: true, status: true, imageUrl: true, imageAlt: true, imageCredit: true } }),
     db.package.findMany({ orderBy: [{ sortOrder: "asc" }, { title: "asc" }], select: { id: true, slug: true, title: true, durationDays: true, status: true, imageUrl: true, imageAlt: true, imageCredit: true } }),
   ]);
 
   const hero: Slot = { anchor: "hero", target: "hero", id: "default", name: "Homepage hero", meta: "Full-width photo behind the homepage headline", href: "/", imageUrl: settings?.heroImageUrl ?? null, imageAlt: settings?.heroImageAlt ?? null, imageCredit: null };
+  const serviceCardSlots: Slot[] = serviceSlots.map((sl) => ({ anchor: `service-${sl.key}`, target: "service", id: sl.key, name: `Service card: ${sl.name}`, meta: "Homepage “Choose your travel service” card", href: "/", imageUrl: settings?.[sl.url] ?? null, imageAlt: settings?.[sl.alt] ?? null, imageCredit: null }));
   const destSlots: Slot[] = destinations.map((d) => ({ anchor: `destination-${d.id}`, target: "destination", id: d.id, name: d.name, meta: `${d.region}${d.status === "PUBLISHED" ? "" : " · draft"}`, href: `/destinations/${d.slug}/`, imageUrl: d.imageUrl, imageAlt: d.imageAlt, imageCredit: d.imageCredit }));
   const pkgSlots: Slot[] = packages.map((p) => ({ anchor: `package-${p.id}`, target: "package", id: p.id, name: p.title, meta: `${p.durationDays ? `${p.durationDays} days` : "Flexible"}${p.status === "PUBLISHED" ? "" : " · draft"}`, href: `/packages/${p.slug}/`, imageUrl: p.imageUrl, imageAlt: p.imageAlt, imageCredit: p.imageCredit }));
-  const all = [hero, ...destSlots, ...pkgSlots];
+  const all = [hero, ...serviceCardSlots, ...destSlots, ...pkgSlots];
   const withPhoto = all.filter((s) => s.imageUrl).length;
 
   const card = (s: Slot) => (
@@ -67,7 +69,7 @@ export default async function PhotosPage({ searchParams }: { searchParams: Promi
           imageUrl={s.imageUrl}
           imageAlt={s.imageAlt}
           imageCredit={s.imageCredit}
-          showCredit={s.target !== "hero"}
+          showCredit={s.target === "destination" || s.target === "package"}
           label={s.target === "hero" ? "Hero photo" : "Photo"}
           hint={s.target === "hero" ? "Landscape photo, 1920 px+ wide (e.g. a Himalayan view). Up to 8 MB; converted to WebP automatically." : undefined}
         />
@@ -96,7 +98,10 @@ export default async function PhotosPage({ searchParams }: { searchParams: Promi
         ))}
       </nav>
       <div className="space-y-10">
-        <section className="space-y-4">{card(hero)}</section>
+        <section className="space-y-4">
+          {card(hero)}
+          {serviceCardSlots.map(card)}
+        </section>
         <section className="space-y-4">
           <h2 id="destinations" className="scroll-mt-24 font-serif text-xl font-bold text-forest-900">Destinations</h2>
           {destSlots.map(card)}

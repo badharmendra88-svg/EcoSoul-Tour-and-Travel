@@ -41,6 +41,7 @@ Admin panel: <http://localhost:3200/admin/>. **First run:** the login page asks 
 | `NOTIFY_WEBHOOK_URL` | Optional webhook (Slack / Google Chat / Zapier / Make) for new-lead alerts |
 | `MEDIA_DIR` | Optional folder for admin photo uploads (default `./uploads`) |
 | `NEXT_PUBLIC_GA_ID` | Optional Google Analytics 4 ID |
+| `RAZORPAY_KEY_ID`, `RAZORPAY_KEY_SECRET`, `RAZORPAY_WEBHOOK_SECRET` | Optional — online advance payments on quote pages (see *Payments* below) |
 
 ---
 
@@ -49,7 +50,10 @@ Admin panel: <http://localhost:3200/admin/>. **First run:** the login page asks 
 ### Public site (blueprint §4, §7, §25)
 | URL | Page |
 | --- | --- |
-| `/` | Home: hero, quick enquiry, experiences, featured packages, transport CTA, why us, how it works, destinations, FAQs |
+| `/` | Home: hero with booking widget (instant taxi fare / trip enquiry), trust strip, services, "travelling from your city", featured packages, taxi routes, season planner, why us, destinations, FAQs |
+| `/how-to-reach-uttarakhand/` | Airports, railway stations and road routes for Garhwal and Kumaon, city links and fare estimator |
+| `/uttarakhand/from-<city>/` | Landing pages for travellers from Delhi NCR, Mumbai, Kolkata, Ahmedabad, Bengaluru, Lucknow, Chandigarh, Jaipur, Pune and Hyderabad: how to reach, fare estimator from their start point, popular routes, suited destinations, season tips, city FAQs and a prefilled booking form. Content lives in `src/config/journeys.ts` |
+| `/hi/char-dham-yatra/` | Hindi Char Dham planning page (hreflang-linked with the English page) |
 | `/destinations/`, `/destinations/[slug]/` | Destination hub (region/category filters) and guides (best time, how to reach, duration, things to do, tips, FAQs, last-reviewed date) |
 | `/uttarakhand/tour-packages/` | Package listing with destination / trip type / duration filters |
 | `/packages/[slug]/` | Package detail: day-wise itinerary, inclusions/exclusions, notes, price basis, cancellation summary, quote form |
@@ -104,6 +108,11 @@ Admin panel: <http://localhost:3200/admin/>. **First run:** the login page asks 
 - **Social media:** Instagram, Facebook, YouTube, X, LinkedIn, Google Business Profile, Tripadvisor → footer icons and `sameAs` structured data.
 - **Tracking & alerts:** GA4 ID, Meta Pixel ID, Google Search Console verification (paste the tag or code) and the new-lead webhook (overrides `NOTIFY_WEBHOOK_URL`).
 
+### Fare estimator, audience tracking & payments
+- **Instant fare estimate** (homepage, taxi / transfer pages, city pages): uses the live **rate card** and the same calculator as admin quotes, applied to typical road distances in `src/config/journeys.ts` (one-way or round trip with days). Shown as a range including driver allowance, service charge and GST; tolls/parking/state tax extra. *Book this* pre-fills the taxi form (route, vehicle, service, days). Saving the rate card refreshes the public estimates.
+- **Travelling from** (optional field on trip, package and transport forms) and **ad-campaign attribution** (UTM tags or Google/Meta click IDs, captured on landing in `sessionStorage`) are stored on each lead, shown on the lead page, the leads list, the CSV export and a "last 30 days" panel on the dashboard.
+- **Payments:** quote links show a payment panel once a quote is sent. With Razorpay keys in `.env` customers pay the advance (then the balance) by UPI / card / net banking; the server creates the order for the amount it calculates, verifies the checkout signature, and the webhook (`/api/payments/razorpay-webhook/`) records payments even if the tab is closed — idempotently. With a **UPI ID** in Settings → Payments, phones get a "Pay with any UPI app" button and everyone sees the UPI ID to copy. Admins (not Managers) record UPI / bank / cash receipts on the quote page (`payments.record` permission). Every payment marks the quote accepted, adds a line to the lead's activity and sends the notification webhook.
+
 ### Mobile & installable apps (PWA)
 - Two installable apps: the **website** (`/site-app/manifest/`) and **EcoSoul Admin** (`/admin-app/manifest/`, opens `/admin/`). Android/Chrome: menu → *Install app*; iPhone Safari: Share → *Add to Home Screen*. Icons are generated in code (`src/lib/app-icon.tsx`).
 - `public/sw.js` is network-first and never caches pages or admin data; it only shows an offline page when there is no connection. It registers in production builds only.
@@ -111,7 +120,7 @@ Admin panel: <http://localhost:3200/admin/>. **First run:** the login page asks 
 
 ### SEO / analytics / accessibility (§12, §16, FR-09/10/12)
 - Unique titles, descriptions and canonical URLs; trailing-slash URLs per the SEO plan; breadcrumbs + BreadcrumbList, FAQPage and TravelAgency JSON-LD.
-- Analytics events `view_package`, `click_whatsapp`, `click_phone`, `submit_enquiry` — never include personal data.
+- Analytics events `view_package`, `click_whatsapp`, `click_phone`, `submit_enquiry`, `fare_estimate`, `begin_payment`, `payment_success` — never include personal data.
 - Skip link, labelled fields, `aria-invalid` errors, visible focus styles, keyboard-friendly menus and filters, sticky mobile CTA bar.
 
 ---
@@ -146,6 +155,9 @@ Content in this repo is a **starting point**, not verified operational data.
 - [ ] Owner + legal/accounting review of all policies, then set `POLICIES_ARE_DRAFT = false` in `src/components/PolicyPage.tsx`.
 - [ ] Replace the About page copy with the real company story and verified credentials.
 - [ ] Configure `NOTIFY_WEBHOOK_URL`, GA4, Google Search Console (submit `/sitemap.xml`).
+- [ ] Replace the default rate card with real partner rates — the public fare estimator uses it.
+- [ ] Set up payments: a business UPI ID in Settings → Payments and/or Razorpay keys + webhook; make a test payment in Razorpay test mode.
+- [ ] Re-check the distances, drive times and train/flight notes in `src/config/journeys.ts`, and have a native speaker review the Hindi Char Dham page.
 - [ ] Mobile, keyboard and broken-link QA; test the enquiry → notification → admin flow end to end.
 
 ## Deploying

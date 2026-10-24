@@ -49,6 +49,24 @@ export default async function LeadsPage({ searchParams }: { searchParams: Promis
     db.quote.count({ where: { status: "ACCEPTED" } }),
     db.enquiry.count({ where: { notifyStatus: "FAILED" } }),
   ]);
+  // Audience insight: where the last 30 days of leads travel from, and which campaigns brought them
+  const recentSources = await db.enquiry.findMany({
+    where: { createdAt: { gte: new Date(Date.now() - 30 * 86400000) }, status: { not: "SPAM" } },
+    select: { travellingFrom: true, utm: true },
+    take: 2000,
+  });
+  const topCities = tally(recentSources.map((r) => r.travellingFrom?.trim() || null)).slice(0, 6);
+  const topCampaigns = tally(
+    recentSources.map((r) => {
+      if (!r.utm) return null;
+      try {
+        const u = JSON.parse(r.utm) as Record<string, string>;
+        return [u.source, u.campaign].filter(Boolean).join(" · ") || null;
+      } catch {
+        return null;
+      }
+    }),
+  ).slice(0, 6);
 
   const kindCounts = Object.fromEntries(byKind.map((k) => [k.kind, k._count]));
   const allCount = byKind.reduce((s, k) => s + k._count, 0);
@@ -105,6 +123,13 @@ export default async function LeadsPage({ searchParams }: { searchParams: Promis
         <StatCard label="Won this month" value={compactRupees(accepted._sum.total ?? 0)} hint={`${accepted._count} accepted · ${conversion}% quote win rate`} icon="check" tone="emerald" />
       </div>
 
+      {(topCities.length > 0 || topCampaigns.length > 0) && (
+        <div className="mt-6 grid gap-4 lg:grid-cols-2">
+          <SourceList title="Travelling from (last 30 days)" icon="map" rows={topCities} empty="Customers haven't shared their city yet." total={recentSources.length} />
+          <SourceList title="Ad campaigns (last 30 days)" icon="trend" rows={topCampaigns} empty="No tagged campaign traffic yet — add utm_source / utm_campaign to ad links." total={recentSources.length} />
+        </div>
+      )}
+
       <div className="panel mt-8 overflow-hidden">
         <div className="flex flex-col gap-4 border-b border-slate-100 p-4 sm:p-5">
           <nav aria-label="Lead type" className="flex flex-wrap gap-1 rounded-xl bg-slate-100/80 p-1">
@@ -156,7 +181,10 @@ export default async function LeadsPage({ searchParams }: { searchParams: Promis
                       <Avatar name={l.name} size="sm" />
                       <span className="min-w-0">
                         <span className="block font-medium text-slate-900 group-hover:text-forest-700">{l.name}</span>
-                        <span className="block truncate text-xs text-slate-500">{l.phone ?? l.email}</span>
+                        <span className="block truncate text-xs text-slate-500">
+                          {l.phone ?? l.email}
+                          {l.travellingFrom && <> · from {l.travellingFrom}</>}
+                        </span>
                       </span>
                     </Link>
                   </td>
@@ -209,5 +237,39 @@ export default async function LeadsPage({ searchParams }: { searchParams: Promis
         )}
       </div>
     </>
+  );
+}
+
+function tally(values: (string | null)[]) {
+  const counts = new Map<string, number>();
+  for (const v of values) if (v) counts.set(v, (counts.get(v) ?? 0) + 1);
+  return [...counts.entries()].sort((a, b) => b[1] - a[1]);
+}
+
+function SourceList({ title, icon, rows, empty, total }: { title: string; icon: IconName; rows: [string, number][]; empty: string; total: number }) {
+  const max = rows[0]?.[1] ?? 1;
+  return (
+    <section className="panel p-5">
+      <h2 className="flex items-center gap-2 text-sm font-semibold text-slate-900">
+        <Icon name={icon} className="h-4 w-4 text-forest-700" /> {title}
+      </h2>
+      {rows.length ? (
+        <ul className="mt-4 space-y-2.5">
+          {rows.map(([label, n]) => (
+            <li key={label} className="text-sm">
+              <div className="flex justify-between gap-3">
+                <span className="truncate text-slate-700">{label}</span>
+                <span className="text-slate-500 tabular-nums">{n} <span className="text-xs text-slate-400">({Math.round((n / Math.max(1, total)) * 100)}%)</span></span>
+              </div>
+              <div className="mt-1 h-1.5 overflow-hidden rounded-full bg-slate-100">
+                <div className="h-full rounded-full bg-forest-500" style={{ width: `${(n / max) * 100}%` }} />
+              </div>
+            </li>
+          ))}
+        </ul>
+      ) : (
+        <p className="mt-3 text-sm text-slate-500">{empty}</p>
+      )}
+    </section>
   );
 }

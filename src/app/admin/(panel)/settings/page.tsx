@@ -3,6 +3,7 @@ import { requireAdmin } from "@/lib/admin-auth";
 import { formatDateTime } from "@/lib/format";
 import { decryptSecret, maskSecret } from "@/lib/secret-box";
 import { getSettingsRow, socialNetworks } from "@/lib/settings";
+import { razorpayConfigured, razorpayMode } from "@/lib/razorpay";
 import { SocialIcon } from "@/components/SocialIcons";
 import { removeWhatsAppTokenAction, saveSettingsAction, testWhatsAppAction } from "../../settings-actions";
 import { Badge, Icon, PageHeader, StatCard, type IconName } from "../ui";
@@ -10,6 +11,7 @@ import { Badge, Icon, PageHeader, StatCard, type IconName } from "../ui";
 const sections: { id: string; label: string; icon: IconName }[] = [
   { id: "contact", label: "Business contact", icon: "phone" },
   { id: "business", label: "Homepage & identity", icon: "hotel" },
+  { id: "payments", label: "Payments", icon: "rupee" },
   { id: "whatsapp", label: "WhatsApp", icon: "message" },
   { id: "social", label: "Social media", icon: "users" },
   { id: "tracking", label: "Tracking & alerts", icon: "trend" },
@@ -156,6 +158,24 @@ export default async function SettingsPage({ searchParams }: { searchParams: Pro
               <Field name="gstin" label="GSTIN (optional)" defaultValue={s.gstin} placeholder="15-character GSTIN" />
               <Field name="tourismRegNo" label="Uttarakhand Tourism registration no. (optional)" defaultValue={s.tourismRegNo} placeholder="Only if registered" />
               <Field name="emergencyPhone" label="Emergency / on-trip support number" defaultValue={s.emergencyPhone} placeholder="+91 …" prefix={<Icon name="phone" />} hint="Shown to travellers in policies and the footer." />
+            </div>
+          </SectionCard>
+
+          {/* ---------------- Payments ---------------- */}
+          <SectionCard id="payments" icon="rupee" title="Payments" description="How customers pay the advance from their quote link.">
+            <div className="grid gap-5 sm:grid-cols-2">
+              <Field name="upiId" label="UPI ID" defaultValue={s.upiId} placeholder="e.g. ecosoul@okhdfcbank" hint="Shown on quote pages with a “Pay with any UPI app” button on phones. Use a business/current-account UPI ID." />
+              <Field name="upiPayeeName" label="UPI payee name" defaultValue={s.upiPayeeName} placeholder={s.legalName || "Registered business name"} hint="Must match the bank account name so customers trust the payment screen." />
+            </div>
+            <div className="flex flex-wrap items-center justify-between gap-3 rounded-xl bg-slate-50 p-4 text-sm ring-1 ring-slate-900/5">
+              <div>
+                <p className="font-medium text-slate-900">Online payments (Razorpay)</p>
+                <p className="mt-0.5 text-xs text-slate-500">
+                  UPI, cards, net banking and wallets with automatic confirmation. Set <code>RAZORPAY_KEY_ID</code>, <code>RAZORPAY_KEY_SECRET</code> and{" "}
+                  <code>RAZORPAY_WEBHOOK_SECRET</code> in the server&apos;s <code>.env</code>, and point the Razorpay webhook to <code>{site.url}/api/payments/razorpay-webhook/</code>.
+                </p>
+              </div>
+              <Badge tone={razorpayConfigured() ? "emerald" : "slate"}>{razorpayConfigured() ? `Connected (${razorpayMode()} mode)` : "Not connected"}</Badge>
             </div>
           </SectionCard>
 

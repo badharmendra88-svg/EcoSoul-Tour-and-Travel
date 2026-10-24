@@ -3,7 +3,7 @@
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useEffect, useState } from "react";
-import { mainNav, site } from "@/config/site";
+import { mainNav, mobileExtraNav, site } from "@/config/site";
 import { Logo } from "./Logo";
 
 export function Header() {
@@ -68,6 +68,13 @@ export function Header() {
             {mainNav.map((item) => (
               <li key={item.href}>
                 <Link href={item.href} className="block rounded-lg px-3 py-3 font-medium text-slate-800 hover:bg-forest-50">
+                  {item.label}
+                </Link>
+              </li>
+            ))}
+            {mobileExtraNav.map((item, i) => (
+              <li key={item.href} className={i === 0 ? "mt-1 border-t border-slate-200 pt-1" : ""}>
+                <Link href={item.href} className="block rounded-lg px-3 py-3 text-sm font-medium text-forest-700 hover:bg-forest-50">
                   {item.label}
                 </Link>
               </li>

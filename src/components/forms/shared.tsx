@@ -4,6 +4,9 @@ import Link from "next/link";
 import { useRef, useState, type ReactNode } from "react";
 import { track } from "@/lib/analytics";
 import { heardFromOptions } from "@/config/options";
+import { travellingFromOptions } from "@/config/journeys";
+import { readUtm } from "@/lib/utm";
+import { Combobox } from "./Combobox";
 
 export type Errors = Record<string, string>;
 
@@ -41,7 +44,7 @@ export function useEnquirySubmit() {
       const res = await fetch("/api/enquiries/", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ ...payload, sourcePage: window.location.pathname }),
+        body: JSON.stringify({ ...payload, sourcePage: window.location.pathname, utm: readUtm() }),
         signal: AbortSignal.timeout(SUBMIT_TIMEOUT_MS),
       });
       const data = await res.json().catch(() => ({}));
@@ -114,7 +117,8 @@ export function ContactFields({
   set,
   errors,
 }: {
-  values: { name: string; phone: string; email: string; heardFrom: string };
+  /** Include `travellingFrom` in the form state to ask for the customer's home city. */
+  values: { name: string; phone: string; email: string; heardFrom: string; travellingFrom?: string };
   set: (key: string, value: string) => void;
   errors: Errors;
 }) {
@@ -145,7 +149,19 @@ export function ContactFields({
           onChange={(e) => set("email", e.target.value)}
         />
       </Field>
-      <div className="sm:col-span-2">
+      {values.travellingFrom !== undefined && (
+        <Field id="travellingFrom" label="Travelling from (city)" hint="Helps us plan pickup, trains and flights">
+          <Combobox
+            id="travellingFrom"
+            value={values.travellingFrom}
+            onChange={(x) => set("travellingFrom", x.slice(0, 80))}
+            options={travellingFromOptions.map((value) => ({ value }))}
+            placeholder="e.g. Delhi NCR"
+            describedBy="travellingFrom-hint"
+          />
+        </Field>
+      )}
+      <div className={values.travellingFrom !== undefined ? "" : "sm:col-span-2"}>
         <Field id="heardFrom" label="How did you hear about us? (optional)">
           <select {...inputProps("heardFrom")} value={values.heardFrom} onChange={(e) => set("heardFrom", e.target.value)}>
             <option value="">Select</option>

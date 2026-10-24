@@ -19,11 +19,21 @@ import {
 
 // Blueprint §24.4 — car / taxi / driver booking request form.
 
-export function TransportForm({ defaultService = "CAR_DRIVER", lockService = false }: { defaultService?: ServiceType; lockService?: boolean }) {
+export function TransportForm({
+  defaultService = "CAR_DRIVER",
+  lockService = false,
+  initialPickup = "",
+  travellingFrom = "",
+}: {
+  defaultService?: ServiceType;
+  lockService?: boolean;
+  initialPickup?: string;
+  travellingFrom?: string;
+}) {
   const { errors, setErrors, status, formError, ref, submit } = useEnquirySubmit();
   const [v, setV] = useState({
     serviceType: defaultService as string,
-    pickup: "",
+    pickup: initialPickup,
     drop: "",
     travelDate: "",
     pickupTime: "",
@@ -40,18 +50,30 @@ export function TransportForm({ defaultService = "CAR_DRIVER", lockService = fal
     phone: "",
     email: "",
     heardFrom: "",
+    travellingFrom,
     consent: false,
     website: "",
   });
   const set = (key: string, value: unknown) => setV((prev) => ({ ...prev, [key]: value }));
 
-  // Prefill from links like ?pickup=Haldwani&drop=Nainital (popular routes)
+  // Prefill from links like ?pickup=Haldwani&drop=Nainital (popular routes) and the
+  // fare estimator's "Book this" (?vehicle=SUV&service=ROUND_TRIP&days=3)
   useEffect(() => {
     const q = new URLSearchParams(window.location.search);
     const pickup = q.get("pickup")?.slice(0, 120);
     const drop = q.get("drop")?.slice(0, 120);
-    if (pickup || drop) setV((prev) => ({ ...prev, pickup: pickup ?? prev.pickup, drop: drop ?? prev.drop }));
-  }, []);
+    const vehicle = q.get("vehicle");
+    const service = q.get("service");
+    const days = Number(q.get("days"));
+    setV((prev) => ({
+      ...prev,
+      pickup: pickup ?? prev.pickup,
+      drop: drop ?? prev.drop,
+      vehicleCategory: vehicle && vehicleCategories.some((c) => c.id === vehicle) ? vehicle : prev.vehicleCategory,
+      serviceType: !lockService && service && service in serviceTypes ? service : prev.serviceType,
+      tripDays: days >= 1 && days <= 60 ? String(days) : prev.tripDays,
+    }));
+  }, [lockService]);
 
   const st = v.serviceType as ServiceType;
   const needsDrop = st !== "LOCAL" && st !== "DRIVER_ONLY";

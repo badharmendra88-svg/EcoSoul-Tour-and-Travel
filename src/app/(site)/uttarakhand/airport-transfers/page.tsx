@@ -14,6 +14,7 @@ export default function AirportTransfersPage() {
       title="Airport & Railway Station Transfers"
       intro="Pre-booked pickups and drops between Uttarakhand's airports and railway stations and your hotel — with meet-up instructions and a clear waiting policy."
       path="/uttarakhand/airport-transfers/"
+      estimator={{ from: "jollygrant", to: "rishikesh" }}
       crumbLabel="Airport / Railway Transfers"
       service="AIRPORT_RAIL"
       highlights={["Pantnagar · Dehradun airports", "Kathgodam · Haridwar · Dehradun stations", "Delay-aware pickups"]}

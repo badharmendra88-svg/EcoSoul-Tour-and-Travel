@@ -14,7 +14,18 @@ function customerWhatsApp(phone: string, text: string) {
   return `https://wa.me/${digits}?text=${encodeURIComponent(text)}`;
 }
 
+function parseUtm(raw: string | null): Record<string, string> | null {
+  if (!raw) return null;
+  try {
+    const v = JSON.parse(raw);
+    return v && typeof v === "object" ? (v as Record<string, string>) : null;
+  } catch {
+    return null;
+  }
+}
+
 const eventIcon: Record<string, IconName> = {
+  payment: "rupee",
   created: "sparkles",
   status: "trend",
   assigned: "user",
@@ -40,6 +51,7 @@ export default async function LeadDetailPage({ params }: { params: Promise<{ id:
   const travellers = e.adults != null ? `${e.adults} adult${e.adults === 1 ? "" : "s"}${e.children ? ` + ${e.children} child${e.children > 1 ? "ren" : ""}` : ""}` : null;
 
   const facts: { icon: IconName; label: string; value: string | null | undefined }[] = [
+    { icon: "map", label: "Travelling from", value: e.travellingFrom },
     { icon: "car", label: "Service", value: e.serviceType ? serviceTypes[e.serviceType as keyof typeof serviceTypes] : null },
     { icon: "package", label: "Package", value: e.packageSlug?.replace(/-/g, " ") },
     { icon: "map", label: "Destination", value: e.destination },
@@ -56,7 +68,14 @@ export default async function LeadDetailPage({ params }: { params: Promise<{ id:
     { icon: "sparkles", label: "Interests", value: e.interests },
     { icon: "rupee", label: "Budget", value: e.budgetBand },
   ];
+  const utm = parseUtm(e.utm);
   const meta = [
+    ...(utm
+      ? ([
+          ["Ad campaign", [utm.source, utm.medium, utm.campaign].filter(Boolean).join(" / ") + (utm.term ? ` · “${utm.term}”` : "")],
+          ["Landing page", utm.landing],
+        ] as const)
+      : []),
     ["Heard from", e.heardFrom],
     ["Source page", e.sourcePage],
     ["Consent", formatDateTime(e.consentAt)],

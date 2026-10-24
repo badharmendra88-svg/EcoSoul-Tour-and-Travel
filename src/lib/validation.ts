@@ -43,7 +43,20 @@ const contact = {
     errorMap: () => ({ message: "Please accept the privacy notice and booking terms" }),
   }),
   heardFrom: optionalText(60),
+  travellingFrom: optionalText(80),
   sourcePage: optionalText(200),
+  // Ad-campaign tags captured on landing (lib/utm.ts); malformed values are dropped, never rejected
+  utm: z
+    .object({
+      source: optionalText(100),
+      medium: optionalText(100),
+      campaign: optionalText(100),
+      term: optionalText(100),
+      content: optionalText(100),
+      landing: optionalText(200),
+    })
+    .optional()
+    .catch(undefined),
   // Honeypot: real users never see or fill this field
   website: z.string().max(0).optional(),
 };

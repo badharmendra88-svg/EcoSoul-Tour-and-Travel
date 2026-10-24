@@ -9,7 +9,7 @@ const steps = [
 
 export function BookingSteps({ current = -1, className = "" }: { current?: number; className?: string }) {
   return (
-    <ol className={`grid gap-3 text-left sm:grid-cols-4 ${className}`} aria-label="How taxi and driver bookings are confirmed">
+    <ol className={`grid grid-cols-2 gap-3 text-left sm:grid-cols-4 ${className}`} aria-label="How taxi and driver bookings are confirmed">
       {steps.map((s, i) => {
         const done = i <= current;
         return (

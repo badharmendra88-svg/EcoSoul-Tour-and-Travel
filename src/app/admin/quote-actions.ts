@@ -10,6 +10,7 @@ import { renderQuotePdf } from "@/lib/quote-pdf";
 import { getSettings, getWhatsAppApiConfig } from "@/lib/settings";
 import { sendPdfDocument } from "@/lib/whatsapp-api";
 import { getRateCard } from "@/lib/rates";
+import { recordPaid } from "@/lib/payments";
 
 // ---------- Rate card ----------
 
@@ -78,6 +79,8 @@ export async function saveRatesAction(formData: FormData) {
   ]);
 
   revalidatePath("/admin/rates/");
+  // Public fare estimates (homepage, taxi and city pages) are built from the rate card
+  revalidatePath("/", "layout");
   redirect("/admin/rates/?saved=1");
 }
 
@@ -244,4 +247,29 @@ export async function setQuoteStatusAction(formData: FormData) {
   }
   revalidatePath(`/admin/quotes/${id}/`);
   revalidatePath("/admin/quotes/");
+}
+
+// ---------- Payments ----------
+
+/** Records a UPI / bank / cash receipt after the team has checked the bank statement. */
+export async function recordManualPaymentAction(formData: FormData) {
+  const actor = await requireAdmin("payments.record");
+  const id = text(formData, "quoteId", 40);
+  const back = `/admin/quotes/${id}/`;
+  const amount = int(formData, "amount");
+  const method = text(formData, "method", 10);
+  const reference = text(formData, "reference", 80);
+  if (!["UPI", "BANK", "CASH"].includes(method)) redirect(`${back}?payError=${encodeURIComponent("Choose how the money was received.")}#payments`);
+  if (amount < 1) redirect(`${back}?payError=${encodeURIComponent("Enter the amount received.")}#payments`);
+  if (method !== "CASH" && !reference) redirect(`${back}?payError=${encodeURIComponent("Enter the UPI / bank reference (UTR) so the payment can be traced.")}#payments`);
+
+  const quote = await db.quote.findUnique({ where: { id }, select: { id: true } });
+  if (!quote) redirect("/admin/quotes/");
+  const payment = await db.payment.create({
+    data: { quoteId: id, method, amount, reference: reference || null, note: text(formData, "note", 200) || null, recordedBy: actor },
+  });
+  await recordPaid(payment.id, { actor });
+  revalidatePath(back);
+  revalidatePath("/admin/quotes/");
+  redirect(`${back}?paid=1#payments`);
 }

@@ -27,6 +27,7 @@ export default function HaldwaniTaxiPage() {
       title="Haldwani Taxi Service"
       intro="Pickups from Haldwani city, Kathgodam railway station and Pantnagar airport to Nainital, the lake district, Kumaon hill towns and Jim Corbett — with local hill drivers and an itemised quote before you confirm."
       path="/uttarakhand/haldwani-taxi-service/"
+      estimator={{ from: "haldwani", to: "nainital" }}
       crumbLabel="Haldwani Taxi Service"
       service="ONE_WAY"
       highlights={["Kathgodam station pickups", "Pantnagar airport", "Kumaon hill routes"]}

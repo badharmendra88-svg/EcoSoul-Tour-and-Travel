@@ -2,13 +2,16 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 import { serviceTypes, vehicleCategories } from "@/config/options";
 import { site } from "@/config/site";
-import { requireAdmin } from "@/lib/admin-auth";
+import { getCurrentUser, requireAdmin } from "@/lib/admin-auth";
+import { paymentState } from "@/lib/payments";
+import { can } from "@/lib/permissions";
+import { razorpayConfigured } from "@/lib/razorpay";
 import { db } from "@/lib/db";
 import { formatDate, formatDateTime } from "@/lib/format";
 import { parseList } from "@/lib/json";
 import { addDaysISO, emptyCalc, rupees, type CalcInput, type QuoteItem, type TransportMode } from "@/lib/quote";
 import { getRateCard } from "@/lib/rates";
-import { setQuoteStatusAction } from "../../../quote-actions";
+import { recordManualPaymentAction, setQuoteStatusAction } from "../../../quote-actions";
 import { QuoteBuilder, type BuilderInitial } from "../QuoteBuilder";
 import { SendPanel } from "../SendPanel";
 import { getSettings, getWhatsAppApiConfig } from "@/lib/settings";
@@ -45,17 +48,19 @@ export default async function QuotePage({
   searchParams,
 }: {
   params: Promise<{ id: string }>;
-  searchParams: Promise<{ lead?: string; saved?: string }>;
+  searchParams: Promise<{ lead?: string; saved?: string; paid?: string; payError?: string }>;
 }) {
   await requireAdmin("quotes.manage");
   const { id } = await params;
-  const { lead: leadId, saved } = await searchParams;
+  const { lead: leadId, saved, paid, payError } = await searchParams;
   const { vehicles, hotels, settings } = await getRateCard();
   const contact = await getSettings();
   const waApiReady = (await getWhatsAppApiConfig()) !== null;
   const isNew = id === "new";
 
-  const quote = isNew ? null : await db.quote.findUnique({ where: { id }, include: { enquiry: true } });
+  const quote = isNew ? null : await db.quote.findUnique({ where: { id }, include: { enquiry: true, payments: { orderBy: { createdAt: "desc" } } } });
+  const me = await getCurrentUser();
+  const pay = quote ? paymentState(quote, quote.payments) : null;
   if (!isNew && !quote) notFound();
   const lead = quote?.enquiry ?? (leadId ? await db.enquiry.findUnique({ where: { id: leadId } }) : null);
 
@@ -249,6 +254,72 @@ export default async function QuotePage({
                   <p className="text-xs text-slate-500">After acceptance, confirm partners and update the lead status.</p>
                 </form>
               </Panel>
+              {pay && (
+                <div id="payments" className="scroll-mt-6">
+                  <Panel title="Payments" icon="rupee">
+                    <div className="space-y-4 text-sm">
+                      {paid && <p role="status" className="rounded-xl bg-emerald-50 px-3 py-2 text-emerald-800 ring-1 ring-emerald-100">Payment recorded and added to the lead&apos;s activity.</p>}
+                      {payError && <p role="alert" className="rounded-xl bg-rose-50 px-3 py-2 text-rose-800 ring-1 ring-rose-100">{payError}</p>}
+                      <dl className="grid grid-cols-3 gap-2 text-center">
+                        <div className="rounded-xl bg-slate-50 p-2"><dt className="text-[11px] text-slate-500">Received</dt><dd className="font-semibold text-emerald-700">{rupees(pay.paid)}</dd></div>
+                        <div className="rounded-xl bg-slate-50 p-2"><dt className="text-[11px] text-slate-500">Advance due</dt><dd className="font-semibold text-slate-900">{rupees(pay.advanceDue)}</dd></div>
+                        <div className="rounded-xl bg-slate-50 p-2"><dt className="text-[11px] text-slate-500">Balance</dt><dd className="font-semibold text-slate-900">{rupees(pay.balanceDue)}</dd></div>
+                      </dl>
+                      {quote.payments.filter((p) => p.status !== "CREATED").length > 0 ? (
+                        <ul className="divide-y divide-slate-100">
+                          {quote.payments
+                            .filter((p) => p.status !== "CREATED")
+                            .map((p) => (
+                              <li key={p.id} className="flex items-start justify-between gap-3 py-2">
+                                <div className="min-w-0">
+                                  <p className="font-medium text-slate-900">{rupees(p.amount)} · {p.method === "RAZORPAY" ? "Online (Razorpay)" : p.method}</p>
+                                  <p className="truncate text-xs text-slate-500">
+                                    {formatDateTime(p.paidAt ?? p.createdAt)}
+                                    {p.paymentId && <> · {p.paymentId}</>}
+                                    {p.reference && <> · ref {p.reference}</>}
+                                    {p.recordedBy && p.recordedBy !== "razorpay" && <> · by {p.recordedBy}</>}
+                                  </p>
+                                </div>
+                                <StatusBadge status={p.status} />
+                              </li>
+                            ))}
+                        </ul>
+                      ) : (
+                        <p className="text-slate-500">
+                          No payments yet.{" "}
+                          {razorpayConfigured() ? "The customer can pay online from the quote link." : contact.upiId ? "The quote link shows your UPI ID." : "Add a UPI ID in Settings → Payments, or Razorpay keys in .env, so customers can pay from the quote link."}
+                        </p>
+                      )}
+                      {can(me?.role, "payments.record") && pay.balanceDue > 0 && (
+                        <form action={recordManualPaymentAction} className="space-y-3 rounded-xl bg-slate-50 p-3 ring-1 ring-slate-900/5">
+                          <p className="text-xs font-semibold text-slate-700">Record a UPI / bank / cash receipt</p>
+                          <input type="hidden" name="quoteId" value={quote.id} />
+                          <div className="grid grid-cols-2 gap-2">
+                            <label className="block">
+                              <span className="admin-label">Amount (₹)</span>
+                              <input name="amount" type="number" min={1} max={pay.balanceDue} defaultValue={pay.advanceDue || pay.balanceDue} className="admin-input" required />
+                            </label>
+                            <label className="block">
+                              <span className="admin-label">Method</span>
+                              <select name="method" className="admin-input" defaultValue="UPI">
+                                <option value="UPI">UPI</option>
+                                <option value="BANK">Bank transfer</option>
+                                <option value="CASH">Cash</option>
+                              </select>
+                            </label>
+                          </div>
+                          <label className="block">
+                            <span className="admin-label">UTR / reference</span>
+                            <input name="reference" className="admin-input" placeholder="12-digit UPI ref or bank UTR" maxLength={80} />
+                          </label>
+                          <button className="btn-admin-primary w-full">Record payment</button>
+                          <p className="text-[11px] text-slate-500">Only record money you have seen in the bank account.</p>
+                        </form>
+                      )}
+                    </div>
+                  </Panel>
+                </div>
+              )}
             </>
           ) : (
             <div className="flex flex-col items-center rounded-2xl border-2 border-dashed border-slate-200 bg-white/50 p-8 text-center text-sm text-slate-500">

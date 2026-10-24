@@ -23,7 +23,7 @@ type Props = {
   packageSlug?: string;
   packageTitle?: string;
   destinations?: ComboOption[];
-  initial?: { destination?: string; travelDate?: string; adults?: string; interest?: string };
+  initial?: { destination?: string; travelDate?: string; adults?: string; interest?: string; travellingFrom?: string };
 };
 
 const STEPS = ["Your trip", "Preferences", "Contact"];
@@ -44,6 +44,7 @@ export function TripEnquiryForm({ mode, packageSlug, packageTitle, destinations 
     phone: "",
     email: "",
     heardFrom: "",
+    travellingFrom: initial.travellingFrom ?? "",
     consent: false,
     website: "",
   });
@@ -90,6 +91,7 @@ export function TripEnquiryForm({ mode, packageSlug, packageTitle, destinations 
         phone: v.phone,
         email: v.email,
         heardFrom: v.heardFrom,
+        travellingFrom: v.travellingFrom,
         consent: v.consent,
         website: v.website,
       },

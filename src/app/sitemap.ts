@@ -1,4 +1,5 @@
 import type { MetadataRoute } from "next";
+import { originPath, origins } from "@/config/journeys";
 import { site } from "@/config/site";
 import { db } from "@/lib/db";
 
@@ -14,6 +15,9 @@ const staticPaths = [
   "/uttarakhand/local-sightseeing-taxi/",
   "/uttarakhand/haldwani-taxi-service/",
   "/uttarakhand/char-dham-yatra/",
+  "/hi/char-dham-yatra/",
+  "/how-to-reach-uttarakhand/",
+  ...origins.map(originPath),
   "/customise-my-trip/",
   "/join-as-driver/",
   "/about-us/",

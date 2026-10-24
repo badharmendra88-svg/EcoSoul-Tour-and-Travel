@@ -1,6 +1,10 @@
 import { notFound } from "next/navigation";
 import { WhatsAppButton } from "@/components/ContactButtons";
+import { PayPanel } from "@/components/PayPanel";
 import { db } from "@/lib/db";
+import { paymentState } from "@/lib/payments";
+import { razorpayConfigured } from "@/lib/razorpay";
+import { getSettings } from "@/lib/settings";
 import { formatDate } from "@/lib/format";
 import { parseList } from "@/lib/json";
 import { lineAmount, rupees, type QuoteItem } from "@/lib/quote";
@@ -12,13 +16,15 @@ export const metadata = { title: "Your quotation", robots: { index: false, follo
 export default async function PublicQuotePage({ params }: { params: Promise<{ token: string }> }) {
   const { token } = await params;
   if (!/^[A-Za-z0-9_-]{20,64}$/.test(token)) notFound();
-  const q = await db.quote.findUnique({ where: { token } });
+  const q = await db.quote.findUnique({ where: { token }, include: { payments: true } });
   if (!q) notFound();
+  const s = await getSettings();
 
   const items = JSON.parse(q.items) as QuoteItem[];
-  const today = new Date(Date.now() + 5.5 * 3600 * 1000).toISOString().slice(0, 10);
-  const expired = q.validUntil < today && q.status !== "ACCEPTED";
-  const advance = Math.round((q.total * q.advancePct) / 100);
+  const pay = paymentState(q, q.payments);
+  const { expired, advance } = pay;
+  const online = razorpayConfigured();
+  const upi = s.upiId ? { id: s.upiId, name: s.upiPayeeName } : null;
 
   return (
     <div className="container-page max-w-4xl py-10">
@@ -75,6 +81,20 @@ export default async function PublicQuotePage({ params }: { params: Promise<{ to
             <div className="flex justify-between border-t border-slate-200 pt-2 text-xl font-bold text-forest-900"><dt>Total</dt><dd>{rupees(q.total)}</dd></div>
             {q.advancePct > 0 && <div className="flex justify-between"><dt className="text-slate-600">Advance to confirm ({q.advancePct}%)</dt><dd className="font-medium">{rupees(advance)}</dd></div>}
           </dl>
+
+          {(pay.payable || pay.paid > 0) && q.advancePct + pay.paid > 0 && (
+            <PayPanel
+              token={q.token}
+              quoteNumber={q.number}
+              total={q.total}
+              paid={pay.paid}
+              advance={advance}
+              advanceDue={pay.advanceDue}
+              balanceDue={pay.payable ? pay.balanceDue : 0}
+              online={online}
+              upi={upi}
+            />
+          )}
 
           <div className="grid gap-6 sm:grid-cols-2">
             <ListBlock title="Inclusions" items={parseList(q.inclusions)} mark="✓" markClass="text-forest-600" />

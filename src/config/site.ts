@@ -39,6 +39,12 @@ export const mainNav: NavItem[] = [
   { label: "Travel Guide", href: "/travel-guides/" },
 ];
 
+// Extra links in the mobile menu (desktop has no room in the top bar)
+export const mobileExtraNav: NavItem[] = [
+  { label: "How to reach Uttarakhand", href: "/how-to-reach-uttarakhand/" },
+  { label: "चार धाम यात्रा (हिंदी)", href: "/hi/char-dham-yatra/" },
+];
+
 export const footerNav: { title: string; items: NavItem[] }[] = [
   {
     title: "Explore",
@@ -47,6 +53,7 @@ export const footerNav: { title: string; items: NavItem[] }[] = [
       { label: "Tour Packages", href: "/uttarakhand/tour-packages/" },
       { label: "Char Dham & Yatra", href: "/uttarakhand/char-dham-yatra/" },
       { label: "Customise My Trip", href: "/customise-my-trip/" },
+      { label: "How to Reach Uttarakhand", href: "/how-to-reach-uttarakhand/" },
       { label: "Travel Guide", href: "/travel-guides/" },
     ],
   },
@@ -85,4 +92,6 @@ export const officialLinks = {
   tourism: "https://uttarakhandtourism.gov.in/",
   tourismPolicies: "https://www.uttarakhandtourism.gov.in/page/policy-and-guidelines",
   yatraRegistration: "https://registrationandtouristcare.uk.gov.in/",
+  // Kedarnath helicopter booking (official IRCTC portal) — re-verify each season
+  heliYatra: "https://heliyatra.irctc.co.in/",
 };

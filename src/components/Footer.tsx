@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { originPath, origins } from "@/config/journeys";
 import { footerNav, officialLinks, site, telLink } from "@/config/site";
 import { getSettings } from "@/lib/settings";
 import { Logo } from "./Logo";
@@ -9,8 +10,8 @@ export async function Footer() {
   const year = new Date().getFullYear();
   return (
     <footer className="mt-20 bg-forest-900 pb-24 text-forest-100 sm:pb-0">
-      <div className="container-page grid gap-10 py-14 md:grid-cols-[1.3fr_repeat(4,1fr)]">
-        <div className="space-y-4">
+      <div className="container-page grid grid-cols-2 gap-x-6 gap-y-10 py-14 md:grid-cols-[1.3fr_repeat(4,1fr)]">
+        <div className="col-span-2 space-y-4 md:col-span-1">
           <Logo light />
           <p className="tagline">Devbhoomi · Uttarakhand</p>
           <p className="max-w-xs text-sm leading-relaxed text-forest-200">
@@ -42,6 +43,16 @@ export async function Footer() {
           </nav>
         ))}
       </div>
+      <nav aria-label="Travel from your city" className="border-t border-white/10">
+        <div className="container-page flex flex-wrap items-center gap-x-4 gap-y-1 py-5 text-sm">
+          <h2 className="mr-1 font-semibold text-white">Uttarakhand trips from</h2>
+          {origins.map((o) => (
+            <Link key={o.slug} href={originPath(o)} className="inline-block py-1.5 text-forest-200 hover:text-white">
+              {o.city}
+            </Link>
+          ))}
+        </div>
+      </nav>
       <div className="border-t border-white/10">
         <div className="container-page flex flex-col gap-2 py-6 text-xs text-forest-300 md:flex-row md:items-center md:justify-between">
           <p>

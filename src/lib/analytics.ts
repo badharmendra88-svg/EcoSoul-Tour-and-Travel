@@ -1,7 +1,7 @@
 // Client-side event tracking (blueprint §16). Never send names, phone
 // numbers, emails or free-text messages — only IDs and page context.
 
-type EventName = "view_package" | "click_whatsapp" | "click_phone" | "submit_enquiry";
+type EventName = "view_package" | "click_whatsapp" | "click_phone" | "submit_enquiry" | "fare_estimate" | "begin_payment" | "payment_success";
 type Params = Record<string, string | number | undefined>;
 
 declare global {

@@ -2,8 +2,10 @@ import Link from "next/link";
 import type { ServiceType } from "@/config/options";
 import { vehicleCategories } from "@/config/options";
 import type { Faq } from "@/lib/json";
+import { getEstimatorRates } from "@/lib/rates";
 import { BookingSteps } from "./BookingSteps";
 import { WhatsAppButton } from "./ContactButtons";
+import { FareEstimator } from "./FareEstimator";
 import { FaqList } from "./FaqList";
 import { TransportForm } from "./forms/TransportForm";
 import { PageHero } from "./PageHero";
@@ -28,7 +30,7 @@ const workflow = [
   "We confirm the booking and share pickup details; driver contact follows closer to the trip.",
 ];
 
-export function TransportLanding({
+export async function TransportLanding({
   title,
   intro,
   path,
@@ -38,6 +40,7 @@ export function TransportLanding({
   highlights,
   faqs,
   showVehicles = true,
+  estimator,
   children,
 }: {
   title: string;
@@ -49,8 +52,11 @@ export function TransportLanding({
   highlights: string[];
   faqs: Faq[];
   showVehicles?: boolean;
+  /** Show the instant fare estimator, starting on this route. */
+  estimator?: { from: string; to: string };
   children?: React.ReactNode;
 }) {
+  const rates = estimator ? await getEstimatorRates() : null;
   return (
     <>
       <PageHero title={title} intro={intro} crumbs={[{ label: crumbLabel, href: path }]} scene="mountain" eyebrow="Car, taxi & driver">
@@ -65,6 +71,16 @@ export function TransportLanding({
 
       <div className="container-page grid gap-10 py-12 lg:grid-cols-[1fr_340px]">
         <div className="min-w-0 space-y-12">
+          {estimator && rates && (
+            <section id="fare" aria-labelledby="fare-title" className="scroll-mt-24">
+              <h2 id="fare-title" className="h2">Instant fare estimate</h2>
+              <p className="mt-2 text-slate-600">Pick your route to see approximate fares for every car — then book the one that fits.</p>
+              <div className="card mt-6 p-5 sm:p-6">
+                <FareEstimator rates={rates} defaultFrom={estimator.from} defaultTo={estimator.to} readUrl />
+              </div>
+            </section>
+          )}
+
           <section aria-labelledby="how-confirmed">
             <h2 id="how-confirmed" className="text-lg font-semibold text-forest-900">How your booking is confirmed</h2>
             <BookingSteps className="mt-4" />
@@ -105,7 +121,9 @@ export function TransportLanding({
           <section>
             <h2 className="h2">How fares are quoted</h2>
             <p className="mt-2 text-slate-600">
-              We don&apos;t publish fixed fares before checking your route with local partners. Every quote is itemised:
+              {estimator
+                ? "The instant estimate is a guide from our current rate card. Your written quote confirms the exact fare after we check the route with local partners, and every quote is itemised:"
+                : "We don't publish fixed fares before checking your route with local partners. Every quote is itemised:"}
             </p>
             <dl className="mt-6 divide-y divide-slate-200 rounded-2xl border border-slate-200 bg-white">
               {fareRules.map(([term, desc]) => (

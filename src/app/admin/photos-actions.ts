@@ -5,8 +5,9 @@ import { redirect } from "next/navigation";
 import { requireAdmin } from "@/lib/admin-auth";
 import { db } from "@/lib/db";
 import { deleteUpload, handleImageFields } from "@/lib/media";
+import { serviceSlots } from "@/lib/settings";
 
-// Website photos (homepage hero, destinations, packages). Super Admin only:
+// Website photos (homepage hero, service cards, destinations, packages). Super Admin only:
 // these are the only actions that write image fields.
 
 const BACK = "/admin/photos/";
@@ -29,6 +30,19 @@ export async function savePhotoAction(formData: FormData) {
         update: { heroImageUrl: img.imageUrl, heroImageAlt: img.imageAlt },
       });
       if (img.replaced && img.replaced !== img.imageUrl) await deleteUpload(img.replaced);
+    }
+  } else if (target === "service") {
+    const slot = serviceSlots.find((sl) => sl.key === id);
+    if (!slot) back("error=" + encodeURIComponent("Unknown photo slot."));
+    else {
+      const s = await db.siteSettings.findUnique({ where: { id: "default" } });
+      const img = await handleImageFields(formData, { imageUrl: s?.[slot.url] ?? null }, `service-${slot.key}`);
+      if ("error" in img) back(`error=${encodeURIComponent(img.error)}&at=${anchor}`);
+      else {
+        const data = { [slot.url]: img.imageUrl, [slot.alt]: img.imageAlt };
+        await db.siteSettings.upsert({ where: { id: "default" }, create: { id: "default", ...data }, update: data });
+        if (img.replaced && img.replaced !== img.imageUrl) await deleteUpload(img.replaced);
+      }
     }
   } else if (target === "destination" || target === "package") {
     const row =

@@ -12,6 +12,7 @@ const permissionLabels: Record<keyof typeof permissions, string> = {
   "leads.edit": "Update leads",
   "leads.export": "Export leads (CSV)",
   "quotes.manage": "Create & send quotes",
+  "payments.record": "Record UPI / bank payments",
   "rates.edit": "Edit rate card",
   "content.edit": "Edit packages & destinations",
   "settings.manage": "Integrations & settings",

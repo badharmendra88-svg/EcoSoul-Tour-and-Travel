@@ -17,6 +17,12 @@ function makeRef() {
   return `ES-${date}-${rand}`;
 }
 
+function utmJson(utm: unknown) {
+  if (!utm || typeof utm !== "object") return null;
+  const clean = Object.fromEntries(Object.entries(utm).filter(([, x]) => typeof x === "string" && x));
+  return Object.keys(clean).length ? JSON.stringify(clean) : null;
+}
+
 export async function POST(request: Request) {
   const ip = clientIp(request.headers);
   const limit = ipRateLimit("enquiry", ip, 5, 10 * 60 * 1000);
@@ -85,6 +91,8 @@ export async function POST(request: Request) {
         email: v.email ?? null,
         sourcePage: str("sourcePage"),
         heardFrom: str("heardFrom"),
+        travellingFrom: str("travellingFrom"),
+        utm: utmJson(v.utm),
         packageSlug: str("packageSlug"),
         destination: str("destination"),
         travelDate: str("travelDate"),

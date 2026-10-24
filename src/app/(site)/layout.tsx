@@ -3,6 +3,7 @@ import { Footer } from "@/components/Footer";
 import { Header } from "@/components/Header";
 import { MobileEnquiryBar } from "@/components/MobileEnquiryBar";
 import { SiteSettingsProvider } from "@/components/SiteSettingsProvider";
+import { UtmCapture } from "@/components/UtmCapture";
 import { site } from "@/config/site";
 import { getSettings } from "@/lib/settings";
 import { jsonLd } from "@/lib/seo";
@@ -28,6 +29,7 @@ export default async function SiteLayout({ children }: { children: React.ReactNo
       <Footer />
       <MobileEnquiryBar />
       <FloatingWhatsApp />
+      <UtmCapture />
     </SiteSettingsProvider>
   );
 }

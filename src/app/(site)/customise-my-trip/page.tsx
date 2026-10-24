@@ -12,7 +12,7 @@ export const metadata = pageMeta({
   path: "/customise-my-trip/",
 });
 
-type Search = { destination?: string; date?: string; adults?: string; interest?: string };
+type Search = { destination?: string; date?: string; adults?: string; interest?: string; from?: string };
 
 // Map the home page's quick-enquiry trip type onto a form interest chip
 const typeToInterest: Record<string, string> = {
@@ -49,6 +49,7 @@ export default async function CustomiseTripPage({ searchParams }: { searchParams
               travelDate: sp.date && /^\d{4}-\d{2}-\d{2}$/.test(sp.date) ? sp.date : undefined,
               adults: sp.adults && /^\d{1,2}$/.test(sp.adults) ? sp.adults : undefined,
               interest,
+              travellingFrom: sp.from?.slice(0, 80),
             }}
           />
         </div>

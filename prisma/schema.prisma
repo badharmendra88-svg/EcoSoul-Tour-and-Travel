@@ -83,7 +83,8 @@ model Enquiry {
   email           String?
   sourcePage      String?
   heardFrom       String?
-  utm             String? // JSON {source,medium,campaign}
+  utm             String? // JSON {source,medium,campaign,term,content,landing}
+  travellingFrom  String? // customer's home city, e.g. "Delhi NCR" (audience insight)
 
   // Trip / package
   packageSlug     String?
@@ -215,8 +216,31 @@ model Quote {
   sentVia       String?
   createdAt     DateTime  @default(now())
   updatedAt     DateTime  @updatedAt
+  payments      Payment[]
 
   @@index([enquiryId])
+}
+
+// Advance / balance payments against a quote. Online payments come from
+// Razorpay (verified by signature or webhook); UPI / bank / cash payments are
+// recorded by the team after checking their bank statement.
+model Payment {
+  id          String    @id @default(cuid())
+  quoteId     String
+  quote       Quote     @relation(fields: [quoteId], references: [id], onDelete: Cascade)
+  method      String // RAZORPAY | UPI | BANK | CASH
+  status      String    @default("CREATED") // CREATED | PAID | FAILED
+  amount      Int // whole rupees
+  orderId     String?   @unique // Razorpay order id
+  paymentId   String?   @unique // Razorpay payment id
+  reference   String? // UPI / bank reference for manual entries
+  note        String?
+  recordedBy  String? // admin name for manual entries; "razorpay" for online
+  paidAt      DateTime?
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+
+  @@index([quoteId, status])
 }
 
 // ---------- Admin users & roles ----------
@@ -277,11 +301,23 @@ model SiteSettings {
   // Homepage hero photo
   heroImageUrl        String?
   heroImageAlt        String?
+  // Homepage "Choose your travel service" card photos
+  serviceToursImageUrl  String?
+  serviceToursImageAlt  String?
+  serviceTaxiImageUrl   String?
+  serviceTaxiImageAlt   String?
+  serviceDriverImageUrl String?
+  serviceDriverImageAlt String?
+  serviceCustomImageUrl String?
+  serviceCustomImageAlt String?
   // Business identity (trust)
   legalName           String?
   gstin               String?
   tourismRegNo        String?
   emergencyPhone      String?
+  // Payments — UPI shown on quote pages (Razorpay keys live in .env)
+  upiId               String?
+  upiPayeeName        String?
   updatedAt           DateTime  @updatedAt
 }
 

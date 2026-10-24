@@ -152,6 +152,8 @@ const statusTone: Record<string, Tone> = {
   IN_PROGRESS: "emerald",
   COMPLETED: "forest",
   ACCEPTED: "emerald",
+  PAID: "emerald",
+  FAILED: "rose",
   PUBLISHED: "emerald",
   LOST: "slate",
   CANCELLED: "slate",
