@@ -3,7 +3,8 @@
 import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 import { z } from "zod";
-import { requireAdmin } from "@/lib/admin-auth";
+import { getCurrentUser, requireAdmin } from "@/lib/admin-auth";
+import { can } from "@/lib/permissions";
 import { db } from "@/lib/db";
 import { computeTotals, rupees } from "@/lib/quote";
 import { renderQuotePdf } from "@/lib/quote-pdf";
@@ -163,8 +164,15 @@ export async function saveQuoteAction(payload: QuotePayload): Promise<{ ok: true
 
   let id = q.id;
   if (id) {
-    const existing = await db.quote.findUnique({ where: { id } });
+    const existing = await db.quote.findUnique({ where: { id }, include: { payments: { where: { status: "PAID" }, select: { amount: true } } } });
     if (!existing) return { ok: false, error: "Quote not found" };
+    // Money has been received against this quote: only roles that handle payments may change it,
+    // and never below what the customer has already paid
+    if (existing.payments.length) {
+      if (!can((await getCurrentUser())?.role, "payments.record")) return { ok: false, error: "This quote has payments recorded — ask an Admin to change it." };
+      const paid = existing.payments.reduce((s, p) => s + p.amount, 0);
+      if (totals.total < paid) return { ok: false, error: `The total can't be lower than the ${rupees(paid)} already paid. Record a refund separately.` };
+    }
     await db.quote.update({ where: { id }, data });
   } else {
     const yymmdd = new Date(Date.now() + 5.5 * 3600 * 1000).toISOString().slice(2, 10).replace(/-/g, "");
@@ -181,8 +189,13 @@ export async function saveQuoteAction(payload: QuotePayload): Promise<{ ok: true
   return { ok: true, id };
 }
 
+// Server actions can be called directly with any arguments — TypeScript types aren't a check
+const quoteIdSchema = z.string().regex(/^[a-z0-9]{10,40}$/);
+const sentViaSchema = z.enum(["WHATSAPP", "WHATSAPP_API", "EMAIL", "LINK"]);
+
 export async function markQuoteSentAction(id: string, via: "WHATSAPP" | "WHATSAPP_API" | "EMAIL" | "LINK") {
   const actor = await requireAdmin("quotes.manage");
+  if (!quoteIdSchema.safeParse(id).success || !sentViaSchema.safeParse(via).success) return;
   const quote = await db.quote.findUnique({ where: { id } });
   if (!quote) return;
   await db.quote.update({ where: { id }, data: { status: quote.status === "DRAFT" ? "SENT" : quote.status, sentAt: new Date(), sentVia: via } });
@@ -213,6 +226,7 @@ export async function markQuoteSentAction(id: string, via: "WHATSAPP" | "WHATSAP
 /** Uploads the quote PDF and sends it to the customer through the WhatsApp Cloud API. */
 export async function sendQuoteViaWhatsAppApiAction(id: string): Promise<{ ok: true } | { ok: false; error: string }> {
   await requireAdmin("quotes.manage");
+  if (!quoteIdSchema.safeParse(id).success) return { ok: false, error: "Quote not found" };
   const quote = await db.quote.findUnique({ where: { id } });
   if (!quote) return { ok: false, error: "Quote not found" };
   if (!quote.customerPhone) return { ok: false, error: "Add the customer's WhatsApp number to the quote first." };
@@ -240,7 +254,12 @@ export async function setQuoteStatusAction(formData: FormData) {
   const actor = await requireAdmin("quotes.manage");
   const id = String(formData.get("id"));
   const status = String(formData.get("status"));
-  if (!["DRAFT", "SENT", "ACCEPTED", "DECLINED"].includes(status)) return;
+  if (!quoteIdSchema.safeParse(id).success || !["DRAFT", "SENT", "ACCEPTED", "DECLINED"].includes(status)) return;
+  // A paid quote can only be reopened or declined by roles that handle payments (refunds)
+  if (status === "DRAFT" || status === "DECLINED") {
+    const paid = await db.payment.count({ where: { quoteId: id, status: "PAID" } });
+    if (paid && !can((await getCurrentUser())?.role, "payments.record")) return;
+  }
   const quote = await db.quote.update({ where: { id }, data: { status } });
   if (quote.enquiryId) {
     await db.enquiryEvent.create({ data: { enquiryId: quote.enquiryId, actor, action: "quote_status", detail: `${quote.number} → ${status}` } });

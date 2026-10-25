@@ -118,6 +118,15 @@ Admin panel: <http://localhost:3200/admin/>. **First run:** the login page asks 
 - `public/sw.js` is network-first and never caches pages or admin data; it only shows an offline page when there is no connection. It registers in production builds only.
 - Mobile-checked at 360 px (Android), 390 px (iPhone) and 768 px (tablet) for every public and admin page: no horizontal scrolling, 32 px+ tap targets, 16 px form inputs (no iOS zoom-on-focus), safe-area padding for the bottom bar.
 
+### Security & privacy
+- **Cookie consent** (`src/components/CookieConsent.tsx`): Google Analytics and the Meta pixel load only after the visitor opts in (Accept all / Reject all / per-category, equally prominent), with Google Consent Mode v2. The choice is a first-party `es_consent` cookie for 180 days; withdrawing consent deletes `_ga*` / `_fbp` and reloads. "Cookie settings" in the footer and privacy policy reopens the panel. No tags ever load on admin pages or on private quote links (the token is the link's only password).
+- **Headers** (`next.config.ts`): Content-Security-Policy limited to the third parties actually used (a stricter, third-party-free policy on `/admin`), HSTS, nosniff, frame protection, COOP, Permissions-Policy; `private, no-store` + `noindex` on quote pages, APIs and admin.
+- **Admin sessions:** signed `__Host-` cookie in production, HttpOnly, revoked on logout and password change; login attempts are counted before the password check (per IP, per account + IP, per account).
+- **Public APIs:** 32 KB body limit, JSON content type and same-origin checks (`src/lib/http.ts`), honeypot, rate limits. Client IPs come from proxy headers only when `TRUST_PROXY=1` (or on Vercel).
+- **Payments:** server-calculated amounts; one open order per quote part (no double payment from two tabs); a payment is PAID only when Razorpay reports it captured for exactly our amount in INR; race-safe, idempotent recording; overpayments are flagged. Paid quotes can be changed only by Admins and never below the amount received.
+- **Secrets:** the server refuses to start in production with the example `SESSION_SECRET` / `ADMIN_PASSWORD` (`src/instrumentation.ts`). Stored secrets use AES-256-GCM with their own `ENCRYPTION_KEY` (falls back to a key derived from `SESSION_SECRET`).
+- **Other:** notification webhooks must be public https addresses and never follow redirects (SSRF), image uploads have a pixel cap, CSV export neutralises spreadsheet formulas, error messages on the login page come from fixed codes.
+
 ### SEO / analytics / accessibility (§12, §16, FR-09/10/12)
 - Unique titles, descriptions and canonical URLs; trailing-slash URLs per the SEO plan; breadcrumbs + BreadcrumbList, FAQPage and TravelAgency JSON-LD.
 - Analytics events `view_package`, `click_whatsapp`, `click_phone`, `submit_enquiry`, `fare_estimate`, `begin_payment`, `payment_success` — never include personal data.
@@ -156,6 +165,7 @@ Content in this repo is a **starting point**, not verified operational data.
 - [ ] Replace the About page copy with the real company story and verified credentials.
 - [ ] Configure `NOTIFY_WEBHOOK_URL`, GA4, Google Search Console (submit `/sitemap.xml`).
 - [ ] Replace the default rate card with real partner rates — the public fare estimator uses it.
+- [ ] Production `.env`: random `SESSION_SECRET` and `ENCRYPTION_KEY` (`openssl rand -hex 32` each), `TRUST_PROXY=1` behind nginx / a load balancer, HTTPS enabled.
 - [ ] Set up payments: a business UPI ID in Settings → Payments and/or Razorpay keys + webhook; make a test payment in Razorpay test mode.
 - [ ] Re-check the distances, drive times and train/flight notes in `src/config/journeys.ts`, and have a native speaker review the Hindi Char Dham page.
 - [ ] Mobile, keyboard and broken-link QA; test the enquiry → notification → admin flow end to end.

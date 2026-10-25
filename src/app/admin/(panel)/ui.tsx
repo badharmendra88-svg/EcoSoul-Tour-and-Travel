@@ -153,6 +153,7 @@ const statusTone: Record<string, Tone> = {
   COMPLETED: "forest",
   ACCEPTED: "emerald",
   PAID: "emerald",
+  AUTHORIZED: "amber",
   FAILED: "rose",
   PUBLISHED: "emerald",
   LOST: "slate",

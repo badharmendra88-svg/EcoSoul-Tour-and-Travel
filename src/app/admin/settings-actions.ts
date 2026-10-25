@@ -5,6 +5,7 @@ import { redirect } from "next/navigation";
 import { requireAdmin } from "@/lib/admin-auth";
 import { db } from "@/lib/db";
 import { encryptSecret } from "@/lib/secret-box";
+import { publicHttpsUrlProblem } from "@/lib/net";
 import { getWhatsAppApiConfig, socialNetworks } from "@/lib/settings";
 import { testConnection } from "@/lib/whatsapp-api";
 
@@ -66,6 +67,12 @@ export async function saveSettingsAction(formData: FormData) {
   const emergencyPhone = text(formData, "emergencyPhone", 30);
   if (emergencyPhone && !/^\+?[0-9\s-]{10,16}$/.test(emergencyPhone)) fail("business", "Emergency number: enter a valid phone number");
 
+  const notifyWebhookUrl = optionalUrl(formData, "notifyWebhookUrl", "Notification webhook", "tracking");
+  if (notifyWebhookUrl) {
+    const problem = await publicHttpsUrlProblem(notifyWebhookUrl);
+    if (problem) fail("tracking", `Notification webhook: ${problem}`);
+  }
+
   const upiId = text(formData, "upiId", 80).toLowerCase();
   if (upiId && !/^[a-z0-9._-]{2,256}@[a-z][a-z0-9.-]{1,64}$/.test(upiId)) fail("payments", "UPI ID should look like name@bank");
 
@@ -90,7 +97,7 @@ export async function saveSettingsAction(formData: FormData) {
     gaId: gaId || null,
     metaPixelId: metaPixelId || null,
     googleVerification: googleVerification || null,
-    notifyWebhookUrl: optionalUrl(formData, "notifyWebhookUrl", "Notification webhook", "tracking"),
+    notifyWebhookUrl,
     legalName: text(formData, "legalName", 160) || null,
     gstin: gstin || null,
     tourismRegNo: text(formData, "tourismRegNo", 80) || null,

@@ -1,6 +1,7 @@
 import { NextResponse, after } from "next/server";
 import { db } from "@/lib/db";
 import { fieldErrors, hasContactMethod, schemaFor } from "@/lib/validation";
+import { readJson } from "@/lib/http";
 import { clientIp, ipRateLimit } from "@/lib/rate-limit";
 import { serialize } from "@/lib/serialize";
 import { notifyNewEnquiry } from "@/lib/notify";
@@ -33,12 +34,9 @@ export async function POST(request: Request) {
     );
   }
 
-  let body: Record<string, unknown>;
-  try {
-    body = await request.json();
-  } catch {
-    return NextResponse.json({ ok: false, error: "Invalid request" }, { status: 400 });
-  }
+  const read = await readJson(request);
+  if (!read.ok) return read.response;
+  const body = read.body;
 
   // Honeypot filled → pretend success so bots learn nothing
   if (typeof body.website === "string" && body.website.length > 0) {

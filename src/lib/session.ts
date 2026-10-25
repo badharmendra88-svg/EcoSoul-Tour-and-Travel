@@ -3,7 +3,9 @@
 // on the server. Middleware checks the signature; requireAdmin() then loads the
 // user and also checks `active` and `tokenVersion` (instant revocation).
 
-export const SESSION_COOKIE = "ecosoul_admin";
+// "__Host-" makes browsers accept the cookie only over HTTPS, for this exact host and path "/",
+// so a subdomain can't plant or overwrite it. Plain name in development (http://localhost).
+export const SESSION_COOKIE = process.env.NODE_ENV === "production" ? "__Host-ecosoul_admin" : "ecosoul_admin";
 export const SESSION_TTL_MS = 12 * 60 * 60 * 1000; // 12 hours
 
 const encoder = new TextEncoder();

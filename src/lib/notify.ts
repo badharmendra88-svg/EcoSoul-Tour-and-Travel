@@ -33,6 +33,7 @@ export async function notifyNewEnquiry(enquiry: Enquiry) {
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ text: summary(enquiry) }),
       signal: AbortSignal.timeout(8000),
+      redirect: "manual", // a 3xx counts as a failure; never follow redirects to other hosts
     });
     if (!res.ok) throw new Error(`Webhook responded ${res.status}`);
     await db.enquiry.update({

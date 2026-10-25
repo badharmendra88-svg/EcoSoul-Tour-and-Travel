@@ -1,3 +1,4 @@
+import { CookieConsent } from "@/components/CookieConsent";
 import { FloatingWhatsApp } from "@/components/FloatingWhatsApp";
 import { Footer } from "@/components/Footer";
 import { Header } from "@/components/Header";
@@ -30,6 +31,7 @@ export default async function SiteLayout({ children }: { children: React.ReactNo
       <MobileEnquiryBar />
       <FloatingWhatsApp />
       <UtmCapture />
+      <CookieConsent gaId={settings.gaId} metaPixelId={settings.metaPixelId} />
     </SiteSettingsProvider>
   );
 }

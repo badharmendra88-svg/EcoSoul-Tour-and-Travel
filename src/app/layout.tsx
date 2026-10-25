@@ -38,8 +38,6 @@ export const viewport: Viewport = {
 };
 
 export default async function RootLayout({ children }: Readonly<{ children: React.ReactNode }>) {
-  // Tracking IDs are managed in Admin → Settings → Tracking (validated there)
-  const { gaId, metaPixelId } = await getSettings();
   return (
     // English at launch; architecture keeps copy in pages/DB so Hindi can be added as /hi/ routes later
     <html lang="en-IN" className={`${inter.variable} ${brandSerif.variable} ${brandScript.variable}`}>
@@ -57,19 +55,7 @@ export default async function RootLayout({ children }: Readonly<{ children: Reac
         </Script>
         {children}
         <ServiceWorker />
-        {gaId && (
-          <>
-            <Script src={`https://www.googletagmanager.com/gtag/js?id=${gaId}`} strategy="afterInteractive" />
-            <Script id="ga-init" strategy="afterInteractive">
-              {`window.dataLayer=window.dataLayer||[];function gtag(){dataLayer.push(arguments);}gtag('js',new Date());gtag('config','${gaId}',{anonymize_ip:true});`}
-            </Script>
-          </>
-        )}
-        {metaPixelId && (
-          <Script id="meta-pixel" strategy="afterInteractive">
-            {`!function(f,b,e,v,n,t,s){if(f.fbq)return;n=f.fbq=function(){n.callMethod?n.callMethod.apply(n,arguments):n.queue.push(arguments)};if(!f._fbq)f._fbq=n;n.push=n;n.loaded=!0;n.version='2.0';n.queue=[];t=b.createElement(e);t.async=!0;t.src=v;s=b.getElementsByTagName(e)[0];s.parentNode.insertBefore(t,s)}(window,document,'script','https://connect.facebook.net/en_US/fbevents.js');fbq('init','${metaPixelId}');fbq('track','PageView');`}
-          </Script>
-        )}
+        {/* Google Analytics / Meta Pixel load from the public site layout, only after cookie consent */}
       </body>
     </html>
   );

@@ -31,6 +31,30 @@ export async function createOrder(amountRupees: number, receipt: string, notes: 
   return data.id;
 }
 
+export type RazorpayPayment = { id: string; order_id: string; amount: number; currency: string; status: string };
+
+/** Fetches a payment from Razorpay (status: created | authorized | captured | refunded | failed). */
+export async function fetchPayment(paymentId: string): Promise<RazorpayPayment | null> {
+  const auth = Buffer.from(`${process.env.RAZORPAY_KEY_ID}:${process.env.RAZORPAY_KEY_SECRET}`).toString("base64");
+  try {
+    const res = await fetch(`https://api.razorpay.com/v1/payments/${encodeURIComponent(paymentId)}`, {
+      headers: { Authorization: `Basic ${auth}` },
+      signal: AbortSignal.timeout(15_000),
+    });
+    return res.ok ? ((await res.json()) as RazorpayPayment) : null;
+  } catch {
+    return null;
+  }
+}
+
+/** True when Razorpay's payment is captured and matches our order exactly (amount in paise, INR). */
+export function matchesOrder(p: Pick<RazorpayPayment, "order_id" | "amount" | "currency" | "status">, ours: { orderId: string | null; amount: number }) {
+  return p.status === "captured" && p.order_id === ours.orderId && p.currency === "INR" && p.amount === ours.amount * 100;
+}
+
+export const isOrderId = (v: unknown): v is string => typeof v === "string" && /^order_[A-Za-z0-9]{6,40}$/.test(v);
+export const isPaymentId = (v: unknown): v is string => typeof v === "string" && /^pay_[A-Za-z0-9]{6,40}$/.test(v);
+
 function safeEqualHex(a: string, b: string) {
   const x = Buffer.from(a, "utf8");
   const y = Buffer.from(b, "utf8");

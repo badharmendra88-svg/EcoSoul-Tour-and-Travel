@@ -50,6 +50,7 @@ export function PayPanel({
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState("");
   const [done, setDone] = useState(false);
+  const [notice, setNotice] = useState("");
   const part = advanceDue > 0 ? "advance" : "balance";
   const due = part === "advance" ? advanceDue : balanceDue;
   const pct = Math.min(100, Math.round((paid / Math.max(1, total)) * 100));
@@ -80,7 +81,11 @@ export function PayPanel({
             headers: { "Content-Type": "application/json" },
             body: JSON.stringify({ orderId: r.razorpay_order_id, paymentId: r.razorpay_payment_id, signature: r.razorpay_signature }),
           }).then((x) => x.json()).catch(() => ({ ok: false }));
-          if (v.ok) {
+          if (v.ok && v.pending) {
+            setDone(true);
+            setNotice("Payment received by Razorpay — we're confirming it with the bank. This page will update in a minute; no need to pay again.");
+            setTimeout(() => window.location.reload(), 20_000);
+          } else if (v.ok) {
             track("payment_success", { part, value: due });
             setDone(true);
             window.location.reload();
@@ -119,6 +124,7 @@ export function PayPanel({
         </div>
       )}
 
+      {notice && <p role="status" className="mt-3 rounded-lg bg-emerald-50 px-3 py-2 text-sm text-emerald-800">{notice}</p>}
       {balanceDue > 0 && !done && (
         <>
           <p className="mt-3 text-sm text-slate-700">

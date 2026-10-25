@@ -229,7 +229,7 @@ model Payment {
   quoteId     String
   quote       Quote     @relation(fields: [quoteId], references: [id], onDelete: Cascade)
   method      String // RAZORPAY | UPI | BANK | CASH
-  status      String    @default("CREATED") // CREATED | PAID | FAILED
+  status      String    @default("CREATED") // CREATED | AUTHORIZED (awaiting capture) | PAID | FAILED
   amount      Int // whole rupees
   orderId     String?   @unique // Razorpay order id
   paymentId   String?   @unique // Razorpay payment id

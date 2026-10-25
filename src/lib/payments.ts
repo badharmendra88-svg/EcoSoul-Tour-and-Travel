@@ -35,13 +35,16 @@ export function amountFor(part: PaymentPart, s: ReturnType<typeof paymentState>)
  * payment on the lead's activity log. Returns false if it was already paid.
  */
 export async function recordPaid(paymentId: string, data: { razorpayPaymentId?: string; actor: string }) {
-  const payment = await db.payment.findUnique({ where: { id: paymentId }, include: { quote: true } });
-  if (!payment || payment.status === "PAID") return false;
-  await db.payment.update({
-    where: { id: payment.id },
+  // Conditional update: when the checkout handler and the webhook arrive together,
+  // exactly one of them flips the row to PAID; the other stops here.
+  const flipped = await db.payment.updateMany({
+    where: { id: paymentId, status: { not: "PAID" } },
     data: { status: "PAID", paidAt: new Date(), ...(data.razorpayPaymentId ? { paymentId: data.razorpayPaymentId } : {}) },
   });
+  if (flipped.count === 0) return false;
+  const payment = await db.payment.findUniqueOrThrow({ where: { id: paymentId }, include: { quote: { include: { payments: true } } } });
   const q = payment.quote;
+  const paidTotal = q.payments.filter((p) => p.status === "PAID").reduce((s, p) => s + p.amount, 0);
   if (q.status === "SENT" || q.status === "DRAFT") await db.quote.update({ where: { id: q.id }, data: { status: "ACCEPTED" } });
   if (q.enquiryId) {
     await db.enquiryEvent.create({
@@ -49,23 +52,24 @@ export async function recordPaid(paymentId: string, data: { razorpayPaymentId?: 
         enquiryId: q.enquiryId,
         actor: data.actor,
         action: "payment",
-        detail: `${rupees(payment.amount)} received for ${q.number} via ${payment.method.toLowerCase()}${payment.reference ? ` (ref ${payment.reference})` : ""}`,
+        detail: `${rupees(payment.amount)} received for ${q.number} via ${payment.method.toLowerCase()}${payment.reference ? ` (ref ${payment.reference})` : ""}${paidTotal > q.total ? ` — OVERPAID by ${rupees(paidTotal - q.total)}, refund needed` : ""}`,
       },
     });
   }
-  notifyPayment(q, payment.amount, payment.method).catch(() => undefined);
+  notifyPayment(q, payment.amount, payment.method, paidTotal > q.total ? paidTotal - q.total : 0).catch(() => undefined);
   return true;
 }
 
-async function notifyPayment(q: Quote, amount: number, method: string) {
+async function notifyPayment(q: Quote, amount: number, method: string, overpaid: number) {
   const url = await getNotifyWebhookUrl();
   if (!url) return;
   await fetch(url, {
     method: "POST",
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify({
-      text: `Payment received: ${rupees(amount)} for ${q.number} (${q.title}) via ${method.toLowerCase()}.\nOpen: ${site.url}/admin/quotes/${q.id}/`,
+      text: `Payment received: ${rupees(amount)} for ${q.number} (${q.title}) via ${method.toLowerCase()}.${overpaid ? ` ⚠ Overpaid by ${rupees(overpaid)} — refund needed.` : ""}\nOpen: ${site.url}/admin/quotes/${q.id}/`,
     }),
     signal: AbortSignal.timeout(8000),
+    redirect: "manual",
   });
 }

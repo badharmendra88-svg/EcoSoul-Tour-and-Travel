@@ -16,6 +16,14 @@ const errors: Record<string, string> = {
   inactive: "This account has been deactivated. Contact your Super Admin.",
 };
 
+const setupErrors: Record<string, string> = {
+  key: "Setup key is incorrect.",
+  name: "Enter your name.",
+  email: "Enter a valid email.",
+  password: `Password must be at least ${MIN_PASSWORD_LENGTH} characters, use both letters and numbers, and not contain your email name.`,
+  confirm: "Passwords do not match.",
+};
+
 export default async function LoginPage({ searchParams }: { searchParams: Promise<{ error?: string; email?: string; setupError?: string }> }) {
   if (await getCurrentUser()) redirect("/admin/");
   const { error, email, setupError } = await searchParams;
@@ -60,7 +68,9 @@ export default async function LoginPage({ searchParams }: { searchParams: Promis
                 Enter the setup key (the <code>ADMIN_PASSWORD</code> value from the server&apos;s <code>.env</code>) and your details.
               </p>
             </div>
-            {setupError && <p role="alert" className="rounded-xl bg-rose-50 px-4 py-2.5 text-sm text-rose-700 ring-1 ring-rose-100">{setupError}</p>}
+            {setupError && setupErrors[setupError] && (
+              <p role="alert" className="rounded-xl bg-rose-50 px-4 py-2.5 text-sm text-rose-700 ring-1 ring-rose-100">{setupErrors[setupError]}</p>
+            )}
             <label className="block"><span className="admin-label">Setup key</span><input name="setupKey" type="password" required className="admin-input py-3" autoComplete="off" /></label>
             <label className="block"><span className="admin-label">Your name</span><input name="name" required className="admin-input py-3" autoComplete="name" /></label>
             <label className="block"><span className="admin-label">Email (your login)</span><input name="email" type="email" required className="admin-input py-3" autoComplete="email" /></label>

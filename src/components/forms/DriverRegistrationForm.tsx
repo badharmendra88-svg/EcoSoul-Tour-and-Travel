@@ -82,7 +82,7 @@ export function DriverRegistrationForm() {
   const inFlight = useRef(false);
   const [status, setStatus] = useState<"idle" | "submitting" | "done">("idle");
   const [formError, setFormError] = useState("");
-  const [result, setResult] = useState<{ ref: string; duplicate?: boolean } | null>(null);
+  const [result, setResult] = useState<{ ref?: string; duplicate?: boolean } | null>(null);
 
   const set = (k: string, val: Values[string]) => setV((p) => ({ ...p, [k]: val }));
   const toggle = (k: string, item: string) =>
@@ -158,11 +158,19 @@ export function DriverRegistrationForm() {
           {result.duplicate ? "You're already registered with us" : "Thank you — your registration is received"}
         </h2>
         <p className="mt-2 text-slate-700">
-          Your registration ID is <strong className="font-mono">{result.ref}</strong>. Our team will call you to arrange document
-          verification. Registration doesn&apos;t guarantee trips — you&apos;ll become an active partner after verification.
+          {result.ref ? (
+            <>Your registration ID is <strong className="font-mono">{result.ref}</strong>. </>
+          ) : (
+            <>Your earlier registration with this mobile number is still open. </>
+          )}
+          Our team will call you to arrange document verification. Registration doesn&apos;t guarantee trips — you&apos;ll become an
+          active partner after verification.
         </p>
         <div className="mt-5 flex flex-wrap justify-center gap-3">
-          <WhatsAppButton label="Message us on WhatsApp" message={`Hi EcoSoul, I registered as a driver partner (${result.ref}).`} />
+          <WhatsAppButton
+            label="Message us on WhatsApp"
+            message={result.ref ? `Hi EcoSoul, I registered as a driver partner (${result.ref}).` : "Hi EcoSoul, I registered as a driver partner earlier."}
+          />
         </div>
       </div>
     );

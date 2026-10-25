@@ -26,7 +26,8 @@ export async function saveUpload(file: File, nameHint: string) {
   const input = Buffer.from(await file.arrayBuffer());
   let output: Buffer;
   try {
-    const img = sharp(input, { failOn: "error" }).rotate();
+    // Pixel cap: a small file can still decode to a huge image ("decompression bomb")
+    const img = sharp(input, { failOn: "error", limitInputPixels: 50_000_000 }).rotate();
     const meta = await img.metadata();
     if ((meta.width ?? 0) < 600) throw new Error("Image is too small — use at least 600 px wide.");
     output = await img.resize({ width: 2000, withoutEnlargement: true }).webp({ quality: 80 }).toBuffer();

@@ -2,6 +2,7 @@ import Link from "next/link";
 import { originPath, origins } from "@/config/journeys";
 import { footerNav, officialLinks, site, telLink } from "@/config/site";
 import { getSettings } from "@/lib/settings";
+import { CookieSettingsButton } from "./CookieSettingsButton";
 import { Logo } from "./Logo";
 import { SocialLinks } from "./SocialIcons";
 
@@ -59,6 +60,8 @@ export async function Footer() {
             © {year} {s.legalName || site.name}. Not an official government website.
             {s.gstin && <> · GSTIN {s.gstin}</>}
             {s.tourismRegNo && <> · Uttarakhand Tourism Reg. {s.tourismRegNo}</>}
+            {" · "}
+            <CookieSettingsButton className="inline-block py-1.5 underline hover:text-white" />
           </p>
           <p>
             Official info:{" "}

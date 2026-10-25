@@ -3,6 +3,7 @@ import { db } from "@/lib/db";
 import { clientIp, ipRateLimit } from "@/lib/rate-limit";
 import { serialize } from "@/lib/serialize";
 import { encryptSecret } from "@/lib/secret-box";
+import { readJson } from "@/lib/http";
 import { getNotifyWebhookUrl } from "@/lib/settings";
 import { driverApplicationSchema, fieldErrors } from "@/lib/validation";
 import { site } from "@/config/site";
@@ -24,12 +25,9 @@ export async function POST(request: Request) {
     return NextResponse.json({ ok: false, error: "Too many attempts. Please try again later or contact us on WhatsApp." }, { status: 429 });
   }
 
-  let body: Record<string, unknown>;
-  try {
-    body = await request.json();
-  } catch {
-    return NextResponse.json({ ok: false, error: "Invalid request" }, { status: 400 });
-  }
+  const read = await readJson(request);
+  if (!read.ok) return read.response;
+  const body = read.body;
   if (typeof body.website === "string" && body.website.length > 0) return NextResponse.json({ ok: true, ref: makeRef() });
 
   const parsed = driverApplicationSchema.safeParse(body);
@@ -43,7 +41,8 @@ export async function POST(request: Request) {
     const existing = await db.driverPartner.findFirst({
       where: { phone: v.phone.replace(/\s+/g, " "), status: { notIn: ["REJECTED", "INACTIVE"] } },
     });
-    if (existing) return NextResponse.json({ ok: true, ref: existing.ref, duplicate: true });
+    // Same answer as a new application (no ref), so the form can't be used to check whether a number has applied
+    if (existing) return NextResponse.json({ ok: true, duplicate: true });
 
     const driver = await db.driverPartner.create({
       data: {
@@ -84,6 +83,7 @@ export async function POST(request: Request) {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ text: `New driver registration ${driver.ref} — ${driver.name}, ${driver.baseLocation}\nOpen: ${site.url}/admin/drivers/${driver.id}/` }),
         signal: AbortSignal.timeout(8000),
+        redirect: "manual",
       }).catch((e) => console.error("[driver notify]", e));
     });
 

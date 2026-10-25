@@ -41,17 +41,27 @@ export function ipRateLimit(scope: string, ip: string | null, limit: number, win
   return ip ? rateLimit(`${scope}:${ip}`, limit, windowMs) : rateLimit(`${scope}:shared`, limit * 20, windowMs);
 }
 
+const MAX_BUCKETS = 10_000;
+
+/** Drops expired buckets, then the oldest ones if a flood of distinct keys keeps the map too large. */
 function prune(now: number) {
   for (const [key, b] of buckets) if (b.resetAt <= now) buckets.delete(key);
+  if (buckets.size <= MAX_BUCKETS) return;
+  for (const key of buckets.keys()) {
+    buckets.delete(key);
+    if (buckets.size <= MAX_BUCKETS * 0.9) break;
+  }
 }
 
 /**
  * Client IP as reported by the reverse proxy, or null when there is none.
- * X-Real-IP is set by the proxy itself; otherwise the right-most X-Forwarded-For
- * entry is the one the nearest proxy appended (left-most entries can be forged
- * by the client).
+ * Only trusted when TRUST_PROXY=1 (or on Vercel): without a proxy that overwrites
+ * these headers, a client could send a new fake IP on every request and dodge
+ * every limit. X-Real-IP is set by the proxy itself; otherwise the right-most
+ * X-Forwarded-For entry is the one the nearest proxy appended.
  */
 export function clientIp(headers: Headers): string | null {
+  if (process.env.TRUST_PROXY !== "1" && !process.env.VERCEL) return null;
   const real = headers.get("x-real-ip")?.trim();
   if (real) return real;
   const forwarded = headers.get("x-forwarded-for")?.split(",").map((s) => s.trim()).filter(Boolean);

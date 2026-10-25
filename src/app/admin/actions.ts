@@ -4,9 +4,9 @@ import { cookies, headers } from "next/headers";
 import { redirect } from "next/navigation";
 import { revalidatePath } from "next/cache";
 import { db } from "@/lib/db";
-import { requireAdmin, requireUser } from "@/lib/admin-auth";
+import { getCurrentUser, requireAdmin, requireUser } from "@/lib/admin-auth";
 import { notifyNewEnquiry } from "@/lib/notify";
-import { clearLimit, clientIp, ipRateLimit, isLimited, rateLimit } from "@/lib/rate-limit";
+import { clearLimit, clientIp, ipRateLimit, rateLimit } from "@/lib/rate-limit";
 import { hashPassword, passwordProblem, verifyPassword } from "@/lib/password";
 import { SESSION_COOKIE, SESSION_TTL_MS, createSessionToken, setupKeyMatches } from "@/lib/session";
 import { statusesFor, tripTypes } from "@/config/options";
@@ -30,29 +30,28 @@ async function startSession(user: { id: string; tokenVersion: number }) {
 const DUMMY_HASH = "scrypt$16384$8$1$AAAAAAAAAAAAAAAAAAAAAA$" + "A".repeat(86);
 
 const LOGIN_WINDOW_MS = 15 * 60 * 1000;
-const MAX_FAILED_PER_ACCOUNT = 6;
+const MAX_TRIES_PER_ACCOUNT_AND_IP = 6;
+const MAX_TRIES_PER_ACCOUNT = 30; // from all IPs — slows distributed guessing without letting one stranger lock staff out
 
 export async function loginAction(formData: FormData) {
   const ip = clientIp(await headers());
   const email = String(formData.get("email") ?? "").trim().toLowerCase().slice(0, 120);
   const password = String(formData.get("password") ?? "").slice(0, 200);
-  // Only failed attempts count, so staff signing in normally are never locked out
-  const ipKey = `login:${ip ?? "shared"}`;
-  const ipMax = ip ? 10 : 200;
-  const userKey = `login-user:${email}`;
-  if (isLimited(ipKey, ipMax) || isLimited(userKey, MAX_FAILED_PER_ACCOUNT)) {
-    redirect("/admin/login/?error=rate");
-  }
+  // Attempts are counted BEFORE the password check, so parallel requests can't all slip
+  // past the limit; a successful sign-in clears the per-account/IP counter.
+  const pairKey = `login-pair:${email}:${ip ?? "shared"}`;
+  const hits = [
+    rateLimit(`login:${ip ?? "shared"}`, ip ? 20 : 300, LOGIN_WINDOW_MS),
+    rateLimit(pairKey, ip ? MAX_TRIES_PER_ACCOUNT_AND_IP : MAX_TRIES_PER_ACCOUNT, LOGIN_WINDOW_MS),
+    rateLimit(`login-user:${email}`, MAX_TRIES_PER_ACCOUNT, LOGIN_WINDOW_MS),
+  ];
+  if (hits.some((h) => !h.ok)) redirect("/admin/login/?error=rate");
 
   const user = await db.adminUser.findUnique({ where: { email } });
   const ok = await verifyPassword(password, user?.passwordHash ?? DUMMY_HASH).catch(() => false);
-  if (!user || !ok) {
-    rateLimit(ipKey, ipMax, LOGIN_WINDOW_MS);
-    rateLimit(userKey, MAX_FAILED_PER_ACCOUNT, LOGIN_WINDOW_MS);
-    redirect(`/admin/login/?error=1&email=${encodeURIComponent(email)}`);
-  }
+  if (!user || !ok) redirect(`/admin/login/?error=1&email=${encodeURIComponent(email)}`);
   if (!user.active) redirect("/admin/login/?error=inactive");
-  clearLimit(userKey);
+  clearLimit(pairKey);
 
   await db.adminUser.update({ where: { id: user.id }, data: { lastLoginAt: new Date() } });
   await startSession(user);
@@ -68,14 +67,14 @@ export async function setupSuperAdminAction(formData: FormData) {
   const name = String(formData.get("name") ?? "").trim().slice(0, 80);
   const email = String(formData.get("email") ?? "").trim().toLowerCase().slice(0, 120);
   const password = String(formData.get("password") ?? "");
-  const fail = (m: string): never => redirect(`/admin/login/?setupError=${encodeURIComponent(m)}`);
+  // Error codes only (mapped to fixed messages on the login page), so a crafted link can't show arbitrary text
+  const fail = (code: "key" | "name" | "email" | "password" | "confirm"): never => redirect(`/admin/login/?setupError=${code}`);
 
-  if (!(await setupKeyMatches(String(formData.get("setupKey") ?? "")))) fail("Setup key is incorrect.");
-  if (name.length < 2) fail("Enter your name.");
-  if (!emailRe.test(email)) fail("Enter a valid email.");
-  const problem = passwordProblem(password, email);
-  if (problem) fail(problem);
-  if (password !== String(formData.get("confirm") ?? "")) fail("Passwords do not match.");
+  if (!(await setupKeyMatches(String(formData.get("setupKey") ?? "")))) fail("key");
+  if (name.length < 2) fail("name");
+  if (!emailRe.test(email)) fail("email");
+  if (passwordProblem(password, email)) fail("password");
+  if (password !== String(formData.get("confirm") ?? "")) fail("confirm");
 
   const user = await db.adminUser.create({
     data: { name, email, passwordHash: await hashPassword(password), role: "SUPER_ADMIN", lastLoginAt: new Date() },
@@ -85,6 +84,10 @@ export async function setupSuperAdminAction(formData: FormData) {
 }
 
 export async function logoutAction() {
+  // Revoke the token itself (not just the cookie), so a copied session stops working too.
+  // This also signs the user out on their other devices.
+  const me = await getCurrentUser();
+  if (me) await db.adminUser.update({ where: { id: me.id }, data: { tokenVersion: { increment: 1 } } });
   (await cookies()).delete(SESSION_COOKIE);
   redirect("/admin/login/");
 }

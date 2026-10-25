@@ -16,7 +16,8 @@ function cell(value: unknown) {
   if (value == null) return "";
   let s = value instanceof Date ? value.toISOString() : String(value);
   // Neutralise spreadsheet formula injection
-  if (/^[=+\-@\t\r]/.test(s)) s = `'${s}`;
+  // (also after leading spaces, and "|" which some spreadsheets treat as DDE)
+  if (/^\s*[=+\-@|]/.test(s) || /^[\t\r]/.test(s)) s = `'${s}`;
   return /[",\n\r]/.test(s) ? `"${s.replace(/"/g, '""')}"` : s;
 }
 
