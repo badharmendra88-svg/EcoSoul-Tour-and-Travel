@@ -1,5 +1,5 @@
 import "server-only";
-import type { Payment, Quote } from "@prisma/client";
+import type { Payment, Quote } from "@/generated/prisma/client";
 import { site } from "@/config/site";
 import { db } from "./db";
 import { rupees } from "./quote";

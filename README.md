@@ -4,7 +4,9 @@ Mobile-first, enquiry-led travel website for Uttarakhand: tour packages, custom 
 
 Built from `EcoSoul_Uttarakhand_Travel_Blueprint_with_SEO_Plan.docx` (v1.0, 20 Oct 2026). Review feedback lives in `docs/` — see `docs/review-1-implementation.md` for what was changed after the 1st review.
 
-**Stack:** Next.js 15 (App Router) · TypeScript · Tailwind CSS v4 · Prisma 6 · SQLite (dev) · Zod
+**Stack:** Next.js 16 (App Router, Turbopack) · React 19.3 · TypeScript 6 · Tailwind CSS v4 · Prisma 7 (better-sqlite3 driver adapter) · SQLite (dev) · Zod 4 · ESLint 10
+
+**Requirements:** Node.js 20.19+ (22 or 24 recommended), npm 11.
 
 ---
 
@@ -13,9 +15,14 @@ Built from `EcoSoul_Uttarakhand_Travel_Blueprint_with_SEO_Plan.docx` (v1.0, 20 O
 ```bash
 npm install
 cp .env.example .env          # then edit values (see below)
-npx prisma migrate dev        # creates prisma/dev.db and seeds starter content
+npx prisma migrate dev        # creates prisma/dev.db (Prisma 7 no longer seeds automatically)
+npm run db:seed               # starter destinations and packages
 npm run dev                   # http://localhost:3200
 ```
+
+**Prisma 7 notes:** the client is generated into `src/generated/prisma` (git-ignored; `npm install` and `npm run build` regenerate it) and imported as `@/generated/prisma/client`. The connection is configured in `prisma.config.ts`, and `DATABASE_URL` is relative to the project root (`file:./prisma/dev.db`). After editing the schema run `npm run db:migrate` and then `npx prisma generate`.
+
+**Install scripts:** npm 11 runs package install scripts only for packages listed under `allowScripts` in `package.json` (Prisma, better-sqlite3, esbuild, unrs-resolver). When a dependency upgrade changes their version, run `npm install-scripts ls` and approve the new versions.
 
 Admin panel: <http://localhost:3200/admin/>. **First run:** the login page asks you to create the Super Admin — enter the `ADMIN_PASSWORD` value from `.env` as the setup key, then your name, email and password. After that everyone signs in with their own email + password.
 
@@ -139,7 +146,8 @@ Admin panel: <http://localhost:3200/admin/>. **First run:** the login page asks 
 ```
 prisma/
   schema.prisma        Destination, Package, Enquiry, EnquiryEvent, VehicleRate, HotelRate, QuoteSettings, Quote
-  seed.mjs             Starter content (blueprint §5–§6)
+  seed.mjs             Starter content (blueprint §5–§6), run with tsx via prisma.config.ts
+prisma.config.ts       Prisma CLI config: schema, migrations, seed, DATABASE_URL
 src/
   app/(site)/          Public pages
   app/admin/           Login, server actions, (panel)/ admin pages
@@ -147,8 +155,11 @@ src/
   components/          UI, forms, cards, SceneArt placeholder illustrations
   config/site.ts       Business details, navigation, official links
   config/options.ts    Trip types, services, vehicles, status workflows
-  lib/                 db, validation, session/auth, rate limit, notify, SEO helpers
-  middleware.ts        Admin route protection
+  config/journeys.ts   Source cities, routes and distances, season planner
+  generated/prisma/    Generated Prisma client (not committed)
+  lib/                 db, validation, session/auth, rate limit, payments, consent, notify, SEO helpers
+  instrumentation.ts   Production start-up checks for unsafe secrets
+  proxy.ts             Admin route protection (Next.js 16 proxy, formerly middleware)
 ```
 
 ---
@@ -174,7 +185,7 @@ Content in this repo is a **starting point**, not verified operational data.
 
 SQLite is for local development. For production:
 
-1. Use PostgreSQL (e.g. Neon, Supabase, Railway): set `provider = "postgresql"` in `prisma/schema.prisma`, point `DATABASE_URL` at it, and create a fresh migration.
+1. Use PostgreSQL (e.g. Neon, Supabase, Railway): set `provider = "postgresql"` in `prisma/schema.prisma`, swap the SQLite driver adapter in `src/lib/db.ts` and `prisma/seed.mjs` for `@prisma/adapter-pg`, point `DATABASE_URL` at it, and create a fresh migration. If you keep SQLite on a single server, change `DATABASE_URL` to `file:./prisma/dev.db` (Prisma 7 resolves it from the project root).
 2. Run `npm run db:deploy` (and `npm run db:seed` once) against the production database.
 3. Deploy to Vercel or any Node host; set all environment variables there. Serve over HTTPS only.
 4. The in-memory rate limiter is per server instance — use a shared store (e.g. Upstash Redis) if you run multiple instances.

@@ -1,9 +1,9 @@
 import { NextResponse, type NextRequest } from "next/server";
 import { SESSION_COOKIE, verifySessionToken } from "@/lib/session";
 
-// First line of defence for the admin area; every admin page and action also
+// First line of defence for the admin area (Next.js 16 "proxy", formerly middleware); every admin page and action also
 // calls requireAdmin() server-side.
-export async function middleware(request: NextRequest) {
+export async function proxy(request: NextRequest) {
   const { pathname } = request.nextUrl;
   if (pathname.startsWith("/admin/login")) return NextResponse.next();
 

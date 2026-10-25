@@ -4,6 +4,7 @@ import { requireAdmin } from "@/lib/admin-auth";
 import { db } from "@/lib/db";
 import { formatDate } from "@/lib/format";
 import { Badge, Icon, PageHeader, StatusBadge } from "../ui";
+import { daysAgo } from "@/lib/time";
 
 export default async function AdminDestinationsPage() {
   await requireAdmin("content.edit");
@@ -11,7 +12,7 @@ export default async function AdminDestinationsPage() {
     orderBy: [{ sortOrder: "asc" }, { name: "asc" }],
     include: { _count: { select: { packages: true } } },
   });
-  const staleBefore = Date.now() - 180 * 24 * 3600 * 1000;
+  const staleBefore = daysAgo(180).getTime();
   const stale = destinations.filter((d) => d.reviewedAt.getTime() < staleBefore).length;
 
   return (

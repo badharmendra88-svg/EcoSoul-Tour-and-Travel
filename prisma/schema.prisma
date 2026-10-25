@@ -2,13 +2,16 @@
 // SQLite for the MVP. Arrays/objects are stored as JSON strings because
 // SQLite has no native list type; see src/lib/json.ts for helpers.
 
+// Prisma 7: the client is generated into the app (imported as "@/generated/prisma/client")
+// and connects through the better-sqlite3 driver adapter (src/lib/db.ts).
+// The connection URL lives in prisma.config.ts.
 generator client {
-  provider = "prisma-client-js"
+  provider = "prisma-client"
+  output   = "../src/generated/prisma"
 }
 
 datasource db {
   provider = "sqlite"
-  url      = env("DATABASE_URL")
 }
 
 model Destination {

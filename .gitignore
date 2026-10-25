@@ -50,3 +50,4 @@ next-env.d.ts
 
 # admin-uploaded photos (back these up separately)
 /uploads/
+src/generated/

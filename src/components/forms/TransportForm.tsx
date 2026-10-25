@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useState, useSyncExternalStore } from "react";
 import { serviceTypes, vehicleCategories, type ServiceType } from "@/config/options";
 import { BookingSteps } from "../BookingSteps";
 import { WhatsAppButton } from "../ContactButtons";
@@ -57,9 +57,13 @@ export function TransportForm({
   const set = (key: string, value: unknown) => setV((prev) => ({ ...prev, [key]: value }));
 
   // Prefill from links like ?pickup=Haldwani&drop=Nainital (popular routes) and the
-  // fare estimator's "Book this" (?vehicle=SUV&service=ROUND_TRIP&days=3)
-  useEffect(() => {
-    const q = new URLSearchParams(window.location.search);
+  // fare estimator's "Book this" (?vehicle=SUV&service=CAR_DRIVER&days=3). Applied once when
+  // the URL is known (server render sees ""), adjusting state during render instead of in an effect.
+  const search = useSyncExternalStore(noSubscribe, () => window.location.search, () => "");
+  const [appliedSearch, setAppliedSearch] = useState("");
+  if (search !== appliedSearch) {
+    setAppliedSearch(search);
+    const q = new URLSearchParams(search);
     const pickup = q.get("pickup")?.slice(0, 120);
     const drop = q.get("drop")?.slice(0, 120);
     const vehicle = q.get("vehicle");
@@ -73,7 +77,7 @@ export function TransportForm({
       serviceType: !lockService && service && service in serviceTypes ? service : prev.serviceType,
       tripDays: days >= 1 && days <= 60 ? String(days) : prev.tripDays,
     }));
-  }, [lockService]);
+  }
 
   const st = v.serviceType as ServiceType;
   const needsDrop = st !== "LOCAL" && st !== "DRIVER_ONLY";
@@ -283,4 +287,9 @@ export function TransportForm({
       </div>
     </form>
   );
+}
+
+/** The URL doesn't change while the form is on screen, so there is nothing to subscribe to. */
+function noSubscribe() {
+  return () => {};
 }

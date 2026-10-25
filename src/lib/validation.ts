@@ -4,6 +4,10 @@ import { serviceTypes } from "@/config/options";
 // Shared by the browser forms and the API so both enforce the same rules
 // (FR-04, §24.4). The server is the source of truth.
 
+// zod 4's default for a missing field ("Invalid input: expected string, received undefined")
+// isn't meant for customers; fields with their own messages keep them.
+z.config({ customError: (issue) => (issue.code === "invalid_type" && issue.input === undefined ? "This field is required" : undefined) });
+
 const phoneRe = /^\+?[0-9\s-]{10,16}$/;
 const dateRe = /^\d{4}-\d{2}-\d{2}$/;
 
@@ -38,10 +42,8 @@ const contact = {
     .trim()
     .optional()
     .transform((v) => (v ? v : undefined))
-    .refine((v) => !v || z.string().email().safeParse(v).success, "Please enter a valid email"),
-  consent: z.literal(true, {
-    errorMap: () => ({ message: "Please accept the privacy notice and booking terms" }),
-  }),
+    .refine((v) => !v || z.email().safeParse(v).success, "Please enter a valid email"),
+  consent: z.literal(true, { error: "Please accept the privacy notice and booking terms" }),
   heardFrom: optionalText(60),
   travellingFrom: optionalText(80),
   sourcePage: optionalText(200),
@@ -88,9 +90,7 @@ export const packageEnquirySchema = base.extend({
 export const transportEnquirySchema = base
   .extend({
     kind: z.literal("TRANSPORT"),
-    serviceType: z.enum(Object.keys(serviceTypes) as [keyof typeof serviceTypes, ...(keyof typeof serviceTypes)[]], {
-      errorMap: () => ({ message: "Please choose a service type" }),
-    }),
+    serviceType: z.enum(Object.keys(serviceTypes) as [keyof typeof serviceTypes, ...(keyof typeof serviceTypes)[]], { error: "Please choose a service type" }),
     pickup: z.string().trim().min(2, "Please enter the pickup point").max(200),
     drop: optionalText(200),
     travelDate: futureDate,
@@ -155,7 +155,7 @@ export function hasContactMethod(v: { phone?: string; email?: string }) {
 export function fieldErrors(error: z.ZodError): Record<string, string> {
   const out: Record<string, string> = {};
   for (const issue of error.issues) {
-    const key = issue.path.join(".") || "_form";
+    const key = issue.path.map(String).join(".") || "_form";
     if (!out[key]) out[key] = issue.message;
   }
   return out;
@@ -171,13 +171,13 @@ export const driverApplicationSchema = z
       .trim()
       .optional()
       .transform((v) => (v ? v : undefined))
-      .refine((v) => !v || z.string().email().safeParse(v).success, "Please enter a valid email"),
+      .refine((v) => !v || z.email().safeParse(v).success, "Please enter a valid email"),
     baseLocation: z.string().trim().min(2, "Where are you based?").max(80),
     serviceAreas: z.array(z.string().max(60)).min(1, "Choose at least one area").max(10),
-    experienceYears: z.coerce.number({ invalid_type_error: "Enter years of experience" }).int().min(0).max(50),
+    experienceYears: z.coerce.number({ error: "Enter years of experience" }).int().min(0).max(50),
     hillExperienceYears: z.preprocess((x) => (x === "" || x == null ? undefined : Number(x)), z.number().int().min(0).max(50).optional()),
     languages: z.array(z.string().max(30)).max(10).optional().default([]),
-    licenceType: z.enum(["LMV", "LMV_TR", "HMV"], { errorMap: () => ({ message: "Choose your licence type" }) }),
+    licenceType: z.enum(["LMV", "LMV_TR", "HMV"], { error: "Choose your licence type" }),
     licenceNumber: z
       .string()
       .trim()
@@ -187,7 +187,7 @@ export const driverApplicationSchema = z
       .string()
       .regex(dateRe, "Choose the licence valid-till date")
       .refine((d) => d >= todayIST(), "Licence must be valid today"),
-    partnerType: z.enum(["DRIVER_ONLY", "WITH_VEHICLE"], { errorMap: () => ({ message: "Choose how you'd like to partner" }) }),
+    partnerType: z.enum(["DRIVER_ONLY", "WITH_VEHICLE"], { error: "Choose how you'd like to partner" }),
     vehicleCategory: optionalText(40),
     vehicleModel: optionalText(60),
     vehicleRegNo: z
@@ -197,11 +197,11 @@ export const driverApplicationSchema = z
       .transform((v) => (v ? v.toUpperCase().replace(/\s+/g, " ") : undefined)),
     vehicleSeats: z.preprocess((x) => (x === "" || x == null ? undefined : Number(x)), z.number().int().min(2).max(30).optional()),
     commercialPermit: z.enum(["YES", "NO", "APPLIED"]).optional().or(z.literal("").transform(() => undefined)),
-    availability: z.enum(["FULL_TIME", "PART_TIME", "WEEKENDS", "SEASONAL"], { errorMap: () => ({ message: "Choose your availability" }) }),
+    availability: z.enum(["FULL_TIME", "PART_TIME", "WEEKENDS", "SEASONAL"], { error: "Choose your availability" }),
     expectedDailyRate: z.preprocess((x) => (x === "" || x == null ? undefined : Number(x)), z.number().int().min(0).max(100000).optional()),
     message: optionalText(1000),
     heardFrom: optionalText(60),
-    consent: z.literal(true, { errorMap: () => ({ message: "Please accept the privacy notice and verification terms" }) }),
+    consent: z.literal(true, { error: "Please accept the privacy notice and verification terms" }),
     website: z.string().max(0).optional(),
   })
   .superRefine((v, ctx) => {

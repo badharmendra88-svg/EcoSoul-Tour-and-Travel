@@ -3,7 +3,7 @@ import { db } from "./db";
 import { getNotifyWebhookUrl } from "./settings";
 import { site } from "@/config/site";
 import { enquiryKinds, serviceTypes } from "@/config/options";
-import type { Enquiry } from "@prisma/client";
+import type { Enquiry } from "@/generated/prisma/client";
 
 // FR-08 / TR-07: internal notification for new leads. Sends only what the
 // team needs to pick the lead up — full contact details stay in the admin.

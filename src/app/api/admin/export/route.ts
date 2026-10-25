@@ -1,4 +1,4 @@
-import type { Prisma } from "@prisma/client";
+import type { Prisma } from "@/generated/prisma/client";
 import { enquiryKinds } from "@/config/options";
 import { db } from "@/lib/db";
 import { getCurrentUser } from "@/lib/admin-auth";

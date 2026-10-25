@@ -1,10 +1,11 @@
 import Link from "next/link";
-import type { Prisma } from "@prisma/client";
+import type { Prisma } from "@/generated/prisma/client";
 import { enquiryKinds, serviceTypes, statusLabel, transportStatuses, tripStatuses } from "@/config/options";
 import { requireUser } from "@/lib/admin-auth";
 import { can } from "@/lib/permissions";
 import { db } from "@/lib/db";
 import { Avatar, EmptyState, Icon, PageHeader, StatCard, StatusBadge, compactRupees, timeAgo, type IconName } from "./ui";
+import { daysAgo, monthStart } from "@/lib/time";
 
 type Search = { kind?: string; status?: string; q?: string; page?: string; denied?: string };
 
@@ -17,8 +18,8 @@ export default async function LeadsPage({ searchParams }: { searchParams: Promis
   const sp = await searchParams;
   const page = Math.max(1, Number(sp.page) || 1);
   const q = sp.q?.trim();
-  const weekAgo = new Date(Date.now() - 7 * 86400000);
-  const monthStart = new Date(new Date().getFullYear(), new Date().getMonth(), 1);
+  const weekAgo = daysAgo(7);
+  const sinceMonthStart = monthStart();
 
   const where: Prisma.EnquiryWhereInput = {
     ...(sp.kind && sp.kind in enquiryKinds ? { kind: sp.kind } : {}),
@@ -44,14 +45,14 @@ export default async function LeadsPage({ searchParams }: { searchParams: Promis
     db.enquiry.count({ where: { createdAt: { gte: weekAgo }, status: { not: "SPAM" } } }),
     db.enquiry.groupBy({ by: ["kind"], where: { status: { not: "SPAM" } }, _count: true }),
     db.quote.aggregate({ where: { status: "SENT" }, _sum: { total: true }, _count: true }),
-    db.quote.aggregate({ where: { status: "ACCEPTED", updatedAt: { gte: monthStart } }, _sum: { total: true }, _count: true }),
+    db.quote.aggregate({ where: { status: "ACCEPTED", updatedAt: { gte: sinceMonthStart } }, _sum: { total: true }, _count: true }),
     db.quote.count({ where: { status: { in: ["SENT", "ACCEPTED", "DECLINED"] } } }),
     db.quote.count({ where: { status: "ACCEPTED" } }),
     db.enquiry.count({ where: { notifyStatus: "FAILED" } }),
   ]);
   // Audience insight: where the last 30 days of leads travel from, and which campaigns brought them
   const recentSources = await db.enquiry.findMany({
-    where: { createdAt: { gte: new Date(Date.now() - 30 * 86400000) }, status: { not: "SPAM" } },
+    where: { createdAt: { gte: daysAgo(30) }, status: { not: "SPAM" } },
     select: { travellingFrom: true, utm: true },
     take: 2000,
   });

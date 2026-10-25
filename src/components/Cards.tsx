@@ -1,5 +1,5 @@
 import Link from "next/link";
-import type { Destination, Package } from "@prisma/client";
+import type { Destination, Package } from "@/generated/prisma/client";
 import { tripTypes } from "@/config/options";
 import { formatPrice } from "@/lib/format";
 import { parseList } from "@/lib/json";

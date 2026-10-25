@@ -9,7 +9,8 @@ import sharp from "sharp";
 // can be added at runtime. Served by /media/[file]. For multi-server or
 // serverless hosting, swap this for object storage (S3/R2/Vercel Blob).
 
-export const MEDIA_DIR = path.resolve(process.env.MEDIA_DIR || "uploads");
+// Runtime data folder, not part of the build (turbopackIgnore stops Turbopack tracing the whole project)
+export const MEDIA_DIR = path.resolve(/*turbopackIgnore: true*/ process.env.MEDIA_DIR || "uploads");
 export const MAX_UPLOAD_BYTES = 8 * 1024 * 1024;
 const ACCEPTED = ["image/jpeg", "image/png", "image/webp", "image/avif"];
 export const MEDIA_NAME_RE = /^[a-z0-9-]{1,60}-[a-f0-9]{10}\.webp$/;
@@ -37,7 +38,7 @@ export async function saveUpload(file: File, nameHint: string) {
 
   await mkdir(MEDIA_DIR, { recursive: true });
   const name = `${slug(nameHint)}-${randomBytes(5).toString("hex")}.webp`;
-  await writeFile(path.join(MEDIA_DIR, name), output);
+  await writeFile(path.join(/*turbopackIgnore: true*/ MEDIA_DIR, name), output);
   return `/media/${name}`;
 }
 
@@ -45,7 +46,7 @@ export async function saveUpload(file: File, nameHint: string) {
 export async function deleteUpload(url: string | null | undefined) {
   const name = url?.startsWith("/media/") ? url.slice(7) : null;
   if (!name || !MEDIA_NAME_RE.test(name)) return;
-  await unlink(path.join(MEDIA_DIR, name)).catch(() => undefined);
+  await unlink(path.join(/*turbopackIgnore: true*/ MEDIA_DIR, name)).catch(() => undefined);
 }
 
 /**

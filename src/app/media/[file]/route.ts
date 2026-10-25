@@ -7,7 +7,7 @@ export async function GET(_req: Request, { params }: { params: Promise<{ file: s
   const { file } = await params;
   if (!MEDIA_NAME_RE.test(file)) return new Response("Not found", { status: 404 });
   try {
-    const data = await readFile(path.join(MEDIA_DIR, file));
+    const data = await readFile(path.join(/*turbopackIgnore: true*/ MEDIA_DIR, file));
     return new Response(new Uint8Array(data), {
       headers: {
         "Content-Type": "image/webp",

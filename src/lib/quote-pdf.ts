@@ -2,7 +2,7 @@ import "server-only";
 import { readFile } from "node:fs/promises";
 import path from "node:path";
 import { PDFDocument, StandardFonts, rgb, type PDFFont, type PDFPage } from "pdf-lib";
-import type { Quote } from "@prisma/client";
+import type { Quote } from "@/generated/prisma/client";
 import { site } from "@/config/site";
 import { formatDate } from "./format";
 import { parseList } from "./json";

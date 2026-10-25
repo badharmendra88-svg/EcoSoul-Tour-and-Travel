@@ -5,6 +5,7 @@ import { db } from "@/lib/db";
 import { formatDate } from "@/lib/format";
 import { rupees } from "@/lib/quote";
 import { Avatar, EmptyState, Icon, PageHeader, StatCard, StatusBadge, compactRupees, timeAgo } from "../ui";
+import { istTodayISO } from "@/lib/time";
 
 const filters = [
   { id: "", label: "All" },
@@ -18,7 +19,7 @@ export default async function QuotesPage({ searchParams }: { searchParams: Promi
   const me = await requireUser("quotes.manage");
   const { status } = await searchParams;
   const valid = filters.some((f) => f.id === status) ? status : undefined;
-  const today = new Date(Date.now() + 5.5 * 3600 * 1000).toISOString().slice(0, 10);
+  const today = istTodayISO();
 
   const [quotes, groups] = await Promise.all([
     db.quote.findMany({

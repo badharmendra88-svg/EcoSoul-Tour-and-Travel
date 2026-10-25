@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { useEffect, useState, type ReactNode } from "react";
+import { useState, type ReactNode } from "react";
 import { Logo } from "@/components/Logo";
 import { logoutAction } from "../actions";
 
@@ -19,8 +19,10 @@ export function AdminShell({
 }) {
   const initials = user.name.split(/\s+/).filter(Boolean).slice(0, 2).map((p) => p[0]?.toUpperCase()).join("");
   const pathname = usePathname();
-  const [open, setOpen] = useState(false);
-  useEffect(() => setOpen(false), [pathname]);
+  // The drawer remembers the page it was opened on, so navigating closes it (no effect needed)
+  const [openOn, setOpenOn] = useState<string | null>(null);
+  const open = openOn === pathname;
+  const setOpen = (v: boolean) => setOpenOn(v ? pathname : null);
 
   const isActive = (href: string) =>
     href === "/admin/" ? pathname === "/admin/" || pathname.startsWith("/admin/leads") : pathname.startsWith(href);

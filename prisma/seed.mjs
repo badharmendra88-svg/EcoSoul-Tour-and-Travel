@@ -6,9 +6,15 @@
 // hotel categories, inclusions and costing before accepting bookings, and
 // re-check all seasonal / access notes against official sources.
 
-import { PrismaClient } from "@prisma/client";
+// Run through tsx (see prisma.config.ts) so it can import the generated TypeScript client.
+import "dotenv/config";
+import path from "node:path";
+import { PrismaBetterSqlite3 } from "@prisma/adapter-better-sqlite3";
+import { PrismaClient } from "../src/generated/prisma/client.ts";
 
-const db = new PrismaClient();
+// Same resolution as src/lib/db.ts: relative DATABASE_URL is from the project root
+const file = (process.env.DATABASE_URL || "file:./prisma/dev.db").replace(/^file:/, "");
+const db = new PrismaClient({ adapter: new PrismaBetterSqlite3({ url: `file:${path.resolve(process.cwd(), file)}` }) });
 const j = (v) => JSON.stringify(v);
 
 const destinations = [

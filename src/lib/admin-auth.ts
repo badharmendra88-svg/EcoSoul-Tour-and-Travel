@@ -2,7 +2,7 @@ import "server-only";
 import { cache } from "react";
 import { cookies } from "next/headers";
 import { redirect } from "next/navigation";
-import type { AdminUser } from "@prisma/client";
+import type { AdminUser } from "@/generated/prisma/client";
 import { db } from "./db";
 import { can, type Permission } from "./permissions";
 import { SESSION_COOKIE, verifySessionToken } from "./session";

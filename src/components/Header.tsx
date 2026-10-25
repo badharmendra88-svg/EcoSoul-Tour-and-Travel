@@ -2,15 +2,16 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import { mainNav, mobileExtraNav, site } from "@/config/site";
 import { Logo } from "./Logo";
 
 export function Header() {
-  const [open, setOpen] = useState(false);
   const pathname = usePathname();
-
-  useEffect(() => setOpen(false), [pathname]);
+  // The menu remembers the page it was opened on, so navigating closes it (no effect needed)
+  const [openOn, setOpenOn] = useState<string | null>(null);
+  const open = openOn === pathname;
+  const setOpen = (fn: (v: boolean) => boolean) => setOpenOn(fn(open) ? pathname : null);
 
   return (
     <header className="sticky top-0 z-40 border-b border-slate-200/70 bg-cream/95 backdrop-blur">

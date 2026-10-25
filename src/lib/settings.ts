@@ -1,6 +1,6 @@
 import "server-only";
 import { cache } from "react";
-import type { SiteSettings } from "@prisma/client";
+import type { SiteSettings } from "@/generated/prisma/client";
 import { site } from "@/config/site";
 import { db } from "./db";
 import { decryptSecret } from "./secret-box";

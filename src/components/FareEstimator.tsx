@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { useEffect, useMemo, useState } from "react";
+import { useMemo, useState, useSyncExternalStore } from "react";
 import { destinationsFrom, estimatorPlaces, placeById, routeBetween } from "@/config/journeys";
 import { whatsappLink } from "@/config/site";
 import { track } from "@/lib/analytics";
@@ -41,14 +41,18 @@ export function FareEstimator({
   const [kind, setKind] = useState<TripKind>("ONE_WAY");
   const [days, setDays] = useState<number | null>(null);
 
-  useEffect(() => {
-    if (!readUrl) return;
-    const q = new URLSearchParams(window.location.search);
+  // Apply ?from=&to= once when the URL is known (server render sees ""), adjusting state during
+  // render — React's recommended alternative to setting state in an effect.
+  const search = useSyncExternalStore(noSubscribe, () => (readUrl ? window.location.search : ""), () => "");
+  const [appliedSearch, setAppliedSearch] = useState("");
+  if (search !== appliedSearch) {
+    setAppliedSearch(search);
+    const q = new URLSearchParams(search);
     const f = q.get("from");
     const t = q.get("to");
     if (f && placeById(f)) setFrom(f);
     if (t && placeById(t)) setTo(t);
-  }, [readUrl]);
+  }
 
   const options = useMemo(() => destinationsFrom(from), [from]);
   // Keep the destination valid when the starting point changes
@@ -236,4 +240,9 @@ function CarIcon({ big }: { big: boolean }) {
       <circle cx="17" cy="17" r="2" />
     </svg>
   );
+}
+
+/** The URL doesn't change while the estimator is on screen, so there is nothing to subscribe to. */
+function noSubscribe() {
+  return () => {};
 }

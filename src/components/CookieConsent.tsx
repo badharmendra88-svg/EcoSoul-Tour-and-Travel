@@ -3,16 +3,18 @@
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import Script from "next/script";
-import { useEffect, useId, useRef, useState } from "react";
-import { CONSENT_EVENT, OPEN_CONSENT_EVENT, readConsent, saveConsent, type Consent } from "@/lib/consent";
+import { useEffect, useId, useRef, useState, useSyncExternalStore } from "react";
+import { OPEN_CONSENT_EVENT, parseConsent, rawConsent, saveConsent, subscribeConsent, type Consent } from "@/lib/consent";
 
 /**
  * Cookie banner + settings panel, and the analytics / marketing tags that load
  * only after consent. Accept and reject are equally prominent (no dark patterns).
  */
 export function CookieConsent({ gaId, metaPixelId }: { gaId: string; metaPixelId: string }) {
-  const [consent, setConsent] = useState<Consent | null>(null);
-  const [ready, setReady] = useState(false);
+  // Server render: null (no banner, no tags); in the browser: the cookie, updated when the choice changes
+  const raw = useSyncExternalStore(subscribeConsent, rawConsent, () => null);
+  const ready = raw !== null;
+  const consent = raw ? parseConsent(raw) : null;
   const [panel, setPanel] = useState(false);
   // Private pages (the customer's quote link is its only password) never load third-party tags,
   // so the token in the URL can't end up in Google / Meta analytics.
@@ -22,16 +24,9 @@ export function CookieConsent({ gaId, metaPixelId }: { gaId: string; metaPixelId
   const pixel = !privatePage && /^\d{6,20}$/.test(metaPixelId) ? metaPixelId : "";
 
   useEffect(() => {
-    setConsent(readConsent());
-    setReady(true);
-    const onChange = (e: Event) => setConsent((e as CustomEvent<Consent | null>).detail);
     const onOpen = () => setPanel(true);
-    window.addEventListener(CONSENT_EVENT, onChange);
     window.addEventListener(OPEN_CONSENT_EVENT, onOpen);
-    return () => {
-      window.removeEventListener(CONSENT_EVENT, onChange);
-      window.removeEventListener(OPEN_CONSENT_EVENT, onOpen);
-    };
+    return () => window.removeEventListener(OPEN_CONSENT_EVENT, onOpen);
   }, []);
 
   function choose(choice: { analytics: boolean; marketing: boolean }) {

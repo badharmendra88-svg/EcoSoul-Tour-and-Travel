@@ -1,5 +1,5 @@
 import Link from "next/link";
-import type { Prisma } from "@prisma/client";
+import type { Prisma } from "@/generated/prisma/client";
 import { driverStatuses, partnerTypes } from "@/config/drivers";
 import { vehicleCategories } from "@/config/options";
 import { requireUser } from "@/lib/admin-auth";

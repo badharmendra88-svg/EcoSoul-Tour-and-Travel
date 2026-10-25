@@ -40,7 +40,8 @@ export const viewport: Viewport = {
 export default async function RootLayout({ children }: Readonly<{ children: React.ReactNode }>) {
   return (
     // English at launch; architecture keeps copy in pages/DB so Hindi can be added as /hi/ routes later
-    <html lang="en-IN" className={`${inter.variable} ${brandSerif.variable} ${brandScript.variable}`}>
+    // data-scroll-behavior: keep CSS smooth scrolling for #section links, but jump instantly on page changes (Next.js 16 opt-in)
+    <html lang="en-IN" data-scroll-behavior="smooth" className={`${inter.variable} ${brandSerif.variable} ${brandScript.variable}`}>
       <body className="min-h-screen font-sans">
         {/* Some browser extensions (form fillers, password managers, Grammarly) stamp attributes such as
             `fdprocessedid` on inputs/buttons before React hydrates, causing hydration-mismatch warnings.

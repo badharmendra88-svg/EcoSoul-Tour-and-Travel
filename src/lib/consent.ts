@@ -12,11 +12,25 @@ export const OPEN_CONSENT_EVENT = "es:open-consent";
 const VERSION = "v1"; // bump to ask everyone again when the categories change
 const MAX_AGE = 180 * 24 * 3600;
 
-export function readConsent(): Consent | null {
-  if (typeof document === "undefined") return null;
-  const raw = document.cookie.split("; ").find((c) => c.startsWith(`${CONSENT_COOKIE}=`))?.split("=")[1];
-  const m = raw && decodeURIComponent(raw).match(/^v1\.a([01])\.m([01])\.(\d+)$/);
+/** The raw cookie value ("" when unset) — a stable string snapshot for useSyncExternalStore. */
+export function rawConsent(): string {
+  if (typeof document === "undefined") return "";
+  return decodeURIComponent(document.cookie.split("; ").find((c) => c.startsWith(`${CONSENT_COOKIE}=`))?.split("=")[1] ?? "");
+}
+
+export function parseConsent(raw: string): Consent | null {
+  const m = raw.match(/^v1\.a([01])\.m([01])\.(\d+)$/);
   return m ? { analytics: m[1] === "1", marketing: m[2] === "1", at: Number(m[3]) } : null;
+}
+
+export function readConsent(): Consent | null {
+  return parseConsent(rawConsent());
+}
+
+/** Notifies `onChange` whenever the visitor saves a new choice (useSyncExternalStore subscribe). */
+export function subscribeConsent(onChange: () => void) {
+  window.addEventListener(CONSENT_EVENT, onChange);
+  return () => window.removeEventListener(CONSENT_EVENT, onChange);
 }
 
 export function saveConsent(choice: { analytics: boolean; marketing: boolean }) {

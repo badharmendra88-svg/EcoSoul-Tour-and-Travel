@@ -1,4 +1,4 @@
-import type { Review } from "@prisma/client";
+import type { Review } from "@/generated/prisma/client";
 import { requireAdmin } from "@/lib/admin-auth";
 import { db } from "@/lib/db";
 import { deleteReviewAction, saveReviewAction } from "../../actions";
