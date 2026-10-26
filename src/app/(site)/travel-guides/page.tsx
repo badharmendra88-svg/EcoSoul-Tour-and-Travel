@@ -1,24 +1,14 @@
 import Link from "next/link";
 import { PageHero } from "@/components/PageHero";
+import { guidePath, guides } from "@/config/guides";
 import { getPublishedDestinations } from "@/lib/queries";
 import { pageMeta } from "@/lib/seo";
 
-// P1 section. Kept noindex until original, reviewed guides are published —
-// the blueprint warns against thin placeholder pages.
 export const metadata = pageMeta({
-  title: "Uttarakhand Travel Guide",
-  description: "Destination guides, route tips and seasonal advice for travelling in Uttarakhand.",
+  title: "Uttarakhand Travel Guide — Best Time, Char Dham, Costs & Tips",
+  description: "Practical Uttarakhand travel guides: the best time to visit, Char Dham and Kedarnath planning, trip costs, Nainital vs Mussoorie, packing lists and destination guides.",
   path: "/travel-guides/",
-  noindex: true,
 });
-
-const upcoming = [
-  "Uttarakhand trip packing checklist by season",
-  "Nainital or Mussoorie for a family trip?",
-  "Kumaon road trip itinerary with realistic driving times",
-  "How to reach Kedarnath and what to prepare",
-  "Responsible travel in the Himalaya: waste, water and local etiquette",
-];
 
 export default async function TravelGuidesPage() {
   const destinations = await getPublishedDestinations();
@@ -26,14 +16,29 @@ export default async function TravelGuidesPage() {
     <>
       <PageHero
         title="Uttarakhand Travel Guide"
-        intro="Practical guides written from local experience. Start with our destination guides below — more route and seasonal guides are on the way."
+        intro="Straight answers for planning your trip — when to go, how long you need, what it costs and what to carry — plus a guide to every destination we cover."
         crumbs={[{ label: "Travel Guide", href: "/travel-guides/" }]}
         scene="river"
       />
-      <div className="container-page grid gap-10 py-12 lg:grid-cols-[1fr_320px]">
-        <section>
-          <h2 className="h2">Destination guides</h2>
-          <ul className="mt-6 grid gap-3 sm:grid-cols-2">
+      <div className="container-page space-y-12 py-12">
+        <section aria-labelledby="planning">
+          <h2 id="planning" className="h2">Planning guides</h2>
+          <ul className="mt-6 grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+            {guides.map((g) => (
+              <li key={g.slug}>
+                <Link href={guidePath(g)} className="card flex h-full flex-col p-5 transition-colors hover:border-forest-300">
+                  <span className="text-xs font-semibold tracking-wide text-leaf-600 uppercase">{g.readMinutes} min read</span>
+                  <span className="mt-1 font-semibold text-forest-900">{g.title}</span>
+                  <span className="mt-2 line-clamp-3 text-sm text-slate-600">{g.description}</span>
+                  <span className="mt-auto pt-3 text-sm font-semibold text-forest-700">Read guide →</span>
+                </Link>
+              </li>
+            ))}
+          </ul>
+        </section>
+        <section aria-labelledby="destinations">
+          <h2 id="destinations" className="h2">Destination guides</h2>
+          <ul className="mt-6 grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
             {destinations.map((d) => (
               <li key={d.slug}>
                 <Link href={`/destinations/${d.slug}/`} className="card block p-4 hover:border-forest-300">
@@ -44,14 +49,6 @@ export default async function TravelGuidesPage() {
             ))}
           </ul>
         </section>
-        <aside className="card h-fit p-6">
-          <h2 className="font-semibold text-forest-900">Coming soon</h2>
-          <ul className="mt-3 list-disc space-y-2 pl-5 text-sm text-slate-600">
-            {upcoming.map((u) => (
-              <li key={u}>{u}</li>
-            ))}
-          </ul>
-        </aside>
       </div>
     </>
   );

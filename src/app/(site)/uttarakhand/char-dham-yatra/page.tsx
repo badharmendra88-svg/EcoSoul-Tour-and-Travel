@@ -167,6 +167,14 @@ export default function CharDhamPage() {
               <WhatsAppButton className="btn-secondary w-full" message="Hi EcoSoul, I'd like help planning the Char Dham Yatra." />
             </div>
           </div>
+          <nav aria-label="Yatra guides" className="card p-6 text-sm">
+            <h2 className="font-semibold text-forest-900">Yatra guides</h2>
+            <ul className="mt-3 space-y-1">
+              <li><Link href="/travel-guides/char-dham-yatra-guide/" className="inline-block py-1.5 text-forest-700 hover:underline">Char Dham route, days & cost →</Link></li>
+              <li><Link href="/travel-guides/kedarnath-trip-guide/" className="inline-block py-1.5 text-forest-700 hover:underline">Kedarnath trek & helicopter →</Link></li>
+              <li><Link href="/taxi/haridwar-to-sonprayag/" className="inline-block py-1.5 text-forest-700 hover:underline">Haridwar to Kedarnath route taxi →</Link></li>
+            </ul>
+          </nav>
         </aside>
       </div>
     </>

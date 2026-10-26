@@ -150,6 +150,34 @@ export const estimatorPlaces = places.filter((p) => legs.some(([x, y]) => x === 
 
 export const estimatorRoutes = legs.map(([a, b, km, time]) => ({ a, b, km, time }));
 
+// ---------- Route landing pages (/taxi/<from>-to-<to>/) ----------
+
+/** URL names for places whose id isn't what people search for. */
+const placeSlugs: Record<string, string> = { jollygrant: "dehradun-airport", pantnagar: "pantnagar-airport", corbett: "jim-corbett", delhi: "delhi" };
+export const placeSlug = (id: string) => placeSlugs[id] ?? id;
+/** Route-table ids that differ from destination slugs in the database. */
+export const destinationSlugFor = (id: string) => (id === "corbett" ? "jim-corbett" : id);
+
+export type RoutePage = { slug: string; from: Place; to: Place; km: number; time: string };
+
+/** One page per leg, in the direction travellers usually book it (as listed in `legs`). */
+export const routePages: RoutePage[] = legs.map(([a, b, km, time]) => ({
+  slug: `${placeSlug(a)}-to-${placeSlug(b)}`,
+  from: placeById(a)!,
+  to: placeById(b)!,
+  km,
+  time,
+}));
+
+export const routePath = (r: Pick<RoutePage, "slug">) => `/taxi/${r.slug}/`;
+
+export function routeBySlug(slug: string) {
+  return routePages.find((r) => r.slug === slug);
+}
+
+/** Short place name for headings, e.g. "Sonprayag (Kedarnath route)" → "Sonprayag". */
+export const shortName = (p: Place) => p.name.replace(/ \(.*\)$/, "").replace(" / NCR", "");
+
 // ---------- Origin cities (who comes to Uttarakhand, and how) ----------
 
 export type Origin = {

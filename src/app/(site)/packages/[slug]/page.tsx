@@ -27,6 +27,8 @@ export async function generateMetadata({ params }: { params: Promise<{ slug: str
     title: p.seoTitle || `${p.title} — ${p.durationLabel}`,
     description: p.seoDescription || p.summary,
     path: `/packages/${p.slug}/`,
+    image: p.imageUrl,
+    imageAlt: p.imageAlt,
   });
 }
 
@@ -45,6 +47,30 @@ export default async function PackagePage({ params }: { params: Promise<{ slug: 
   return (
     <>
       <TrackPackageView packageId={p.slug} />
+      {/* TouristTrip: lets search and AI assistants read the route and day-wise plan */}
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={jsonLd({
+          "@context": "https://schema.org",
+          "@type": "TouristTrip",
+          name: p.title,
+          description: p.summary,
+          url: `${site.url}/packages/${p.slug}/`,
+          ...(p.imageUrl ? { image: `${site.url}${p.imageUrl}` } : {}),
+          touristType: p.audience || undefined,
+          provider: { "@type": "TravelAgency", name: site.name, url: site.url },
+          ...(itinerary.length
+            ? {
+                itinerary: {
+                  "@type": "ItemList",
+                  numberOfItems: itinerary.length,
+                  itemListElement: itinerary.map((day, i) => ({ "@type": "ListItem", position: i + 1, name: day.title, description: day.detail })),
+                },
+              }
+            : {}),
+          ...(p.destinations.length ? { subjectOf: p.destinations.map((d) => ({ "@type": "TouristDestination", name: d.name, url: `${site.url}/destinations/${d.slug}/` })) } : {}),
+        })}
+      />
       {/* Offer markup only when a real, visible price exists (review §3) */}
       {p.startingPrice != null && (
         <script

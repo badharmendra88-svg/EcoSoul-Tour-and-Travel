@@ -41,6 +41,7 @@ export const mainNav: NavItem[] = [
 
 // Extra links in the mobile menu (desktop has no room in the top bar)
 export const mobileExtraNav: NavItem[] = [
+  { label: "Taxi routes & fares", href: "/taxi/" },
   { label: "How to reach Uttarakhand", href: "/how-to-reach-uttarakhand/" },
   { label: "चार धाम यात्रा (हिंदी)", href: "/hi/char-dham-yatra/" },
 ];
@@ -61,6 +62,7 @@ export const footerNav: { title: string; items: NavItem[] }[] = [
     title: "Transport",
     items: [
       { label: "Book a Taxi", href: "/uttarakhand/taxi-booking/" },
+      { label: "Taxi Routes & Fares", href: "/taxi/" },
       { label: "Book a Driver", href: "/uttarakhand/driver-booking/" },
       { label: "Airport / Railway Transfers", href: "/uttarakhand/airport-transfers/" },
       { label: "Local Sightseeing Taxi", href: "/uttarakhand/local-sightseeing-taxi/" },

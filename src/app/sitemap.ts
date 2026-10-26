@@ -1,5 +1,6 @@
 import type { MetadataRoute } from "next";
-import { originPath, origins } from "@/config/journeys";
+import { guidePath, guides } from "@/config/guides";
+import { originPath, origins, routePages, routePath } from "@/config/journeys";
 import { site } from "@/config/site";
 import { db } from "@/lib/db";
 
@@ -18,6 +19,10 @@ const staticPaths = [
   "/hi/char-dham-yatra/",
   "/how-to-reach-uttarakhand/",
   ...origins.map(originPath),
+  "/taxi/",
+  "/travel-guides/",
+  ...guides.map(guidePath),
+  ...routePages.map(routePath),
   "/customise-my-trip/",
   "/join-as-driver/",
   "/about-us/",

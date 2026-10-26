@@ -6,7 +6,7 @@ import { FaqList } from "@/components/FaqList";
 import { HeroBooking } from "@/components/HeroBooking";
 import { SceneArt } from "@/components/SceneArt";
 import { SitePhoto } from "@/components/SitePhoto";
-import { originPath, origins, placeById, seasons } from "@/config/journeys";
+import { originPath, origins, placeById, routeBySlug, routePath, seasons } from "@/config/journeys";
 import { tripTypes } from "@/config/options";
 import { site } from "@/config/site";
 import { db } from "@/lib/db";
@@ -17,12 +17,18 @@ import { pageMeta } from "@/lib/seo";
 
 export const revalidate = 300;
 
-export const metadata = pageMeta({
-  title: `${site.name} — Uttarakhand Tour Packages, Taxi & Driver Booking`,
-  description:
-    "Explore Uttarakhand your way: tour packages, custom itineraries, Char Dham planning, and taxi or driver booking from Delhi NCR, airports and stations. Instant fare estimates and written quotes.",
-  path: "/",
-});
+const homeTitle = `${site.name} — Uttarakhand Tour Packages, Taxi & Driver Booking`;
+
+export const metadata = {
+  ...pageMeta({
+    title: homeTitle,
+    description:
+      "Explore Uttarakhand your way: tour packages, custom itineraries, Char Dham planning, and taxi or driver booking from Delhi NCR, airports and stations. Instant fare estimates and written quotes.",
+    path: "/",
+  }),
+  // Absolute: the brand is already in this title, so skip the "| EcoSoul" suffix
+  title: { absolute: homeTitle },
+};
 
 // Homepage order:
 // 1 Hero + booking widget (taxi fare / trip) · trust strip · 2 Choose your service ·
@@ -36,14 +42,10 @@ const services: { title: string; photo: ServiceKey; text: string; href: string; 
   { title: "Custom Trip", photo: "custom", text: "Tell us your dates, pace and budget — we plan hotels, transport and sightseeing.", href: "/customise-my-trip/", cta: "Plan a Custom Trip", scene: "meadow" },
 ];
 
-const routes = [
-  { from: "Delhi / NCR", to: "Nainital", href: "/uttarakhand/taxi-booking/" },
-  { from: "Delhi / NCR", to: "Rishikesh", href: "/uttarakhand/taxi-booking/" },
-  { from: "Kathgodam Station", to: "Nainital", href: "/uttarakhand/airport-transfers/" },
-  { from: "Dehradun Airport", to: "Mussoorie", href: "/uttarakhand/airport-transfers/" },
-  { from: "Haridwar", to: "Kedarnath route (Sonprayag)", href: "/uttarakhand/taxi-booking/" },
-  { from: "Pantnagar Airport", to: "Jim Corbett", href: "/uttarakhand/airport-transfers/" },
-];
+// Popular routes, each with its own fare page (/taxi/<from>-to-<to>/)
+const routes = ["delhi-to-nainital", "delhi-to-rishikesh", "kathgodam-to-nainital", "dehradun-airport-to-mussoorie", "haridwar-to-sonprayag", "pantnagar-airport-to-jim-corbett"]
+  .map((slug) => routeBySlug(slug)!)
+  .map((r) => ({ from: r.from.name, to: r.to.name, href: routePath(r), km: r.km }));
 
 const fareFacts = [
   ["Included in every taxi quote", "Vehicle, fuel, driver and the km/hours stated"],
@@ -236,21 +238,25 @@ export default async function HomePage() {
           <div>
             <p className="eyebrow">Taxi & driver</p>
             <h2 className="h2 mt-2">Popular taxi routes</h2>
-            <p className="mt-2 text-slate-600">Pick a route to request a quote — pickup and drop are filled in for you.</p>
+            <p className="mt-2 text-slate-600">Distance, drive time and fares for every car — then book in a minute.</p>
             <ul className="mt-6 grid gap-3 sm:grid-cols-2">
               {routes.map((r) => (
                 <li key={r.from + r.to}>
                   <Link
-                    href={`${r.href}?pickup=${encodeURIComponent(r.from)}&drop=${encodeURIComponent(r.to)}#book`}
+                    href={r.href}
                     className="card flex items-center justify-between gap-3 px-4 py-3 hover:border-forest-300"
                   >
-                    <span className="font-medium text-forest-900">{r.from} → {r.to}</span>
-                    <span className="shrink-0 text-sm font-semibold text-forest-700">Quote →</span>
+                    <span>
+                      <span className="block font-medium text-forest-900">{r.from} → {r.to}</span>
+                      <span className="block text-xs text-slate-500">{r.km} km</span>
+                    </span>
+                    <span className="shrink-0 text-sm font-semibold text-forest-700">Fares →</span>
                   </Link>
                 </li>
               ))}
             </ul>
-            <h3 className="mt-10 text-lg font-semibold text-forest-900">How taxi and driver bookings are confirmed</h3>
+            <Link href="/taxi/" className="mt-3 inline-block py-2 font-semibold text-forest-700 hover:underline">All taxi routes & fares →</Link>
+            <h3 className="mt-8 text-lg font-semibold text-forest-900">How taxi and driver bookings are confirmed</h3>
             <BookingSteps className="mt-4" />
           </div>
           <aside className="space-y-5">

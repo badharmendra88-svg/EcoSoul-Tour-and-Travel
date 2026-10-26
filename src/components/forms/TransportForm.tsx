@@ -23,18 +23,20 @@ export function TransportForm({
   defaultService = "CAR_DRIVER",
   lockService = false,
   initialPickup = "",
+  initialDrop = "",
   travellingFrom = "",
 }: {
   defaultService?: ServiceType;
   lockService?: boolean;
   initialPickup?: string;
+  initialDrop?: string;
   travellingFrom?: string;
 }) {
   const { errors, setErrors, status, formError, ref, submit } = useEnquirySubmit();
   const [v, setV] = useState({
     serviceType: defaultService as string,
     pickup: initialPickup,
-    drop: "",
+    drop: initialDrop,
     travelDate: "",
     pickupTime: "",
     returnDate: "",

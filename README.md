@@ -61,6 +61,8 @@ Admin panel: <http://localhost:3200/admin/>. **First run:** the login page asks 
 | `/how-to-reach-uttarakhand/` | Airports, railway stations and road routes for Garhwal and Kumaon, city links and fare estimator |
 | `/uttarakhand/from-<city>/` | Landing pages for travellers from Delhi NCR, Mumbai, Kolkata, Ahmedabad, Bengaluru, Lucknow, Chandigarh, Jaipur, Pune and Hyderabad: how to reach, fare estimator from their start point, popular routes, suited destinations, season tips, city FAQs and a prefilled booking form. Content lives in `src/config/journeys.ts` |
 | `/hi/char-dham-yatra/` | Hindi Char Dham planning page (hreflang-linked with the English page) |
+| `/taxi/`, `/taxi/<from>-to-<to>/` | 81 route pages (one per route in `src/config/journeys.ts`): quick answer, distance and drive time, one-way and round-trip fares for every car from the live rate card, destination facts, route FAQs, prefilled booking form, `TaxiService` markup |
+| `/travel-guides/`, `/travel-guides/<slug>/` | Planning guides in `src/config/guides.ts` (best time, Char Dham, Kedarnath, Nainital vs Mussoorie, trip cost, packing): quick answer, live tables from site data (trip costs use the rate card), FAQs, `Article` markup |
 | `/destinations/`, `/destinations/[slug]/` | Destination hub (region/category filters) and guides (best time, how to reach, duration, things to do, tips, FAQs, last-reviewed date) |
 | `/uttarakhand/tour-packages/` | Package listing with destination / trip type / duration filters |
 | `/packages/[slug]/` | Package detail: day-wise itinerary, inclusions/exclusions, notes, price basis, cancellation summary, quote form |
@@ -69,7 +71,6 @@ Admin panel: <http://localhost:3200/admin/>. **First run:** the login page asks 
 | `/char-dham-yatra/` | Yatra planning info with official links and "not a government site" disclaimer |
 | `/about-us/`, `/contact/`, `/faqs/` | Company, contact form, FAQs |
 | `/booking-policy/`, `/cancellation-policy/`, `/privacy-policy/`, `/terms-and-conditions/` | Policies (marked **draft** — see launch checklist) |
-| `/travel-guides/` | Guide hub (noindex until real guides exist) |
 | `/sitemap.xml`, `/robots.txt` | Generated from published content |
 
 ### Enquiries (§8, §24.4, FR-04/05/08)
@@ -135,7 +136,10 @@ Admin panel: <http://localhost:3200/admin/>. **First run:** the login page asks 
 - **Other:** notification webhooks must be public https addresses and never follow redirects (SSRF), image uploads have a pixel cap, CSV export neutralises spreadsheet formulas, error messages on the login page come from fixed codes.
 
 ### SEO / analytics / accessibility (§12, §16, FR-09/10/12)
-- Unique titles, descriptions and canonical URLs; trailing-slash URLs per the SEO plan; breadcrumbs + BreadcrumbList, FAQPage and TravelAgency JSON-LD.
+- Unique titles, descriptions and canonical URLs (short "| EcoSoul" suffix); trailing-slash URLs per the SEO plan; JSON-LD: TravelAgency, BreadcrumbList, FAQPage, TouristDestination (destinations), TouristTrip (packages), TaxiService / Service (taxi pages), Article (guides).
+- Answer-first content for AI Overviews and assistants: "Quick answer" blocks on route pages and guides, quick facts on destination pages, FAQs written as direct answers.
+- Every page has a share image for WhatsApp / social previews: its own photo, or `public/brand/og-default.png`.
+- Internal links between destinations, route pages, city pages and guides; everything is listed in `/sitemap.xml`.
 - Analytics events `view_package`, `click_whatsapp`, `click_phone`, `submit_enquiry`, `fare_estimate`, `begin_payment`, `payment_success` — never include personal data.
 - Skip link, labelled fields, `aria-invalid` errors, visible focus styles, keyboard-friendly menus and filters, sticky mobile CTA bar.
 
@@ -179,6 +183,7 @@ Content in this repo is a **starting point**, not verified operational data.
 - [ ] Production `.env`: random `SESSION_SECRET` and `ENCRYPTION_KEY` (`openssl rand -hex 32` each), `TRUST_PROXY=1` behind nginx / a load balancer, HTTPS enabled.
 - [ ] Set up payments: a business UPI ID in Settings → Payments and/or Razorpay keys + webhook; make a test payment in Razorpay test mode.
 - [ ] Re-check the distances, drive times and train/flight notes in `src/config/journeys.ts`, and have a native speaker review the Hindi Char Dham page.
+- [ ] Read every travel guide in `src/config/guides.ts` against official sources (temple dates, treks, heli booking, Corbett zones) before launch, and update each guide`s `reviewed` date after every seasonal check.
 - [ ] Mobile, keyboard and broken-link QA; test the enquiry → notification → admin flow end to end.
 
 ## Deploying

@@ -7,7 +7,7 @@ import { FareEstimator } from "@/components/FareEstimator";
 import { FaqList } from "@/components/FaqList";
 import { TransportForm } from "@/components/forms/TransportForm";
 import { PageHero } from "@/components/PageHero";
-import { destinationsFrom, originBySlug, originPath, origins, placeById, routeBetween, seasons } from "@/config/journeys";
+import { destinationsFrom, originBySlug, originPath, origins, placeById, routeBetween, routePages, routePath, seasons } from "@/config/journeys";
 import { getPublishedDestinations, getPublishedPackages } from "@/lib/queries";
 import { getEstimatorRates } from "@/lib/rates";
 import { pageMeta } from "@/lib/seo";
@@ -25,6 +25,12 @@ export function generateStaticParams() {
 function originFromParam(param: string) {
   return param.startsWith("from-") ? originBySlug(param.slice(5)) : undefined;
 }
+
+/** Route page for a start → destination pair, when one exists (routes are listed one way). */
+const routeLink = (a: string, b: string) => {
+  const r = routePages.find((x) => x.from.id === a && x.to.id === b);
+  return r ? routePath(r) : null;
+};
 
 // Route-table ids that differ from destination slugs
 const destinationSlug: Record<string, string> = { corbett: "jim-corbett" };
@@ -118,7 +124,7 @@ export default async function OriginPage({ params }: { params: Promise<{ origin:
               {routes.map((r) => (
                 <li key={r.to}>
                   <Link
-                    href={`/uttarakhand/taxi-booking/?pickup=${encodeURIComponent(start.name)}&drop=${encodeURIComponent(r.place.name)}#book`}
+                    href={routeLink(o.startPlace, r.to) ?? `/uttarakhand/taxi-booking/?pickup=${encodeURIComponent(start.name)}&drop=${encodeURIComponent(r.place.name)}#book`}
                     className="flex items-center justify-between gap-3 px-4 py-3 hover:bg-forest-50/50"
                   >
                     <span>

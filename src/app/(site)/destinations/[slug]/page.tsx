@@ -3,7 +3,10 @@ import { notFound } from "next/navigation";
 import { PackageCard } from "@/components/Cards";
 import { WhatsAppButton } from "@/components/ContactButtons";
 import { FaqList } from "@/components/FaqList";
+import { JsonLd } from "@/components/JsonLd";
 import { PageHero } from "@/components/PageHero";
+import { destinationSlugFor, routePages, routePath, shortName } from "@/config/journeys";
+import { site } from "@/config/site";
 import { db } from "@/lib/db";
 import { formatDate } from "@/lib/format";
 import { parseFaqs, parseList } from "@/lib/json";
@@ -25,6 +28,8 @@ export async function generateMetadata({ params }: { params: Promise<{ slug: str
     title: d.seoTitle || `${d.name} Travel Guide — Best Time, How to Reach & Tours`,
     description: d.seoDescription || d.summary,
     path: `/destinations/${d.slug}/`,
+    image: d.imageUrl,
+    imageAlt: d.imageAlt,
   });
 }
 
@@ -36,9 +41,22 @@ export default async function DestinationPage({ params }: { params: Promise<{ sl
   const experiences = parseList(d.experiences);
   const practical = parseList(d.practical);
   const faqs = parseFaqs(d.faqs);
+  const taxiRoutes = routePages.filter((r) => destinationSlugFor(r.to.id) === d.slug).sort((a, b) => a.km - b.km).slice(0, 6);
 
   return (
     <>
+      <JsonLd
+        data={{
+          "@context": "https://schema.org",
+          "@type": "TouristDestination",
+          name: d.name,
+          description: d.summary,
+          url: `${site.url}/destinations/${d.slug}/`,
+          ...(d.imageUrl ? { image: `${site.url}${d.imageUrl}` } : {}),
+          ...(d.bestFor ? { touristType: d.bestFor.split(",").map((t) => t.trim()).filter(Boolean) } : {}),
+          containedInPlace: { "@type": "State", name: "Uttarakhand", containedInPlace: { "@type": "Country", name: "India" } },
+        }}
+      />
       <PageHero
         title={`${d.name} Travel Guide`}
         intro={d.summary}
@@ -119,6 +137,21 @@ export default async function DestinationPage({ params }: { params: Promise<{ sl
               <WhatsAppButton className="btn-outline w-full" message={`Hi EcoSoul, I'm planning a trip to ${d.name}.`} />
             </div>
           </div>
+          {taxiRoutes.length > 0 && (
+            <nav aria-label={`Taxi to ${d.name}`} className="card p-6 text-sm">
+              <h2 className="font-semibold text-forest-900">Taxi to {d.name}</h2>
+              <ul className="mt-3 space-y-1">
+                {taxiRoutes.map((r) => (
+                  <li key={r.slug}>
+                    <Link href={routePath(r)} className="flex justify-between gap-3 py-1.5 text-forest-700 hover:underline">
+                      <span>From {shortName(r.from)}</span>
+                      <span className="text-slate-400">{r.km} km · {r.time}</span>
+                    </Link>
+                  </li>
+                ))}
+              </ul>
+            </nav>
+          )}
           <div className="card p-6">
             <h2 className="font-semibold text-forest-900">Need only a taxi?</h2>
             <p className="mt-2 text-sm text-slate-600">Car + driver, transfers and local sightseeing on request.</p>

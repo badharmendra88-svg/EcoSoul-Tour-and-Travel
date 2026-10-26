@@ -1,12 +1,14 @@
 import Link from "next/link";
 import type { ServiceType } from "@/config/options";
-import { vehicleCategories } from "@/config/options";
+import { serviceTypes, vehicleCategories } from "@/config/options";
+import { site } from "@/config/site";
 import type { Faq } from "@/lib/json";
 import { getEstimatorRates } from "@/lib/rates";
 import { BookingSteps } from "./BookingSteps";
 import { WhatsAppButton } from "./ContactButtons";
 import { FareEstimator } from "./FareEstimator";
 import { FaqList } from "./FaqList";
+import { JsonLd } from "./JsonLd";
 import { TransportForm } from "./forms/TransportForm";
 import { PageHero } from "./PageHero";
 
@@ -59,6 +61,18 @@ export async function TransportLanding({
   const rates = estimator ? await getEstimatorRates() : null;
   return (
     <>
+      <JsonLd
+        data={{
+          "@context": "https://schema.org",
+          "@type": "Service",
+          serviceType: serviceTypes[service],
+          name: title,
+          description: intro,
+          url: `${site.url}${path}`,
+          areaServed: { "@type": "State", name: "Uttarakhand" },
+          provider: { "@type": "TravelAgency", name: site.name, url: site.url },
+        }}
+      />
       <PageHero title={title} intro={intro} crumbs={[{ label: crumbLabel, href: path }]} scene="mountain" eyebrow="Car, taxi & driver">
         <ul className="flex flex-wrap gap-2">
           {highlights.map((h) => (
@@ -169,6 +183,7 @@ export async function TransportLanding({
               <li><Link className="inline-block py-1.5 text-forest-700 hover:underline" href="/uttarakhand/airport-transfers/">Airport / railway transfers</Link></li>
               <li><Link className="inline-block py-1.5 text-forest-700 hover:underline" href="/uttarakhand/local-sightseeing-taxi/">Local sightseeing taxi</Link></li>
               <li><Link className="inline-block py-1.5 text-forest-700 hover:underline" href="/uttarakhand/haldwani-taxi-service/">Haldwani taxi service</Link></li>
+              <li><Link className="inline-block py-1.5 font-semibold text-forest-700 hover:underline" href="/taxi/">All taxi routes & fares →</Link></li>
             </ul>
           </div>
         </aside>

@@ -2,6 +2,7 @@ import type { Metadata, Viewport } from "next";
 import Script from "next/script";
 import { Dancing_Script, Inter, Merriweather } from "next/font/google";
 import { site } from "@/config/site";
+import { DEFAULT_SHARE_IMAGE } from "@/lib/seo";
 import { getSettings } from "@/lib/settings";
 import { ServiceWorker } from "@/components/ServiceWorker";
 import "./globals.css";
@@ -17,13 +18,14 @@ export async function generateMetadata(): Promise<Metadata> {
   const s = await getSettings();
   return {
     metadataBase: new URL(site.url),
-    title: { default: `${site.name} — Tours, Taxis & Custom Trips`, template: `%s | ${site.name}` },
+    // Short brand suffix: search results cut titles at about 60 characters
+    title: { default: `${site.name} — Tours, Taxis & Custom Trips`, template: `%s | ${site.shortName}` },
     description: site.description,
     applicationName: site.name,
     manifest: "/site-app/manifest/",
     appleWebApp: { capable: true, title: "EcoSoul", statusBarStyle: "default" },
     formatDetection: { telephone: false },
-    openGraph: { siteName: site.name, locale: site.locale, type: "website" },
+    openGraph: { siteName: site.name, locale: site.locale, type: "website", images: [{ url: DEFAULT_SHARE_IMAGE, width: 1200, height: 630, alt: site.name }] },
     ...(s.googleVerification ? { verification: { google: s.googleVerification } } : {}),
   };
 }
