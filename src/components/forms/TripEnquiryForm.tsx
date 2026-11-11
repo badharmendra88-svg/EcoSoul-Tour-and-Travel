@@ -117,10 +117,11 @@ export function TripEnquiryForm({ mode, packageSlug, packageTitle, destinations 
     );
   }
 
+  // Layout follows the form's own width (container queries), so it also fits a narrow sidebar
   const tripStep = (
-    <div className="grid gap-4 sm:grid-cols-2">
+    <div className="grid grid-cols-2 gap-4">
       {mode === "custom" && (
-        <div className="sm:col-span-2">
+        <div className="col-span-2">
           <Field id="destination" label="Where would you like to go?" hint="Pick one or leave blank if you'd like suggestions">
             <Combobox
               id="destination"
@@ -133,6 +134,7 @@ export function TripEnquiryForm({ mode, packageSlug, packageTitle, destinations 
           </Field>
         </div>
       )}
+      <div className="col-span-2 @md:col-span-1">
       <Field id="travelDate" label="Travel start date" error={errors.travelDate}>
         <input
           {...inputProps("travelDate", errors.travelDate)}
@@ -142,7 +144,8 @@ export function TripEnquiryForm({ mode, packageSlug, packageTitle, destinations 
           onChange={(e) => set("travelDate", e.target.value)}
         />
       </Field>
-      <div className="flex items-end pb-2.5">
+      </div>
+      <div className="col-span-2 flex items-end @md:col-span-1 @md:pb-2.5">
         <label className="flex min-h-11 items-center gap-2 text-sm text-slate-700">
           <input type="checkbox" className="h-5 w-5 accent-forest-700" checked={v.dateFlexible} onChange={(e) => set("dateFlexible", e.target.checked)} />
           My dates are flexible
@@ -205,7 +208,7 @@ export function TripEnquiryForm({ mode, packageSlug, packageTitle, destinations 
   );
 
   return (
-    <form onSubmit={onSubmit} noValidate className="relative space-y-6">
+    <form onSubmit={onSubmit} noValidate className="@container relative space-y-6">
       <Honeypot value={v.website} onChange={(x) => set("website", x)} />
 
       {multiStep ? (

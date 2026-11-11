@@ -23,7 +23,7 @@ export function ContactForm() {
   if (status === "success") return <SuccessPanel refId={ref} />;
 
   return (
-    <form onSubmit={onSubmit} noValidate className="relative space-y-5">
+    <form onSubmit={onSubmit} noValidate className="@container relative space-y-5">
       <Honeypot value={v.website} onChange={(x) => set("website", x)} />
       <ContactFields values={v} set={set} errors={errors} />
       <Field id="message" label="Message" error={errors.message} required>

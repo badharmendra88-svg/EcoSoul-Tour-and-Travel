@@ -141,7 +141,7 @@ export function TransportForm({
   }
 
   return (
-    <form onSubmit={onSubmit} noValidate className="relative space-y-6">
+    <form onSubmit={onSubmit} noValidate className="@container relative space-y-6">
       <Honeypot value={v.website} onChange={(x) => set("website", x)} />
 
       {!lockService && (

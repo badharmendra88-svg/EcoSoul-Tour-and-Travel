@@ -114,7 +114,7 @@ export default async function PackagePage({ params }: { params: Promise<{ slug: 
         </div>
       </PageHero>
 
-      <div className="container-page grid gap-10 py-12 lg:grid-cols-[1fr_360px]">
+      <div className="container-page grid gap-10 py-12 lg:grid-cols-[1fr_400px] lg:items-start">
         <div className="min-w-0 space-y-10">
           {/* Key facts */}
           <dl className="grid gap-4 sm:grid-cols-3">
@@ -205,42 +205,30 @@ export default async function PackagePage({ params }: { params: Promise<{ slug: 
             </p>
           </section>
 
-          <section id="enquire" className="scroll-mt-24">
-            <h2 className="h2">Request a quote for this trip</h2>
-            <p className="mt-2 text-slate-600">No payment needed now. We confirm availability and send an itemised quote.</p>
-            <div className="card mt-6 p-6">
-              <TripEnquiryForm mode="package" packageSlug={p.slug} packageTitle={p.title} />
-            </div>
-          </section>
         </div>
 
-        <aside className="lg:sticky lg:top-24 lg:h-fit">
-          <div className="card p-6">
-            {price ? (
-              <>
-                <p className="text-sm text-slate-500">Starting from</p>
-                <p className="text-3xl font-bold text-forest-900">{price}</p>
-                <p className="mt-1 text-sm text-slate-600">{p.priceBasis}</p>
-              </>
-            ) : (
-              <>
-                <p className="text-sm text-slate-500">Price</p>
-                <p className="text-2xl font-bold text-forest-900">On request</p>
-                <p className="mt-1 text-sm text-slate-600">{p.priceBasis}</p>
-              </>
-            )}
-            <div className="mt-5 grid gap-3">
-              <a href="#enquire" className="btn-primary w-full">Get Package Quote</a>
-              <WhatsAppButton
-                className="btn-outline w-full"
-                packageId={p.slug}
-                message={`Hi EcoSoul, I'm interested in the "${p.title}" package.`}
-                label="Ask on WhatsApp"
-              />
+        {/* Price + quote form beside the trip details (not sticky: the form is taller than the screen) */}
+        <aside id="enquire" className="card scroll-mt-24 overflow-hidden">
+          <div className="flex items-start justify-between gap-4 border-b border-slate-100 bg-forest-50/60 px-5 py-4">
+            <div className="min-w-0">
+              <p className="text-xs font-medium tracking-wide text-slate-500 uppercase">{price ? "Starting from" : "Price"}</p>
+              <p className="text-lg font-bold text-forest-900">{price ?? "On request"}</p>
+              {p.priceBasis && <p className="mt-0.5 text-xs leading-snug text-slate-600">{p.priceBasis}</p>}
             </div>
-            <p className="mt-4 text-xs leading-relaxed text-slate-500">
-              Hotels and vehicles are confirmed only after you accept the quote and the booking terms.
-            </p>
+            <WhatsAppButton
+              className="inline-flex shrink-0 items-center gap-1.5 rounded-full border border-forest-700 px-3 py-1.5 text-xs font-semibold text-forest-800 hover:bg-forest-50"
+              packageId={p.slug}
+              message={`Hi EcoSoul, I'm interested in the "${p.title}" package.`}
+              label="WhatsApp"
+            />
+          </div>
+          <div className="p-5">
+            <h2 className="text-lg font-semibold text-forest-900">Request a quote for this trip</h2>
+            <p className="mt-1 text-sm text-slate-600">No payment needed now. We confirm availability and send an itemised quote.</p>
+            <div className="mt-5">
+              <TripEnquiryForm mode="package" packageSlug={p.slug} packageTitle={p.title} />
+            </div>
+            <p className="mt-4 text-xs leading-relaxed text-slate-500">Hotels and vehicles are confirmed only after you accept the quote and the booking terms.</p>
           </div>
         </aside>
       </div>

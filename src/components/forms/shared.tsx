@@ -123,8 +123,9 @@ export function ContactFields({
   errors: Errors;
 }) {
   return (
-    <div className="grid gap-4 sm:grid-cols-2">
-      <div className="sm:col-span-2">
+    // Two columns only when the form itself is wide enough (the form root is an @container)
+    <div className="grid gap-4 @md:grid-cols-2">
+      <div className="@md:col-span-2">
         <Field id="name" label="Your name" error={errors.name} required>
           <input {...inputProps("name", errors.name)} autoComplete="name" value={values.name} onChange={(e) => set("name", e.target.value)} />
         </Field>
@@ -161,7 +162,7 @@ export function ContactFields({
           />
         </Field>
       )}
-      <div className={values.travellingFrom !== undefined ? "" : "sm:col-span-2"}>
+      <div className={values.travellingFrom !== undefined ? "" : "@md:col-span-2"}>
         <Field id="heardFrom" label="How did you hear about us? (optional)">
           <select {...inputProps("heardFrom")} value={values.heardFrom} onChange={(e) => set("heardFrom", e.target.value)}>
             <option value="">Select</option>
