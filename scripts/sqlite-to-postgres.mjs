@@ -1,14 +1,14 @@
 // One-time copy of the old SQLite database (prisma/dev.db) into PostgreSQL.
-// Run after `npm run db:deploy` has created the tables, against an EMPTY database:
-//   node scripts/sqlite-to-postgres.mjs [path/to/dev.db]
-// Uses DIRECT_URL (Neon: the URL without "-pooler"), else DATABASE_URL. Everything is
-// copied in one transaction, so a failure leaves the database as it was.
+// Run after the tables exist (`npm run db:deploy`, or any Vercel build), against a database
+// with no rows yet:   node scripts/sqlite-to-postgres.mjs [path/to/dev.db]
+// Uses DIRECT_URL or DATABASE_URL_UNPOOLED (Neon: the URL without "-pooler"), else
+// DATABASE_URL. Everything is copied in one transaction, so a failure changes nothing.
 import "dotenv/config";
 import Database from "better-sqlite3";
 import pg from "pg";
 
 const file = process.argv[2] || "prisma/dev.db";
-const url = process.env.DIRECT_URL || process.env.DATABASE_URL;
+const url = process.env.DIRECT_URL || process.env.DATABASE_URL_UNPOOLED || process.env.DATABASE_URL;
 if (!url?.startsWith("postgres")) throw new Error("Set DATABASE_URL (or DIRECT_URL) to the PostgreSQL database.");
 
 const lite = new Database(file, { readonly: true, fileMustExist: true });

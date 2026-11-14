@@ -190,9 +190,9 @@ Content in this repo is a **starting point**, not verified operational data.
 
 The site uses PostgreSQL. On Vercel:
 
-1. Create a Neon database (Vercel → Storage → Neon, or neon.tech). In Vercel → Settings → Environment Variables set `DATABASE_URL` (pooled string, host has `-pooler`) and `DIRECT_URL` (direct string), plus every other variable from `.env.example`.
+1. Create a Neon database (Vercel → Storage → Neon) and connect it to the project: Vercel adds `DATABASE_URL` (pooled) and `DATABASE_URL_UNPOOLED` (direct, used for migrations). Add every other variable from `.env.example` in Settings → Environment Variables.
 2. Create a **public** Blob store (Vercel → Storage → Blob) and connect it to the project; Vercel adds `BLOB_READ_WRITE_TOKEN`. Admin photo uploads are stored there (the Vercel disk is read-only).
-3. From your computer, with the Neon URLs in `.env`: `npm run db:deploy` (creates the tables), then either `npm run db:seed` for a fresh start or `node scripts/sqlite-to-postgres.mjs` to copy an old SQLite `prisma/dev.db`. With the token in `.env`, `node scripts/upload-media-to-blob.mjs` copies the photos in `./uploads`. Run `npm run db:deploy` again after every new migration, before deploying it.
+3. `npm run build` applies pending migrations (`prisma migrate deploy`), so every deploy creates or updates the tables itself. To fill a new database, put the direct Neon URL in your local `.env` as `DIRECT_URL` and run either `npm run db:seed` (starter content) or `node scripts/sqlite-to-postgres.mjs` (copies an old SQLite `prisma/dev.db`). With the Blob token in `.env`, `node scripts/upload-media-to-blob.mjs` copies the photos in `./uploads`.
 4. Deploy (the build reads the database for static pages, so the variables must be set first). Serve over HTTPS only.
 5. The in-memory rate limiter is per server instance — use a shared store (e.g. Upstash Redis) if you run multiple instances.
 

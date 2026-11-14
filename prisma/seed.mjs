@@ -11,8 +11,9 @@ import "dotenv/config";
 import { PrismaPg } from "@prisma/adapter-pg";
 import { PrismaClient } from "../src/generated/prisma/client.ts";
 
-// Same database as prisma.config.ts (DIRECT_URL for Neon, else DATABASE_URL)
-const db = new PrismaClient({ adapter: new PrismaPg({ connectionString: process.env.DIRECT_URL || process.env.DATABASE_URL }) });
+// Same database as prisma.config.ts (the direct Neon URL when set, else DATABASE_URL)
+const url = process.env.DIRECT_URL || process.env.DATABASE_URL_UNPOOLED || process.env.DATABASE_URL;
+const db = new PrismaClient({ adapter: new PrismaPg({ connectionString: url }) });
 const j = (v) => JSON.stringify(v);
 
 const destinations = [
