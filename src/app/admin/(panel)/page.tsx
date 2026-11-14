@@ -26,13 +26,14 @@ export default async function LeadsPage({ searchParams }: { searchParams: Promis
     ...(sp.status ? { status: sp.status } : { status: { not: "SPAM" } }),
     ...(q
       ? {
+          // Postgres "contains" is case-sensitive unless told otherwise
           OR: [
-            { ref: { contains: q } },
-            { name: { contains: q } },
+            { ref: { contains: q, mode: "insensitive" } },
+            { name: { contains: q, mode: "insensitive" } },
             { phone: { contains: q } },
-            { email: { contains: q } },
-            { destination: { contains: q } },
-            { pickup: { contains: q } },
+            { email: { contains: q, mode: "insensitive" } },
+            { destination: { contains: q, mode: "insensitive" } },
+            { pickup: { contains: q, mode: "insensitive" } },
           ],
         }
       : {}),

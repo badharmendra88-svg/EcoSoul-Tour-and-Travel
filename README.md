@@ -4,7 +4,7 @@ Mobile-first, enquiry-led travel website for Uttarakhand: tour packages, custom 
 
 Built from `EcoSoul_Uttarakhand_Travel_Blueprint_with_SEO_Plan.docx` (v1.0, 20 Oct 2026). Review feedback lives in `docs/` — see `docs/review-1-implementation.md` for what was changed after the 1st review.
 
-**Stack:** Next.js 16 (App Router, Turbopack) · React 19.3 · TypeScript 6 · Tailwind CSS v4 · Prisma 7 (better-sqlite3 driver adapter) · SQLite (dev) · Zod 4 · ESLint 10
+**Stack:** Next.js 16 (App Router, Turbopack) · React 19.3 · TypeScript 6 · Tailwind CSS v4 · Prisma 7 (node-postgres driver adapter) · PostgreSQL (Neon on Vercel) · Vercel Blob (photos) · Zod 4 · ESLint 10
 
 **Requirements:** Node.js 20.19+ (22 or 24 recommended), npm 11.
 
@@ -20,7 +20,7 @@ npm run db:seed               # starter destinations and packages
 npm run dev                   # http://localhost:3200
 ```
 
-**Prisma 7 notes:** the client is generated into `src/generated/prisma` (git-ignored; `npm install` and `npm run build` regenerate it) and imported as `@/generated/prisma/client`. The connection is configured in `prisma.config.ts`, and `DATABASE_URL` is relative to the project root (`file:./prisma/dev.db`). After editing the schema run `npm run db:migrate` and then `npx prisma generate`.
+**Prisma 7 notes:** the client is generated into `src/generated/prisma` (git-ignored; `npm install` and `npm run build` regenerate it) and imported as `@/generated/prisma/client`. The connection is configured in `prisma.config.ts`, `DATABASE_URL` is a PostgreSQL connection string (migrations use `DIRECT_URL` when set). After editing the schema run `npm run db:migrate` and then `npx prisma generate`.
 
 **Install scripts:** npm 11 runs package install scripts only for packages listed under `allowScripts` in `package.json` (Prisma, better-sqlite3, esbuild, unrs-resolver). When a dependency upgrade changes their version, run `npm install-scripts ls` and approve the new versions.
 
@@ -40,13 +40,13 @@ Admin panel: <http://localhost:3200/admin/>. **First run:** the login page asks 
 
 | Variable | Purpose |
 | --- | --- |
-| `DATABASE_URL` | Database connection (SQLite file locally) |
+| `DATABASE_URL` | PostgreSQL connection (Neon pooled URL on Vercel); `DIRECT_URL` for migrations |
 | `NEXT_PUBLIC_SITE_URL` | Public URL for canonical tags, sitemap, Open Graph |
 | `NEXT_PUBLIC_PHONE`, `NEXT_PUBLIC_WHATSAPP`, `NEXT_PUBLIC_EMAIL`, `NEXT_PUBLIC_ADDRESS`, `NEXT_PUBLIC_HOURS` | Real business contact details shown site-wide |
 | `ADMIN_PASSWORD` | Admin sign-in password (long and random) |
 | `SESSION_SECRET` | 64-char random hex used to sign admin sessions |
 | `NOTIFY_WEBHOOK_URL` | Optional webhook (Slack / Google Chat / Zapier / Make) for new-lead alerts |
-| `MEDIA_DIR` | Optional folder for admin photo uploads (default `./uploads`) |
+| `BLOB_READ_WRITE_TOKEN` / `MEDIA_DIR` | Photo uploads: Vercel Blob when the token is set, else this folder (default `./uploads`) |
 | `NEXT_PUBLIC_GA_ID` | Optional Google Analytics 4 ID |
 | `RAZORPAY_KEY_ID`, `RAZORPAY_KEY_SECRET`, `RAZORPAY_WEBHOOK_SECRET` | Optional — online advance payments on quote pages (see *Payments* below) |
 
@@ -98,7 +98,7 @@ Admin panel: <http://localhost:3200/admin/>. **First run:** the login page asks 
 - Theme colours come from the logo (`public/brand/colours.json`): deep green `#043a26`, leaf green `#54972b`, sun orange `#fea324`, sky blue `#42a1d5` — defined once in `src/app/globals.css` and shared by the website, admin and quote PDF. Headings use Merriweather (matches the serif wordmark); the tagline uses Dancing Script.
 
 ### Photos & reviews
-- Admins upload licensed photos for the homepage hero (Integrations), destinations and packages. Uploads are re-encoded to WebP (max 2000 px) with `sharp`, stored in `./uploads` (`MEDIA_DIR`, git-ignored — back it up) and served from `/media/...`; `next/image` delivers AVIF/WebP and lazy-loads. Use object storage (S3/R2/Blob) on serverless hosting.
+- Admins upload licensed photos for the homepage hero (Integrations), destinations and packages. Uploads are re-encoded to WebP (max 2000 px) with `sharp`, stored in Vercel Blob (`BLOB_READ_WRITE_TOKEN`) or else `./uploads` (`MEDIA_DIR`, git-ignored — back it up), and served from `/media/...` either way; `next/image` delivers AVIF/WebP and lazy-loads.
 - **Reviews** (Admin → Reviews): genuine customer reviews only, with a permission record; the homepage section appears once a review is published.
 
 ### Driver partners (`/join-as-driver/`, `/admin/drivers/`)
@@ -188,12 +188,15 @@ Content in this repo is a **starting point**, not verified operational data.
 
 ## Deploying
 
-SQLite is for local development. For production:
+The site uses PostgreSQL. On Vercel:
 
-1. Use PostgreSQL (e.g. Neon, Supabase, Railway): set `provider = "postgresql"` in `prisma/schema.prisma`, swap the SQLite driver adapter in `src/lib/db.ts` and `prisma/seed.mjs` for `@prisma/adapter-pg`, point `DATABASE_URL` at it, and create a fresh migration. If you keep SQLite on a single server, change `DATABASE_URL` to `file:./prisma/dev.db` (Prisma 7 resolves it from the project root).
-2. Run `npm run db:deploy` (and `npm run db:seed` once) against the production database.
-3. Deploy to Vercel or any Node host; set all environment variables there. Serve over HTTPS only.
-4. The in-memory rate limiter is per server instance — use a shared store (e.g. Upstash Redis) if you run multiple instances.
+1. Create a Neon database (Vercel → Storage → Neon, or neon.tech). In Vercel → Settings → Environment Variables set `DATABASE_URL` (pooled string, host has `-pooler`) and `DIRECT_URL` (direct string), plus every other variable from `.env.example`.
+2. Create a **public** Blob store (Vercel → Storage → Blob) and connect it to the project; Vercel adds `BLOB_READ_WRITE_TOKEN`. Admin photo uploads are stored there (the Vercel disk is read-only).
+3. From your computer, with the Neon URLs in `.env`: `npm run db:deploy` (creates the tables), then either `npm run db:seed` for a fresh start or `node scripts/sqlite-to-postgres.mjs` to copy an old SQLite `prisma/dev.db`. With the token in `.env`, `node scripts/upload-media-to-blob.mjs` copies the photos in `./uploads`. Run `npm run db:deploy` again after every new migration, before deploying it.
+4. Deploy (the build reads the database for static pages, so the variables must be set first). Serve over HTTPS only.
+5. The in-memory rate limiter is per server instance — use a shared store (e.g. Upstash Redis) if you run multiple instances.
+
+On a single Node server, the same PostgreSQL setup works; leave `BLOB_READ_WRITE_TOKEN` empty and photos are kept in `./uploads`.
 
 ## Roadmap (blueprint §24.11)
 

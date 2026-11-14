@@ -1,19 +1,35 @@
 import "server-only";
 import { randomBytes } from "node:crypto";
-import { mkdir, unlink, writeFile } from "node:fs/promises";
+import { mkdir, readFile, unlink, writeFile } from "node:fs/promises";
 import path from "node:path";
+import { del, get, put } from "@vercel/blob";
 import sharp from "sharp";
 
 // Admin photo uploads. Files are re-encoded to WebP (max 2000 px wide, EXIF
 // orientation applied, metadata stripped) and stored outside /public so they
-// can be added at runtime. Served by /media/[file]. For multi-server or
-// serverless hosting, swap this for object storage (S3/R2/Vercel Blob).
+// can be added at runtime. Served by /media/[file]. With BLOB_READ_WRITE_TOKEN set
+// (Vercel, whose disk is read-only) they live in a public Vercel Blob store under
+// media/; otherwise in MEDIA_DIR on this server's disk. Stored URLs are /media/<name>
+// either way, so moving between the two only means copying the files.
 
 // Runtime data folder, not part of the build (turbopackIgnore stops Turbopack tracing the whole project)
 export const MEDIA_DIR = path.resolve(/*turbopackIgnore: true*/ process.env.MEDIA_DIR || "uploads");
 export const MAX_UPLOAD_BYTES = 8 * 1024 * 1024;
 const ACCEPTED = ["image/jpeg", "image/png", "image/webp", "image/avif"];
 export const MEDIA_NAME_RE = /^[a-z0-9-]{1,60}-[a-f0-9]{10}\.webp$/;
+const blobStorage = () => !!process.env.BLOB_READ_WRITE_TOKEN;
+
+/** The stored photo's bytes (a stream from Blob), or null if there is none. */
+export async function readUpload(name: string): Promise<ReadableStream<Uint8Array> | Uint8Array | null> {
+  if (blobStorage()) {
+    const r = await get(`media/${name}`, { access: "public" }).catch(() => null);
+    return r?.statusCode === 200 ? r.stream : null;
+  }
+  return readFile(path.join(/*turbopackIgnore: true*/ MEDIA_DIR, name)).then(
+    (b) => new Uint8Array(b),
+    () => null,
+  );
+}
 
 function slug(s: string) {
   return s.toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/^-+|-+$/g, "").slice(0, 50) || "photo";
@@ -36,9 +52,13 @@ export async function saveUpload(file: File, nameHint: string) {
     throw new Error(e instanceof Error && e.message.startsWith("Image is") ? e.message : "This file couldn't be read as an image.");
   }
 
-  await mkdir(MEDIA_DIR, { recursive: true });
   const name = `${slug(nameHint)}-${randomBytes(5).toString("hex")}.webp`;
-  await writeFile(path.join(/*turbopackIgnore: true*/ MEDIA_DIR, name), output);
+  if (blobStorage()) {
+    await put(`media/${name}`, output, { access: "public", contentType: "image/webp", cacheControlMaxAge: 31536000 });
+  } else {
+    await mkdir(MEDIA_DIR, { recursive: true });
+    await writeFile(path.join(/*turbopackIgnore: true*/ MEDIA_DIR, name), output);
+  }
   return `/media/${name}`;
 }
 
@@ -46,7 +66,8 @@ export async function saveUpload(file: File, nameHint: string) {
 export async function deleteUpload(url: string | null | undefined) {
   const name = url?.startsWith("/media/") ? url.slice(7) : null;
   if (!name || !MEDIA_NAME_RE.test(name)) return;
-  await unlink(path.join(/*turbopackIgnore: true*/ MEDIA_DIR, name)).catch(() => undefined);
+  if (blobStorage()) await del(`media/${name}`).catch(() => undefined);
+  else await unlink(path.join(/*turbopackIgnore: true*/ MEDIA_DIR, name)).catch(() => undefined);
 }
 
 /**

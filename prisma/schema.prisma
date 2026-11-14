@@ -1,9 +1,9 @@
 // EcoSoul Uttarakhand Travel — data model (blueprint §10, §24.7)
-// SQLite for the MVP. Arrays/objects are stored as JSON strings because
-// SQLite has no native list type; see src/lib/json.ts for helpers.
+// PostgreSQL (Neon on Vercel). Arrays/objects are stored as JSON strings, a
+// leftover from the SQLite MVP; see src/lib/json.ts for helpers.
 
 // Prisma 7: the client is generated into the app (imported as "@/generated/prisma/client")
-// and connects through the better-sqlite3 driver adapter (src/lib/db.ts).
+// and connects through the node-postgres driver adapter (src/lib/db.ts).
 // The connection URL lives in prisma.config.ts.
 generator client {
   provider = "prisma-client"
@@ -11,7 +11,7 @@ generator client {
 }
 
 datasource db {
-  provider = "sqlite"
+  provider = "postgresql"
 }
 
 model Destination {

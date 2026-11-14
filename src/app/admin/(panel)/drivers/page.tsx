@@ -27,7 +27,15 @@ export default async function DriversPage({ searchParams }: { searchParams: Prom
   const where: Prisma.DriverPartnerWhereInput = {
     ...(status ? { status } : {}),
     ...(q
-      ? { OR: [{ name: { contains: q } }, { phone: { contains: q } }, { ref: { contains: q } }, { baseLocation: { contains: q } }, { vehicleRegNo: { contains: q.toUpperCase() } }] }
+      ? {
+          OR: [
+            { name: { contains: q, mode: "insensitive" } },
+            { phone: { contains: q } },
+            { ref: { contains: q, mode: "insensitive" } },
+            { baseLocation: { contains: q, mode: "insensitive" } },
+            { vehicleRegNo: { contains: q.toUpperCase() } },
+          ],
+        }
       : {}),
   };
 
