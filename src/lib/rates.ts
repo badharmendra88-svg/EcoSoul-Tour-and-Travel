@@ -12,16 +12,17 @@ export async function getRateCard() {
     db.quoteSettings.findUnique({ where: { id: "default" } }),
   ]);
 
+  // Pages render in parallel (build workers, requests), so several may create the defaults at once
   if (vehicles.length === 0) {
-    await db.vehicleRate.createMany({ data: defaultVehicleRates });
+    await db.vehicleRate.createMany({ data: defaultVehicleRates, skipDuplicates: true });
     vehicles = await db.vehicleRate.findMany({ orderBy: { sortOrder: "asc" } });
   }
   if (hotels.length === 0) {
-    await db.hotelRate.createMany({ data: defaultHotelRates });
+    await db.hotelRate.createMany({ data: defaultHotelRates, skipDuplicates: true });
     hotels = await db.hotelRate.findMany({ orderBy: { sortOrder: "asc" } });
   }
   if (!settings) {
-    settings = await db.quoteSettings.create({ data: defaultQuoteSettings });
+    settings = await db.quoteSettings.upsert({ where: { id: "default" }, create: defaultQuoteSettings, update: {} });
   }
 
   // One-time backfill for rate cards created before one-way/transfer rates existed
