@@ -22,7 +22,9 @@ export async function getRateCard() {
     hotels = await db.hotelRate.findMany({ orderBy: { sortOrder: "asc" } });
   }
   if (!settings) {
-    settings = await db.quoteSettings.upsert({ where: { id: "default" }, create: defaultQuoteSettings, update: {} });
+    // createMany + skipDuplicates is one INSERT … ON CONFLICT DO NOTHING; upsert is not atomic here
+    await db.quoteSettings.createMany({ data: [{ ...defaultQuoteSettings, id: "default" }], skipDuplicates: true });
+    settings = await db.quoteSettings.findUniqueOrThrow({ where: { id: "default" } });
   }
 
   // One-time backfill for rate cards created before one-way/transfer rates existed
