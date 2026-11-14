@@ -46,6 +46,8 @@ Admin panel: <http://localhost:3200/admin/>. **First run:** the login page asks 
 | `ADMIN_PASSWORD` | Admin sign-in password (long and random) |
 | `SESSION_SECRET` | 64-char random hex used to sign admin sessions |
 | `NOTIFY_WEBHOOK_URL` | Optional webhook (Slack / Google Chat / Zapier / Make) for new-lead alerts |
+| `SMTP_USER` / `SMTP_PASS` | Optional lead emails over SMTP (Gmail address + App Password): the team gets each new lead, the customer a confirmation. `SMTP_HOST`/`SMTP_PORT` default to Gmail (465). Results show on the lead's timeline |
+| `LEAD_NOTIFY_EMAIL` | Inbox(es) for new-lead emails, comma separated (default: the site contact email) |
 | `BLOB_READ_WRITE_TOKEN` / `MEDIA_DIR` | Photo uploads: Vercel Blob when the token is set, else this folder (default `./uploads`) |
 | `NEXT_PUBLIC_GA_ID` | Optional Google Analytics 4 ID |
 | `RAZORPAY_KEY_ID`, `RAZORPAY_KEY_SECRET`, `RAZORPAY_WEBHOOK_SECRET` | Optional — online advance payments on quote pages (see *Payments* below) |

@@ -5,6 +5,7 @@ import { readJson } from "@/lib/http";
 import { clientIp, ipRateLimit } from "@/lib/rate-limit";
 import { serialize } from "@/lib/serialize";
 import { notifyNewEnquiry } from "@/lib/notify";
+import { emailNewEnquiry } from "@/lib/email";
 
 // Public enquiry endpoint for all forms (trip, package, transport, contact).
 
@@ -118,7 +119,7 @@ export async function POST(request: Request) {
     });
 
     // Notify after the response is sent so the visitor is not kept waiting
-    after(() => notifyNewEnquiry(enquiry));
+    after(() => Promise.all([notifyNewEnquiry(enquiry), emailNewEnquiry(enquiry)]));
 
     return NextResponse.json({ ok: true, ref: enquiry.ref }, { status: 201 });
   });

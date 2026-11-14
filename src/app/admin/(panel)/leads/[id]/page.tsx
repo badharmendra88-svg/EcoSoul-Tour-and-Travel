@@ -32,6 +32,8 @@ const eventIcon: Record<string, IconName> = {
   note: "message",
   notes_updated: "edit",
   notify_retry: "bell",
+  email_team: "mail",
+  email_customer: "mail",
   quote_created: "quote",
   quote_sent: "quote",
   quote_status: "check",
