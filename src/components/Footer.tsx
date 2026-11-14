@@ -9,6 +9,9 @@ import { SocialLinks } from "./SocialIcons";
 export async function Footer() {
   const s = await getSettings();
   const year = new Date().getFullYear();
+  // A g.page short link (Admin → Settings → Social) also opens the profile's "write a review" box at /review
+  const gbp = s.social.find((x) => x.key === "googleBusiness")?.url;
+  const reviewUrl = gbp && /^https:\/\/g\.page\/r\/[\w-]+\/?(review)?$/.test(gbp) ? gbp.replace(/\/?(review)?$/, "/review") : null;
   return (
     <footer className="mt-20 bg-forest-900 pb-24 text-forest-100 sm:pb-0">
       <div className="container-page grid grid-cols-2 gap-x-6 gap-y-10 py-14 md:grid-cols-[1.3fr_repeat(4,1fr)]">
@@ -28,6 +31,11 @@ export async function Footer() {
             )}
           </address>
           <SocialLinks links={s.social} className="pt-2" />
+          {reviewUrl && (
+            <a href={reviewUrl} target="_blank" rel="noopener noreferrer" className="inline-block py-1.5 text-sm font-medium text-accent hover:text-white">
+              ★ Travelled with us? Review us on Google
+            </a>
+          )}
         </div>
         {footerNav.map((group) => (
           <nav key={group.title} aria-label={group.title}>
