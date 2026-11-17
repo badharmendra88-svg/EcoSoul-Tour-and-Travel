@@ -8,7 +8,8 @@ import { tripTypes } from "@/config/options";
 import { db } from "@/lib/db";
 import { formatPrice } from "@/lib/format";
 import { parseItinerary, parseList } from "@/lib/json";
-import { getPackage } from "@/lib/queries";
+import { PackageCard } from "@/components/Cards";
+import { getPackage, getPublishedPackages } from "@/lib/queries";
 import { jsonLd, pageMeta } from "@/lib/seo";
 import { site } from "@/config/site";
 
@@ -36,6 +37,15 @@ export default async function PackagePage({ params }: { params: Promise<{ slug: 
   const { slug } = await params;
   const p = await getPackage(slug);
   if (!p) notFound();
+
+  // Internal links between tours: packages sharing a destination first, then the same trip type, then the rest
+  const destSlugs = new Set(p.destinations.map((d) => d.slug));
+  const related = (await getPublishedPackages())
+    .filter((o) => o.slug !== p.slug)
+    .map((o) => ({ o, score: o.destinations.filter((d) => destSlugs.has(d.slug)).length * 2 + (o.tripType === p.tripType ? 1 : 0) }))
+    .sort((a, b) => b.score - a.score)
+    .slice(0, 3)
+    .map(({ o }) => o);
 
   const itinerary = parseItinerary(p.itinerary);
   const inclusions = parseList(p.inclusions);
@@ -232,6 +242,22 @@ export default async function PackagePage({ params }: { params: Promise<{ slug: 
           </div>
         </aside>
       </div>
+
+      {related.length > 0 && (
+        <section className="bg-sand py-14">
+          <div className="container-page">
+            <div className="flex flex-wrap items-end justify-between gap-4">
+              <h2 className="h2">More Uttarakhand tour packages</h2>
+              <Link href="/uttarakhand/tour-packages/" className="py-2 font-semibold text-forest-700 hover:underline">All packages →</Link>
+            </div>
+            <div className="mt-8 grid gap-6 md:grid-cols-2 lg:grid-cols-3">
+              {related.map((o) => (
+                <PackageCard key={o.id} pkg={o} />
+              ))}
+            </div>
+          </div>
+        </section>
+      )}
     </>
   );
 }

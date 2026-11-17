@@ -90,6 +90,7 @@ export default async function GuidePage({ params }: { params: Promise<{ slug: st
             <p className="mt-2 text-sm text-slate-600">Tell us your dates and group — we send a day-wise plan with an itemised quote.</p>
             <div className="mt-4 grid gap-3">
               <Link href="/customise-my-trip/" className="btn-primary w-full">Customise my trip</Link>
+              <Link href="/uttarakhand/tour-packages/" className="btn-outline w-full">Browse tour packages</Link>
               <WhatsAppButton className="btn-outline w-full" message={`Hi EcoSoul, I read your guide "${g.title}" and want help planning.`} />
             </div>
           </div>

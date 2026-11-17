@@ -3,6 +3,14 @@ import { site } from "@/config/site";
 
 export const DEFAULT_SHARE_IMAGE = "/brand/og-default.png";
 
+// Public pages say so explicitly: <meta name="robots" content="index, follow"> plus large image previews for Google.
+// Metadata merges shallowly, so every page sets `robots` itself instead of relying on the layout.
+export const INDEX_ROBOTS = {
+  index: true,
+  follow: true,
+  googleBot: { index: true, follow: true, "max-image-preview": "large", "max-snippet": -1, "max-video-preview": -1 },
+} satisfies Metadata["robots"];
+
 // FR-09: unique title, description and canonical URL per page.
 export function pageMeta({
   title,
@@ -29,7 +37,7 @@ export function pageMeta({
     alternates: { canonical: url },
     openGraph: { title, description, url, siteName: site.name, locale: site.locale, type: "website", images },
     twitter: { card: "summary_large_image", title, description, images },
-    robots: noindex ? { index: false, follow: true } : undefined,
+    robots: noindex ? { index: false, follow: true } : INDEX_ROBOTS,
   };
 }
 

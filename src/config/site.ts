@@ -7,7 +7,13 @@ export const site = {
   tagline: "Discover Uttarakhand, Your Way.",
   description:
     "Thoughtfully planned mountain escapes, family holidays, pilgrimage journeys and car + driver bookings across Uttarakhand.",
-  url: (process.env.NEXT_PUBLIC_SITE_URL || "http://localhost:3000").replace(/\/$/, ""),
+  // Preferred domain for canonical URLs, sitemap and robots.txt. If NEXT_PUBLIC_SITE_URL is missing on Vercel, fall back
+  // to the project's production domain (a system variable Vercel exposes) so canonicals never point at localhost.
+  url: (
+    process.env.NEXT_PUBLIC_SITE_URL ||
+    (process.env.NEXT_PUBLIC_VERCEL_PROJECT_PRODUCTION_URL ? `https://${process.env.NEXT_PUBLIC_VERCEL_PROJECT_PRODUCTION_URL}` : "") ||
+    "http://localhost:3000"
+  ).replace(/\/$/, ""),
   phone: process.env.NEXT_PUBLIC_PHONE || "+910000000000",
   whatsapp: process.env.NEXT_PUBLIC_WHATSAPP || "910000000000",
   email: process.env.NEXT_PUBLIC_EMAIL || "hello@example.com",

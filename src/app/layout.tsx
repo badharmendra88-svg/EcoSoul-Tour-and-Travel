@@ -2,7 +2,7 @@ import type { Metadata, Viewport } from "next";
 import Script from "next/script";
 import { Dancing_Script, Inter, Merriweather } from "next/font/google";
 import { site } from "@/config/site";
-import { DEFAULT_SHARE_IMAGE } from "@/lib/seo";
+import { DEFAULT_SHARE_IMAGE, INDEX_ROBOTS } from "@/lib/seo";
 import { getSettings } from "@/lib/settings";
 import { ServiceWorker } from "@/components/ServiceWorker";
 import "./globals.css";
@@ -21,6 +21,8 @@ export async function generateMetadata(): Promise<Metadata> {
     // Short brand suffix: search results cut titles at about 60 characters
     title: { default: `${site.name} — Tours, Taxis & Custom Trips`, template: `%s | ${site.shortName}` },
     description: site.description,
+    // Default for public pages; admin, quote, offline and 404 pages set their own noindex
+    robots: INDEX_ROBOTS,
     applicationName: site.name,
     manifest: "/site-app/manifest/",
     appleWebApp: { capable: true, title: "EcoSoul", statusBarStyle: "default" },
