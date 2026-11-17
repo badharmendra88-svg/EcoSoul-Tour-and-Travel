@@ -13,7 +13,17 @@ import { db } from "@/lib/db";
 import { getPublishedDestinations, getPublishedPackages } from "@/lib/queries";
 import { getEstimatorRates } from "@/lib/rates";
 import { getSettings, type ServiceKey } from "@/lib/settings";
-import { pageMeta } from "@/lib/seo";
+import { jsonLd, pageMeta } from "@/lib/seo";
+
+// Google takes the site name shown above search results from WebSite markup on the homepage.
+// Without it, a *.vercel.app site is labelled "Vercel".
+const websiteSchema = {
+  "@context": "https://schema.org",
+  "@type": "WebSite",
+  name: site.name,
+  alternateName: [site.shortName, "EcoSoul Travel"],
+  url: `${site.url}/`,
+};
 
 export const revalidate = 300;
 
@@ -97,6 +107,7 @@ export default async function HomePage() {
 
   return (
     <>
+      <script type="application/ld+json" dangerouslySetInnerHTML={jsonLd(websiteSchema)} />
       {/* 1 — Hero + booking widget */}
       <section className="relative overflow-hidden bg-forest-900">
         {s.heroImageUrl ? (
