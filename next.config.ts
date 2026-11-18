@@ -66,7 +66,13 @@ const nextConfig: NextConfig = {
   poweredByHeader: false,
   // Hide the dev-only Next.js "N" badge (review §5)
   devIndicators: false,
-  images: { formats: ["image/avif", "image/webp"] },
+  images: {
+    formats: ["image/avif", "image/webp"],
+    // Extra steps (1440, 1680 / 448, 512) so a 1366px laptop gets a 1440px hero instead of 1920px,
+    // and ~400px cards get a 448px file instead of 640px (PageSpeed "Improve image delivery")
+    deviceSizes: [640, 750, 828, 1080, 1200, 1440, 1680, 1920, 2048, 3840],
+    imageSizes: [32, 48, 64, 96, 128, 256, 384, 448, 512],
+  },
   // Admin photo uploads go through server actions
   experimental: { serverActions: { bodySizeLimit: "10mb" } },
   async redirects() {

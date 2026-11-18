@@ -27,7 +27,7 @@ export function SitePhoto({
   return (
     <div className={`${positioned ? "" : "relative "}overflow-hidden ${className}`}>
       {url ? (
-        <Image src={url} alt={alt ?? ""} fill sizes={sizes} priority={priority} className={`object-cover ${imgClassName}`} />
+        <Image src={url} alt={alt ?? ""} fill sizes={sizes} preload={priority} fetchPriority={priority ? "high" : undefined} className={`object-cover ${imgClassName}`} />
       ) : (
         <SceneArt scene={scene} className={`h-full w-full ${imgClassName}`} />
       )}

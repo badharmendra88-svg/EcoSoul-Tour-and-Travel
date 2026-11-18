@@ -66,7 +66,7 @@ body {
     @apply rounded-2xl border border-slate-200 bg-white shadow-sm;
   }
   .eyebrow {
-    @apply text-xs font-semibold tracking-widest text-leaf-600 uppercase;
+    @apply text-xs font-semibold tracking-widest text-leaf-700 uppercase;
   }
   .h1 {
     @apply font-serif text-3xl font-bold text-forest-900 sm:text-4xl;

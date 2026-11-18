@@ -378,7 +378,14 @@ export default async function HomePage() {
             {reviews.map((r) => (
               <figure key={r.id} className="card flex flex-col p-6">
                 {r.rating && (
-                  <p className="text-amber-500" aria-label={`${r.rating} out of 5`}>{"★".repeat(r.rating)}<span className="text-slate-300">{"★".repeat(5 - r.rating)}</span></p>
+                  // SVG stars, not "★" text: gold text on white fails the 4.5:1 text-contrast check
+                  <p className="flex gap-0.5" role="img" aria-label={`${r.rating} out of 5`}>
+                    {[1, 2, 3, 4, 5].map((n) => (
+                      <svg key={n} viewBox="0 0 20 20" className={`h-4 w-4 ${n <= r.rating! ? "text-amber-500" : "text-slate-300"}`} fill="currentColor" aria-hidden="true">
+                        <path d="M10 1.5l2.6 5.4 5.9.8-4.3 4.1 1 5.9L10 14.9l-5.2 2.8 1-5.9L1.5 7.7l5.9-.8z" />
+                      </svg>
+                    ))}
+                  </p>
                 )}
                 <blockquote className="mt-3 flex-1 leading-relaxed text-slate-700">“{r.text}”</blockquote>
                 <figcaption className="mt-4 text-sm">

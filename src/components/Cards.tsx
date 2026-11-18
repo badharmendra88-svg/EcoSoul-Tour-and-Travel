@@ -20,7 +20,7 @@ export function PackageCard({ pkg }: { pkg: PackageWithDest }) {
         url={pkg.imageUrl}
         alt={pkg.imageAlt}
         scene={scene}
-        sizes="(min-width: 1024px) 33vw, (min-width: 768px) 50vw, 100vw"
+        sizes="(min-width: 1536px) 470px, (min-width: 1024px) calc(33vw - 40px), (min-width: 768px) calc(50vw - 36px), (min-width: 640px) 46vw, 82vw"
         className="aspect-[16/10]"
         imgClassName="transition-transform duration-500 group-hover:scale-105"
       />
@@ -81,7 +81,7 @@ export function DestinationCard({
         url={d.imageUrl}
         alt={d.imageAlt}
         scene={d.scene}
-        sizes="(min-width: 1024px) 25vw, (min-width: 768px) 33vw, 50vw"
+        sizes="(min-width: 1536px) 350px, (min-width: 1024px) calc(25vw - 30px), (min-width: 768px) 33vw, (min-width: 640px) 46vw, 82vw"
         className="aspect-[4/3]"
         imgClassName="transition-transform duration-500 group-hover:scale-105"
       />

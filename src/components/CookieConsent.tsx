@@ -50,7 +50,7 @@ export function CookieConsent({ gaId, metaPixelId }: { gaId: string; metaPixelId
           <p className="mt-1 text-sm leading-relaxed text-slate-600">
             We use essential cookies to run this site. With your permission we also use analytics cookies to improve it and
             marketing cookies to measure our ads. We never sell your data.{" "}
-            <Link href="/privacy-policy/#cookies" className="font-medium text-forest-700 underline">Learn more</Link>
+            <Link href="/privacy-policy/#cookies" className="font-medium text-forest-700 underline">How we use cookies</Link>
           </p>
           <div className="mt-3 grid grid-cols-2 gap-2 sm:flex sm:justify-end">
             <button type="button" onClick={() => setPanel(true)} className="col-span-2 rounded-full px-4 py-2.5 text-sm font-semibold text-forest-700 underline-offset-2 hover:underline sm:col-span-1 sm:mr-auto sm:px-2">
