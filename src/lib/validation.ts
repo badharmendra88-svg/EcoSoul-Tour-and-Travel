@@ -121,7 +121,21 @@ export const transportEnquirySchema = base
     }
   });
 
-export const hotelEnquirySchema = base.extend({\n  kind: z.literal("HOTEL"),\n  destination: z.string().trim().min(2, "Please enter a destination").max(120),\n  travelDate: futureDate,\n  returnDate: futureDate,\n  rooms: z.coerce.number().int().min(1).max(20),\n  adults: z.coerce.number().int().min(1).max(60),\n  children: z.coerce.number().int().min(0).max(40).optional().default(0),\n  roomCategory: optionalText(60),\n  message: optionalText(1500),\n}).superRefine((v, ctx) => {\n  if (v.returnDate <= v.travelDate) ctx.addIssue({ code: "custom", path: ["returnDate"], message: "Check-out must be after check-in" });\n});\n\nexport const contactEnquirySchema = base.extend({
+export const hotelEnquirySchema = base.extend({
+  kind: z.literal("HOTEL"),
+  destination: z.string().trim().min(2, "Please enter a destination").max(120),
+  travelDate: futureDate,
+  returnDate: futureDate,
+  rooms: z.coerce.number().int().min(1).max(20),
+  adults: z.coerce.number().int().min(1).max(60),
+  children: z.coerce.number().int().min(0).max(40).optional().default(0),
+  roomCategory: optionalText(60),
+  message: optionalText(1500),
+}).superRefine((v, ctx) => {
+  if (v.returnDate <= v.travelDate) ctx.addIssue({ code: "custom", path: ["returnDate"], message: "Check-out must be after check-in" });
+});
+
+export const contactEnquirySchema = base.extend({
   kind: z.literal("CONTACT"),
   message: z.string().trim().min(5, "Please write a short message").max(2000),
 });
@@ -130,7 +144,8 @@ export type EnquiryInput =
   | z.input<typeof tripEnquirySchema>
   | z.input<typeof packageEnquirySchema>
   | z.input<typeof transportEnquirySchema>
-  | z.input<typeof contactEnquirySchema>\n  | z.input<typeof hotelEnquirySchema>;
+  | z.input<typeof contactEnquirySchema>
+  | z.input<typeof hotelEnquirySchema>;
 
 export function schemaFor(kind: unknown) {
   switch (kind) {
@@ -142,6 +157,8 @@ export function schemaFor(kind: unknown) {
       return transportEnquirySchema;
     case "CONTACT":
       return contactEnquirySchema;
+    case "HOTEL":
+      return hotelEnquirySchema;
     default:
       return null;
   }
