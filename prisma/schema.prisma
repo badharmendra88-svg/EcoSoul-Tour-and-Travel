@@ -79,7 +79,7 @@ model Package {
 model Enquiry {
   id              String         @id @default(cuid())
   ref             String         @unique // public enquiry ID, e.g. ES-261020-7KQ4
-  kind            String // TRIP | PACKAGE | TRANSPORT | CONTACT
+  kind            String // TRIP | PACKAGE | TRANSPORT | HOTEL | CONTACT
   status          String         @default("NEW")
   name            String
   phone           String?
@@ -106,6 +106,8 @@ model Enquiry {
   drop            String?
   pickupTime      String? // HH:mm
   returnDate      String?
+  rooms           Int?
+  roomCategory    String?
   luggage         String?
   vehicleCategory String?
   fareType        String? // FIXED_QUOTE | ESTIMATE
