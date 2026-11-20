@@ -1,0 +1,2 @@
+ALTER TABLE "Enquiry" ADD COLUMN "rooms" INTEGER;
+ALTER TABLE "Enquiry" ADD COLUMN "roomCategory" TEXT;
