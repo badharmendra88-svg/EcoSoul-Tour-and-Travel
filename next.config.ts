@@ -74,7 +74,11 @@ const nextConfig: NextConfig = {
     imageSizes: [32, 48, 64, 96, 128, 256, 384, 448, 512],
   },
   // Admin photo uploads go through server actions
-  experimental: { serverActions: { bodySizeLimit: "10mb" } },
+  experimental: {
+    serverActions: { bodySizeLimit: "10mb" },
+    // Set by the Next.js security upgrade (16.4.3 → 16.4.6)
+    agentUpgrade: "security",
+  },
   async redirects() {
     return [
       { source: "/char-dham-yatra/", destination: "/uttarakhand/char-dham-yatra/", permanent: true },
