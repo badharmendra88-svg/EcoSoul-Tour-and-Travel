@@ -105,7 +105,7 @@ export async function POST(request: Request) {
         pickup: str("pickup"),
         drop: str("drop"),
         pickupTime: str("pickupTime"),
-        returnDate: str("returnDate"),
+        returnDate: str("returnDate"),\n        rooms: num("rooms"),\n        roomCategory: str("roomCategory"),
         luggage: str("luggage"),
         vehicleCategory: str("vehicleCategory"),
         fareType: str("fareType"),
