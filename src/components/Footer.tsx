@@ -16,7 +16,7 @@ export async function Footer() {
     <footer className="mt-20 bg-forest-900 pb-24 text-forest-100 sm:pb-0">
       <div className="container-page grid grid-cols-2 gap-x-6 gap-y-10 py-14 md:grid-cols-[1.3fr_repeat(4,1fr)]">
         <div className="col-span-2 space-y-4 md:col-span-1">
-          <Logo light />
+          <Logo light lazy />
           <p className="tagline">Devbhoomi · Uttarakhand</p>
           <p className="max-w-xs text-sm leading-relaxed text-forest-200">
             Tour packages, custom trips and car + driver bookings across Uttarakhand — planned by people who know the hills.

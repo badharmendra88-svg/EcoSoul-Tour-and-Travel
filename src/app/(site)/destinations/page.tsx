@@ -62,7 +62,7 @@ export default async function DestinationsPage({ searchParams }: { searchParams:
         </p>
         <div className="mt-4 grid grid-cols-2 gap-4 md:grid-cols-3 lg:grid-cols-4">
           {list.map((d) => (
-            <DestinationCard key={d.id} d={d} />
+            <DestinationCard key={d.id} d={d} layout="grid" />
           ))}
         </div>
         {list.length === 0 && (

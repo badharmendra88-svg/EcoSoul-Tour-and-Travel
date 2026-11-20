@@ -168,7 +168,7 @@ export default async function DestinationPage({ params }: { params: Promise<{ sl
             <h2 className="h2">{d.name} tour packages</h2>
             <div className="mt-8 grid gap-6 md:grid-cols-2 lg:grid-cols-3">
               {d.packages.map((p) => (
-                <PackageCard key={p.id} pkg={p} />
+                <PackageCard key={p.id} pkg={p} layout="grid" />
               ))}
             </div>
           </div>

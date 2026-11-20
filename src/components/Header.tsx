@@ -20,7 +20,7 @@ export function Header() {
       </a>
       <div className="container-page flex h-16 items-center justify-between gap-4">
         <Link href="/" className="flex items-center gap-2" aria-label={`${site.name} home`}>
-          <Logo eager />
+          <Logo />
         </Link>
 
         <nav aria-label="Main" className="hidden lg:block">
