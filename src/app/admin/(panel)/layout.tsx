@@ -36,8 +36,8 @@ export default async function AdminLayout({ children }: { children: React.ReactN
         { href: "/admin/quotes/", label: "Quotes", icon: "quote", perm: "quotes.manage", badge: openQuotes },
         { href: "/admin/rates/", label: "Rate card", icon: "calculator", perm: "rates.edit" },
         { href: "/admin/drivers/", label: "Taxi partners", icon: "car", perm: "drivers.view", badge: newDrivers },
-        { href: "/admin/hotels/", label: "Hotel partners", icon: "building", perm: "partners.view" },
-        { href: "/admin/bookings/", label: "Bookings & commission", icon: "clipboard-list", perm: "bookings.view" },
+        { href: "/admin/hotels/", label: "Hotel partners", icon: "hotel", perm: "partners.view" },
+        { href: "/admin/bookings/", label: "Bookings & commission", icon: "calendar", perm: "bookings.view" },
       ],
     },
     {
