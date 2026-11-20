@@ -21,6 +21,10 @@ export const permissions = {
   "settings.manage": ["SUPER_ADMIN", "ADMIN"],
   "drivers.view": ["SUPER_ADMIN", "ADMIN", "MANAGER"],
   "drivers.manage": ["SUPER_ADMIN", "ADMIN"],
+  "partners.view": ["SUPER_ADMIN", "ADMIN", "MANAGER"],
+  "partners.manage": ["SUPER_ADMIN", "ADMIN"],
+  "bookings.view": ["SUPER_ADMIN", "ADMIN", "MANAGER"],
+  "bookings.manage": ["SUPER_ADMIN", "ADMIN"],
   "users.manage": ["SUPER_ADMIN"],
   // Website photos (hero, destinations, packages) — Super Admin only
   "media.manage": ["SUPER_ADMIN"],
