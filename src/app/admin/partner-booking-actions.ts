@@ -71,7 +71,7 @@ export async function createBookingAction(fd: FormData) {
     if (!hotel || hotel.status !== "ACTIVE") redirect("/admin/bookings/?error=Hotel%20partner%20must%20be%20active");
     hotelDefaultPct = hotel.commissionPct;
   }
-  const effectiveRate = commissionRate || (serviceType === "HOTEL" ? hotelDefaultPct : 0);
+  const effectiveRate = commissionType === "PERCENT" && commissionRate === 0 && serviceType === "HOTEL" ? hotelDefaultPct : commissionRate;
   const commissionAmount = commissionType === "PERCENT" ? Math.round(bookingAmount * effectiveRate / 100) : Math.round(effectiveRate);
   await db.booking.create({ data: {
     ref: makeRef("BK"), enquiryId, serviceType, driverPartnerId, hotelPartnerId,
