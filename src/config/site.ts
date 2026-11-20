@@ -58,7 +58,8 @@ export const footerNav: { title: string; items: NavItem[] }[] = [
     title: "Explore",
     items: [
       { label: "Destinations", href: "/destinations/" },
-      { label: "Tour Packages", href: "/uttarakhand/tour-packages/" },\n      { label: "Hotels & Homestays", href: "/hotel-booking/" },
+      { label: "Tour Packages", href: "/uttarakhand/tour-packages/" },
+      { label: "Hotels & Homestays", href: "/hotel-booking/" },
       { label: "Char Dham & Yatra", href: "/uttarakhand/char-dham-yatra/" },
       { label: "Customise My Trip", href: "/customise-my-trip/" },
       { label: "How to Reach Uttarakhand", href: "/how-to-reach-uttarakhand/" },
