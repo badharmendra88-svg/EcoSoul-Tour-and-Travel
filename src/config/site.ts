@@ -37,7 +37,7 @@ export type NavItem = { label: string; href: string };
 // Blueprint §25 — updated primary navigation
 export const mainNav: NavItem[] = [
   { label: "Destinations", href: "/destinations/" },
-  { label: "Tour Packages", href: "/uttarakhand/tour-packages/" },
+  { label: "Tour Packages", href: "/uttarakhand/tour-packages/" },\n  { label: "Hotels & Homestays", href: "/hotel-booking/" },
   { label: "Book a Taxi", href: "/uttarakhand/taxi-booking/" },
   { label: "Book a Driver", href: "/uttarakhand/driver-booking/" },
   { label: "Transfers", href: "/uttarakhand/airport-transfers/" },
@@ -57,7 +57,7 @@ export const footerNav: { title: string; items: NavItem[] }[] = [
     title: "Explore",
     items: [
       { label: "Destinations", href: "/destinations/" },
-      { label: "Tour Packages", href: "/uttarakhand/tour-packages/" },
+      { label: "Tour Packages", href: "/uttarakhand/tour-packages/" },\n      { label: "Hotels & Homestays", href: "/hotel-booking/" },
       { label: "Char Dham & Yatra", href: "/uttarakhand/char-dham-yatra/" },
       { label: "Customise My Trip", href: "/customise-my-trip/" },
       { label: "How to Reach Uttarakhand", href: "/how-to-reach-uttarakhand/" },
