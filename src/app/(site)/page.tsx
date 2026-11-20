@@ -47,6 +47,7 @@ export const metadata = {
 
 const services: { title: string; photo: ServiceKey; text: string; href: string; cta: string; scene: string }[] = [
   { title: "Tour Packages", photo: "tours", text: "Curated Uttarakhand trips with day-wise itineraries and clear inclusions.", href: "/uttarakhand/tour-packages/", cta: "Explore packages", scene: "lake" },
+  { title: "Hotels & Homestays", photo: "custom", text: "Request stays with local hotel, resort and homestay partners.", href: "/hotel-booking/", cta: "Find a Stay", scene: "meadow" },
   { title: "Book a Taxi", photo: "taxi", text: "Pickup/drop, local sightseeing, outstation travel and multi-day trips.", href: "/uttarakhand/taxi-booking/", cta: "Get Taxi Quote", scene: "mountain" },
   { title: "Book a Driver", photo: "driver", text: "An experienced hill driver for your own car — by route and trip duration.", href: "/uttarakhand/driver-booking/", cta: "Request a Driver", scene: "forest" },
   { title: "Custom Trip", photo: "custom", text: "Tell us your dates, pace and budget — we plan hotels, transport and sightseeing.", href: "/customise-my-trip/", cta: "Plan a Custom Trip", scene: "meadow" },
@@ -171,7 +172,7 @@ export default async function HomePage() {
       <section className="container-page py-12 sm:py-16">
         <p className="eyebrow">Choose your travel service</p>
         <h2 className="h2 mt-2">How can we help you travel?</h2>
-        <div className="mt-6 grid grid-cols-2 gap-3 sm:mt-8 sm:gap-5 lg:grid-cols-4">
+        <div className="mt-6 grid grid-cols-2 gap-3 sm:mt-8 sm:gap-5 lg:grid-cols-3 xl:grid-cols-5">
           {services.map((sv) => (
             <article key={sv.title} className="card group relative flex flex-col overflow-hidden">
               <SitePhoto

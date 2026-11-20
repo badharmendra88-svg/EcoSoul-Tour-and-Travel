@@ -6,18 +6,10 @@ import { clientIp, ipRateLimit } from "@/lib/rate-limit";
 import { serialize } from "@/lib/serialize";
 import { notifyNewEnquiry } from "@/lib/notify";
 import { emailNewEnquiry } from "@/lib/email";
+import { makeRef } from "@/lib/ref";
 
 // Public enquiry endpoint for all forms (trip, package, transport, contact).
 
-const REF_ALPHABET = "23456789ABCDEFGHJKLMNPQRSTUVWXYZ"; // no 0/O/1/I
-
-function makeRef() {
-  const d = new Date(Date.now() + 5.5 * 3600 * 1000).toISOString();
-  const date = d.slice(2, 10).replace(/-/g, "");
-  const bytes = crypto.getRandomValues(new Uint8Array(4));
-  const rand = Array.from(bytes, (b) => REF_ALPHABET[b % REF_ALPHABET.length]).join("");
-  return `ES-${date}-${rand}`;
-}
 
 function utmJson(utm: unknown) {
   if (!utm || typeof utm !== "object") return null;
@@ -41,7 +33,7 @@ export async function POST(request: Request) {
 
   // Honeypot filled → pretend success so bots learn nothing
   if (typeof body.website === "string" && body.website.length > 0) {
-    return NextResponse.json({ ok: true, ref: makeRef() });
+    return NextResponse.json({ ok: true, ref: makeRef("ES") });
   }
 
   const schema = schemaFor(body.kind);
@@ -83,7 +75,7 @@ export async function POST(request: Request) {
 
     const enquiry = await db.enquiry.create({
       data: {
-        ref: makeRef(),
+        ref: makeRef("ES"),
         kind: v.kind,
         name: String(v.name),
         phone: v.phone ?? null,
@@ -106,6 +98,8 @@ export async function POST(request: Request) {
         drop: str("drop"),
         pickupTime: str("pickupTime"),
         returnDate: str("returnDate"),
+        rooms: num("rooms"),
+        roomCategory: str("roomCategory"),
         luggage: str("luggage"),
         vehicleCategory: str("vehicleCategory"),
         fareType: str("fareType"),

@@ -79,7 +79,7 @@ model Package {
 model Enquiry {
   id              String         @id @default(cuid())
   ref             String         @unique // public enquiry ID, e.g. ES-261020-7KQ4
-  kind            String // TRIP | PACKAGE | TRANSPORT | CONTACT
+  kind            String // TRIP | PACKAGE | TRANSPORT | HOTEL | CONTACT
   status          String         @default("NEW")
   name            String
   phone           String?
@@ -106,6 +106,8 @@ model Enquiry {
   drop            String?
   pickupTime      String? // HH:mm
   returnDate      String?
+  rooms           Int?
+  roomCategory    String?
   luggage         String?
   vehicleCategory String?
   fareType        String? // FIXED_QUOTE | ESTIMATE
@@ -123,6 +125,7 @@ model Enquiry {
   updatedAt       DateTime       @updatedAt
   events          EnquiryEvent[]
   quotes          Quote[]
+  bookings        Booking[]
 
   @@index([status])
   @@index([kind, createdAt])
@@ -398,6 +401,7 @@ model DriverPartner {
   createdAt           DateTime      @default(now())
   updatedAt           DateTime      @updatedAt
   events              DriverEvent[]
+  bookings            Booking[]
 
   @@index([status])
   @@index([phone])
@@ -413,4 +417,58 @@ model DriverEvent {
   detail   String?
 
   @@index([driverId, at])
+}
+
+
+// ---------- Hotel partners, allocated bookings & commission ledger ----------
+// Taxi partners reuse DriverPartner so existing document verification remains authoritative.
+model HotelPartner {
+  id           String    @id @default(cuid())
+  ref          String    @unique
+  name         String
+  phone        String
+  email        String?
+  location     String
+  propertyType String    // HOTEL | HOMESTAY | RESORT | GUESTHOUSE
+  roomTypes    String?
+  commissionPct Float    @default(0)
+  status       String    @default("ACTIVE") // ACTIVE | INACTIVE | UNDER_REVIEW
+  internalNotes String?
+  createdAt    DateTime  @default(now())
+  updatedAt    DateTime  @updatedAt
+  bookings     Booking[]
+
+  @@index([status, location])
+  @@index([phone])
+}
+
+model Booking {
+  id               String        @id @default(cuid())
+  ref              String        @unique
+  enquiryId        String?
+  enquiry          Enquiry?      @relation(fields: [enquiryId], references: [id], onDelete: SetNull)
+  serviceType      String        // TAXI | HOTEL | PACKAGE | OTHER
+  status           String        @default("ALLOCATED") // ALLOCATED | CONFIRMED | IN_PROGRESS | COMPLETED | CANCELLED
+  driverPartnerId  String?
+  driverPartner    DriverPartner? @relation(fields: [driverPartnerId], references: [id], onDelete: SetNull)
+  hotelPartnerId   String?
+  hotelPartner     HotelPartner? @relation(fields: [hotelPartnerId], references: [id], onDelete: SetNull)
+  travelDate       String?
+  endDate          String?
+  bookingAmount    Int           @default(0)
+  commissionType   String        @default("PERCENT") // PERCENT | FIXED
+  commissionRate   Float         @default(0) // percentage, or fixed rupees
+  commissionAmount Int           @default(0) // calculated snapshot in whole rupees
+  commissionStatus String        @default("PENDING") // PENDING | PAID | NOT_DUE
+  commissionPaidAt DateTime?
+  notes            String?
+  createdBy        String
+  createdAt        DateTime      @default(now())
+  updatedAt        DateTime      @updatedAt
+
+  @@index([status, travelDate])
+  @@index([commissionStatus, createdAt])
+  @@index([enquiryId])
+  @@index([driverPartnerId])
+  @@index([hotelPartnerId])
 }

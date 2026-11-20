@@ -11,7 +11,7 @@ type Search = { kind?: string; status?: string; q?: string; page?: string; denie
 
 const PAGE_SIZE = 50;
 
-const kindIcon: Record<string, IconName> = { TRIP: "sparkles", PACKAGE: "package", TRANSPORT: "car", CONTACT: "message" };
+const kindIcon: Record<string, IconName> = { TRIP: "sparkles", PACKAGE: "package", TRANSPORT: "car", HOTEL: "hotel", CONTACT: "message" };
 
 export default async function LeadsPage({ searchParams }: { searchParams: Promise<Search> }) {
   const me = await requireUser("leads.view");

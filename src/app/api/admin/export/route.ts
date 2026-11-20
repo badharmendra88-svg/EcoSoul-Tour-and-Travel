@@ -8,7 +8,7 @@ import { can } from "@/lib/permissions";
 
 const columns = [
   "ref", "createdAt", "kind", "status", "name", "phone", "email", "packageSlug", "destination", "serviceType",
-  "pickup", "drop", "travelDate", "dateFlexible", "pickupTime", "returnDate", "adults", "children", "luggage",
+  "pickup", "drop", "travelDate", "dateFlexible", "pickupTime", "returnDate", "rooms", "roomCategory", "adults", "children", "luggage",
   "vehicleCategory", "transmission", "tripDays", "fareType", "interests", "budgetBand", "heardFrom", "travellingFrom", "utm", "sourcePage", "assignedTo", "message", "internalNotes",
 ] as const;
 

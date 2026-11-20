@@ -12,6 +12,7 @@ const staticPaths = [
   "/uttarakhand/tour-packages/",
   "/uttarakhand/taxi-booking/",
   "/uttarakhand/driver-booking/",
+  "/hotel-booking/",
   "/uttarakhand/airport-transfers/",
   "/uttarakhand/local-sightseeing-taxi/",
   "/uttarakhand/haldwani-taxi-service/",
