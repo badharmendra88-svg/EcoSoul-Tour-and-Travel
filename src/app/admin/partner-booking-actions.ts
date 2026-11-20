@@ -102,7 +102,7 @@ export async function updateBookingAction(fd: FormData) {
     const enquiryStatus = status === "COMPLETED" ? "COMPLETED" : status === "CANCELLED" ? "CANCELLED" : status === "IN_PROGRESS" ? "IN_PROGRESS" : status === "CONFIRMED" ? "CONFIRMED" : "DRIVER_ASSIGNED";
     const allowed = booking.serviceType === "TAXI" ? ["NEW","CHECKING","QUOTE_SENT","AWAITING_CUSTOMER","AWAITING_ADVANCE","CONFIRMED","DRIVER_ASSIGNED","IN_PROGRESS","COMPLETED","CANCELLED","INCIDENT","SPAM"] : null;
     if (!allowed || allowed.includes(enquiryStatus)) {
-      await db.enquiry.update({ where: { id: booking.enquiryId }, data: { status: enquiryStatus, events: { create: { actor: me.name, action: "booking_updated", detail: `${status}; commission ${commissionStatus}` } } } });
+      await db.enquiry.update({ where: { id: booking.enquiryId }, data: { status: safeStatus, events: { create: { actor: me.name, action: "booking_updated", detail: `${status}; commission ${commissionStatus}` } } } });
     }
   }
   revalidatePath("/admin/bookings/");
