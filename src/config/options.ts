@@ -95,6 +95,7 @@ export const enquiryKinds = {
   TRIP: "Custom trip",
   PACKAGE: "Package",
   TRANSPORT: "Transport",
+  HOTEL: "Hotel stay",
   CONTACT: "Contact",
 } as const;
 export type EnquiryKind = keyof typeof enquiryKinds;
