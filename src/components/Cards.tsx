@@ -9,7 +9,19 @@ type PackageWithDest = Package & { destinations?: Pick<Destination, "scene" | "n
 
 // Review §B: real photo, duration, destination, who it suits, included
 // services, price or "Request a customised quote", and a quote CTA.
-export function PackageCard({ pkg }: { pkg: PackageWithDest }) {
+// Image `sizes` per layout. "row" = .snap-row (82% / 46% wide swipe cards on phones, grid from md);
+// "grid" = a plain CSS grid (one full-width column on phones for packages, two columns for destinations).
+const PACKAGE_SIZES = {
+  row: "(min-width: 1536px) 470px, (min-width: 1024px) calc(33vw - 40px), (min-width: 768px) calc(50vw - 36px), (min-width: 640px) 46vw, 82vw",
+  grid: "(min-width: 1536px) 470px, (min-width: 1024px) calc(33vw - 40px), (min-width: 768px) calc(50vw - 36px), calc(100vw - 32px)",
+};
+const DESTINATION_SIZES = {
+  row: "(min-width: 1536px) 350px, (min-width: 1024px) calc(25vw - 30px), (min-width: 768px) 33vw, (min-width: 640px) 46vw, 82vw",
+  grid: "(min-width: 1536px) 350px, (min-width: 1024px) calc(25vw - 30px), (min-width: 768px) 33vw, 50vw",
+};
+type CardLayout = keyof typeof PACKAGE_SIZES;
+
+export function PackageCard({ pkg, layout = "row" }: { pkg: PackageWithDest; layout?: CardLayout }) {
   const price = formatPrice(pkg.startingPrice, pkg.currency);
   const scene = pkg.destinations?.[0]?.scene ?? (pkg.tripType === "PILGRIMAGE" ? "temple" : "mountain");
   const facts = parseList(pkg.inclusions).slice(0, 3);
@@ -20,7 +32,7 @@ export function PackageCard({ pkg }: { pkg: PackageWithDest }) {
         url={pkg.imageUrl}
         alt={pkg.imageAlt}
         scene={scene}
-        sizes="(min-width: 1536px) 470px, (min-width: 1024px) calc(33vw - 40px), (min-width: 768px) calc(50vw - 36px), (min-width: 640px) 46vw, 82vw"
+        sizes={PACKAGE_SIZES[layout]}
         className="aspect-[16/10]"
         imgClassName="transition-transform duration-500 group-hover:scale-105"
       />
@@ -71,7 +83,9 @@ export function PackageCard({ pkg }: { pkg: PackageWithDest }) {
 
 export function DestinationCard({
   d,
+  layout = "row",
 }: {
+  layout?: CardLayout;
   d: Pick<Destination, "slug" | "name" | "summary" | "scene" | "region" | "cluster" | "bestFor" | "imageUrl" | "imageAlt">;
 }) {
   const tags = (d.bestFor ?? "").split(",").map((t) => t.trim()).filter(Boolean).slice(0, 3);
@@ -81,7 +95,7 @@ export function DestinationCard({
         url={d.imageUrl}
         alt={d.imageAlt}
         scene={d.scene}
-        sizes="(min-width: 1536px) 350px, (min-width: 1024px) calc(25vw - 30px), (min-width: 768px) 33vw, (min-width: 640px) 46vw, 82vw"
+        sizes={DESTINATION_SIZES[layout]}
         className="aspect-[4/3]"
         imgClassName="transition-transform duration-500 group-hover:scale-105"
       />

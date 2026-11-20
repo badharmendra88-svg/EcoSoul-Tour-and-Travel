@@ -87,7 +87,7 @@ export default async function PackagesPage({ searchParams }: { searchParams: Pro
 
         <div className="mt-4 grid gap-6 md:grid-cols-2 lg:grid-cols-3">
           {packages.map((p) => (
-            <PackageCard key={p.id} pkg={p} />
+            <PackageCard key={p.id} pkg={p} layout="grid" />
           ))}
         </div>
 

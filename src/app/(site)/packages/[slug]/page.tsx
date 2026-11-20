@@ -252,7 +252,7 @@ export default async function PackagePage({ params }: { params: Promise<{ slug: 
             </div>
             <div className="mt-8 grid gap-6 md:grid-cols-2 lg:grid-cols-3">
               {related.map((o) => (
-                <PackageCard key={o.id} pkg={o} />
+                <PackageCard key={o.id} pkg={o} layout="grid" />
               ))}
             </div>
           </div>
