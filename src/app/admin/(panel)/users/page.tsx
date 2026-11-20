@@ -18,6 +18,10 @@ const permissionLabels: Record<keyof typeof permissions, string> = {
   "settings.manage": "Integrations & settings",
   "drivers.view": "View driver partners",
   "drivers.manage": "Verify & manage drivers",
+  "partners.view": "View hotel partners",
+  "partners.manage": "Add & manage hotel partners",
+  "bookings.view": "View bookings & commission",
+  "bookings.manage": "Allocate bookings & record commission",
   "users.manage": "Manage users",
   "media.manage": "Change website photos",
 };

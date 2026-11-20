@@ -4,7 +4,7 @@ import { db } from "@/lib/db";
 import { formatDate } from "@/lib/format";
 import { rupees } from "@/lib/quote";
 import { Badge, PageHeader, StatCard, StatusBadge } from "../ui";
-import { createBookingAction, updateBookingAction } from "../partner-booking-actions";
+import { createBookingAction, updateBookingAction } from "../../partner-booking-actions";
 
 const bookingStatuses = ["ALLOCATED", "CONFIRMED", "IN_PROGRESS", "COMPLETED", "CANCELLED"];
 export default async function BookingsPage({ searchParams }: { searchParams: Promise<{ saved?: string; error?: string }> }) {
@@ -15,8 +15,8 @@ export default async function BookingsPage({ searchParams }: { searchParams: Pro
     db.enquiry.findMany({ where: { status: { notIn: ["SPAM", "LOST"] } }, orderBy: { createdAt: "desc" }, take: 100, select: { id: true, ref: true, name: true, kind: true, destination: true, pickup: true, drop: true, travelDate: true } }),
     db.driverPartner.findMany({ where: { status: { in: ["ACTIVE", "VERIFIED"] }, partnerType: "WITH_VEHICLE" }, orderBy: { name: "asc" }, select: { id: true, name: true, phone: true, vehicleCategory: true } }),
     db.hotelPartner.findMany({ where: { status: "ACTIVE" }, orderBy: { name: "asc" }, select: { id: true, name: true, location: true, commissionPct: true } }),
-    db.booking.aggregate({ _sum: { bookingAmount: true, commissionAmount: true }, _count: true }),
-    db.booking.aggregate({ where: { commissionStatus: "PENDING" }, _sum: { commissionAmount: true }, _count: true }),
+    db.booking.aggregate({ where: { status: { not: "CANCELLED" } }, _sum: { bookingAmount: true, commissionAmount: true }, _count: true }),
+    db.booking.aggregate({ where: { commissionStatus: "PENDING", status: { not: "CANCELLED" } }, _sum: { commissionAmount: true }, _count: true }),
     db.booking.aggregate({ where: { commissionStatus: "PAID" }, _sum: { commissionAmount: true }, _count: true }),
   ]);
   const manage = can(me.role, "bookings.manage");
@@ -38,7 +38,7 @@ export default async function BookingsPage({ searchParams }: { searchParams: Pro
         <label className="text-sm">Taxi partner<select name="driverPartnerId" className="admin-input mt-1 w-full"><option value="">Not applicable</option>{drivers.map(d=><option key={d.id} value={d.id}>{d.name} · {d.phone} · {d.vehicleCategory || "Vehicle"}</option>)}</select></label>
         <label className="text-sm">Hotel partner<select name="hotelPartnerId" className="admin-input mt-1 w-full"><option value="">Not applicable</option>{hotels.map(h=><option key={h.id} value={h.id}>{h.name} · {h.location}</option>)}</select></label>
         <label className="text-sm">Commission method<select name="commissionType" className="admin-input mt-1 w-full"><option value="PERCENT">Percentage (%)</option><option value="FIXED">Fixed amount (₹)</option></select></label>
-        <label className="text-sm">Commission rate / amount<input required name="commissionRate" type="number" min="0" step="0.5" defaultValue="0" className="admin-input mt-1 w-full"/></label>
+        <label className="text-sm">Commission rate / amount<input name="commissionRate" type="number" min="0" step="0.5" placeholder="Blank = hotel's default %" className="admin-input mt-1 w-full"/></label>
         <label className="text-sm">Travel / check-in date<input name="travelDate" type="date" className="admin-input mt-1 w-full"/></label>
         <label className="text-sm">Return / check-out date<input name="endDate" type="date" className="admin-input mt-1 w-full"/></label>
         <label className="text-sm sm:col-span-2 lg:col-span-3">Internal notes<textarea name="notes" rows={2} maxLength={2000} className="admin-input mt-1 w-full" placeholder="Partner quote, room / vehicle details, customer requirements..."/></label>

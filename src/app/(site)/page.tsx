@@ -172,7 +172,7 @@ export default async function HomePage() {
       <section className="container-page py-12 sm:py-16">
         <p className="eyebrow">Choose your travel service</p>
         <h2 className="h2 mt-2">How can we help you travel?</h2>
-        <div className="mt-6 grid grid-cols-2 gap-3 sm:mt-8 sm:gap-5 lg:grid-cols-4">
+        <div className="mt-6 grid grid-cols-2 gap-3 sm:mt-8 sm:gap-5 lg:grid-cols-3 xl:grid-cols-5">
           {services.map((sv) => (
             <article key={sv.title} className="card group relative flex flex-col overflow-hidden">
               <SitePhoto
