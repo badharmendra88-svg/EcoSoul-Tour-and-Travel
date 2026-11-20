@@ -46,7 +46,8 @@ export const metadata = {
 // 6 Season planner · 7 Why EcoSoul · 8 Destinations · 9 Reviews, FAQs & final CTA
 
 const services: { title: string; photo: ServiceKey; text: string; href: string; cta: string; scene: string }[] = [
-  { title: "Tour Packages", photo: "tours", text: "Curated Uttarakhand trips with day-wise itineraries and clear inclusions.", href: "/uttarakhand/tour-packages/", cta: "Explore packages", scene: "lake" },\n  { title: "Hotels & Homestays", photo: "custom", text: "Request stays with local hotel, resort and homestay partners.", href: "/hotel-booking/", cta: "Find a Stay", scene: "meadow" },
+  { title: "Tour Packages", photo: "tours", text: "Curated Uttarakhand trips with day-wise itineraries and clear inclusions.", href: "/uttarakhand/tour-packages/", cta: "Explore packages", scene: "lake" },
+  { title: "Hotels & Homestays", photo: "custom", text: "Request stays with local hotel, resort and homestay partners.", href: "/hotel-booking/", cta: "Find a Stay", scene: "meadow" },
   { title: "Book a Taxi", photo: "taxi", text: "Pickup/drop, local sightseeing, outstation travel and multi-day trips.", href: "/uttarakhand/taxi-booking/", cta: "Get Taxi Quote", scene: "mountain" },
   { title: "Book a Driver", photo: "driver", text: "An experienced hill driver for your own car — by route and trip duration.", href: "/uttarakhand/driver-booking/", cta: "Request a Driver", scene: "forest" },
   { title: "Custom Trip", photo: "custom", text: "Tell us your dates, pace and budget — we plan hotels, transport and sightseeing.", href: "/customise-my-trip/", cta: "Plan a Custom Trip", scene: "meadow" },
