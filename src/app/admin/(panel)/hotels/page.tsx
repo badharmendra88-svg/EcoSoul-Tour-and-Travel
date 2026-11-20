@@ -1,7 +1,7 @@
 import { requireUser } from "@/lib/admin-auth";
 import { can } from "@/lib/permissions";
 import { db } from "@/lib/db";
-import { Badge, PageHeader, StatusBadge } from "../ui";
+import { PageHeader, StatusBadge } from "../ui";
 import { createHotelPartnerAction, updateHotelPartnerAction } from "../partner-booking-actions";
 
 export default async function HotelsPage({ searchParams }: { searchParams: Promise<{ saved?: string; error?: string }> }) {
