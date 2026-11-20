@@ -1,12 +1,14 @@
 import Link from "next/link";
 import { notFound } from "next/navigation";
-import { enquiryKinds, serviceTypes, statusLabel, statusesFor, vehicleCategories } from "@/config/options";
-import { requireAdmin } from "@/lib/admin-auth";
+import { bookingServiceTypes, bookingStatuses, closedLeadStatuses, commissionStatuses, enquiryKinds, serviceTypes, statusLabel, statusesFor, vehicleCategories } from "@/config/options";
+import { requireUser } from "@/lib/admin-auth";
+import { can } from "@/lib/permissions";
 import { db } from "@/lib/db";
 import { formatDate, formatDateTime } from "@/lib/format";
 import { rupees } from "@/lib/quote";
 import { retryNotificationAction, updateEnquiryAction } from "../../../actions";
 import { Avatar, Badge, Icon, Panel, StatusBadge, timeAgo, type IconName } from "../../ui";
+import { BookingProgressForm } from "../../bookings/BookingProgressForm";
 
 // Indian 10-digit numbers get the 91 country code for wa.me links
 function customerWhatsApp(phone: string, text: string) {
@@ -32,6 +34,8 @@ const eventIcon: Record<string, IconName> = {
   note: "message",
   notes_updated: "edit",
   notify_retry: "bell",
+  booking_allocated: "calendar",
+  booking_updated: "calendar",
   email_team: "mail",
   email_customer: "mail",
   quote_created: "quote",
@@ -39,14 +43,37 @@ const eventIcon: Record<string, IconName> = {
   quote_status: "check",
 };
 
-export default async function LeadDetailPage({ params }: { params: Promise<{ id: string }> }) {
-  await requireAdmin("leads.view");
+export default async function LeadDetailPage({
+  params,
+  searchParams,
+}: {
+  params: Promise<{ id: string }>;
+  searchParams: Promise<{ booking?: string; error?: string }>;
+}) {
+  const me = await requireUser("leads.view");
   const { id } = await params;
-  const e = await db.enquiry.findUnique({
-    where: { id },
-    include: { events: { orderBy: { at: "desc" } }, quotes: { orderBy: { createdAt: "desc" } } },
-  });
+  const sp = await searchParams;
+  const canViewBookings = can(me.role, "bookings.view");
+  const canManageBookings = can(me.role, "bookings.manage");
+  const [e, bookings] = await Promise.all([
+    db.enquiry.findUnique({
+      where: { id },
+      include: { events: { orderBy: { at: "desc" } }, quotes: { orderBy: { createdAt: "desc" } } },
+    }),
+    canViewBookings
+      ? db.booking.findMany({
+          where: { enquiryId: id },
+          orderBy: { createdAt: "desc" },
+          include: { driverPartner: { select: { name: true, phone: true } }, hotelPartner: { select: { name: true, phone: true } } },
+        })
+      : [],
+  ]);
   if (!e) notFound();
+  const liveBookings = bookings.filter((b) => b.status !== "CANCELLED");
+  const bookingValue = liveBookings.reduce((s, b) => s + b.bookingAmount, 0);
+  const commissionPending = liveBookings.filter((b) => b.commissionStatus === "PENDING").reduce((s, b) => s + b.commissionAmount, 0);
+  const commissionPaid = bookings.filter((b) => b.commissionStatus === "PAID").reduce((s, b) => s + b.commissionAmount, 0);
+  const leadClosed = closedLeadStatuses.includes(e.status);
 
   const statuses = statusesFor(e.kind);
   const vehicle = vehicleCategories.find((v) => v.id === e.vehicleCategory)?.name ?? e.vehicleCategory;
@@ -256,6 +283,66 @@ export default async function LeadDetailPage({ params }: { params: Promise<{ id:
               </ul>
             )}
           </Panel>
+
+          {canViewBookings && (
+            <Panel
+              title="Bookings & commission"
+              icon="calendar"
+              bodyClassName="p-3"
+              description={bookings.length ? `${liveBookings.length} active · ${rupees(bookingValue)}` : undefined}
+              actions={
+                canManageBookings && !leadClosed ? (
+                  <Link href={`/admin/bookings/?lead=${e.id}#allocate`} className="text-sm font-semibold text-forest-700 hover:underline">+ New booking</Link>
+                ) : undefined
+              }
+            >
+              {sp.booking === "created" && <p className="mx-3 mb-2 rounded-lg bg-emerald-50 px-3 py-2 text-sm text-emerald-800">Booking created and linked to this lead.</p>}
+              {sp.error && <p role="alert" className="mx-3 mb-2 rounded-lg bg-rose-50 px-3 py-2 text-sm text-rose-800">{sp.error}</p>}
+              {bookings.length === 0 ? (
+                <p className="px-3 py-4 text-sm text-slate-500">
+                  {leadClosed ? "This lead is closed. Reopen it to add a booking." : "No bookings yet. Once the customer confirms, allocate a taxi or hotel partner here."}
+                </p>
+              ) : (
+                <>
+                  <dl className="mx-3 mb-2 grid grid-cols-2 gap-2 text-xs">
+                    <div className="rounded-lg bg-amber-50 px-3 py-2"><dt className="text-amber-800">Commission pending</dt><dd className="text-sm font-semibold text-amber-900">{rupees(commissionPending)}</dd></div>
+                    <div className="rounded-lg bg-emerald-50 px-3 py-2"><dt className="text-emerald-800">Commission received</dt><dd className="text-sm font-semibold text-emerald-900">{rupees(commissionPaid)}</dd></div>
+                  </dl>
+                  <ul className="divide-y divide-slate-100">
+                    {bookings.map((b) => {
+                      const partner = b.driverPartner ?? b.hotelPartner;
+                      return (
+                        <li key={b.id} className="space-y-2 px-3 py-3">
+                          <div className="flex items-start justify-between gap-3">
+                            <span className="min-w-0">
+                              <span className="block font-mono text-sm text-slate-900">{b.ref}</span>
+                              <span className="block text-xs text-slate-500">
+                                {bookingServiceTypes[b.serviceType as keyof typeof bookingServiceTypes] ?? b.serviceType}
+                                {partner && <> · {partner.name} · {partner.phone}</>}
+                              </span>
+                              {b.travelDate && <span className="block text-xs text-slate-500">{formatDate(b.travelDate)}{b.endDate && <> – {formatDate(b.endDate)}</>}</span>}
+                            </span>
+                            <span className="shrink-0 text-right">
+                              <span className="block text-sm font-semibold text-slate-900">{rupees(b.bookingAmount)}</span>
+                              <span className="block text-xs text-slate-500">Commission {rupees(b.commissionAmount)}</span>
+                            </span>
+                          </div>
+                          {canManageBookings ? (
+                            <BookingProgressForm booking={b} back={`/admin/leads/${e.id}/`} />
+                          ) : (
+                            <div className="flex flex-wrap gap-1.5">
+                              <StatusBadge status={b.status} label={bookingStatuses[b.status as keyof typeof bookingStatuses]} />
+                              <StatusBadge status={b.commissionStatus} label={commissionStatuses[b.commissionStatus as keyof typeof commissionStatuses]} />
+                            </div>
+                          )}
+                        </li>
+                      );
+                    })}
+                  </ul>
+                </>
+              )}
+            </Panel>
+          )}
 
           <Panel title="Team notification" icon="bell">
             <div className="flex items-center justify-between gap-3 text-sm">

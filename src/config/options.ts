@@ -133,3 +133,48 @@ export function statusesFor(kind: string): Record<string, string> {
 export function statusLabel(kind: string, status: string) {
   return statusesFor(kind)[status] ?? status;
 }
+
+// ---- Partner bookings & commission (admin) ----
+export const bookingServiceTypes = {
+  TAXI: "Taxi",
+  HOTEL: "Hotel / homestay",
+  PACKAGE: "Tour package",
+  OTHER: "Other",
+} as const;
+export type BookingServiceType = keyof typeof bookingServiceTypes;
+
+export const bookingStatuses = {
+  ALLOCATED: "Allocated",
+  CONFIRMED: "Confirmed",
+  IN_PROGRESS: "In progress",
+  COMPLETED: "Completed",
+  CANCELLED: "Cancelled",
+} as const;
+export type BookingStatus = keyof typeof bookingStatuses;
+
+export const commissionStatuses = {
+  PENDING: "Commission pending",
+  PAID: "Commission paid",
+  NOT_DUE: "Not due",
+} as const;
+
+export const hotelPropertyTypes = {
+  HOTEL: "Hotel",
+  HOMESTAY: "Homestay",
+  RESORT: "Resort",
+  GUESTHOUSE: "Guesthouse",
+} as const;
+
+export const hotelPartnerStatuses = {
+  ACTIVE: "Active",
+  UNDER_REVIEW: "Under review",
+  INACTIVE: "Inactive",
+} as const;
+
+/** The booking service a lead most likely needs, used to pre-fill "New booking" from a lead. */
+export function bookingServiceForKind(kind: string): BookingServiceType {
+  return kind === "TRANSPORT" ? "TAXI" : kind === "HOTEL" ? "HOTEL" : kind === "PACKAGE" ? "PACKAGE" : "OTHER";
+}
+
+/** Lead statuses that are closed: no new booking can be linked to them. */
+export const closedLeadStatuses = ["SPAM", "LOST", "CANCELLED"];

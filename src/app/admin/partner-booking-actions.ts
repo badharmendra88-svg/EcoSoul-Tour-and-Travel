@@ -2,8 +2,10 @@
 
 import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
+import { bookingServiceTypes, bookingStatuses, closedLeadStatuses, commissionStatuses, hotelPartnerStatuses, hotelPropertyTypes } from "@/config/options";
 import { db } from "@/lib/db";
 import { requireAdmin } from "@/lib/admin-auth";
+import { DATE_RE, driverTripReady, leadStatusFromBookings } from "@/lib/bookings";
 import { makeRef } from "@/lib/ref";
 
 const value = (fd: FormData, key: string, max = 200) => String(fd.get(key) ?? "").trim().slice(0, max);
@@ -11,28 +13,34 @@ const amount = (fd: FormData, key: string) => {
   const n = Number(fd.get(key) ?? 0);
   return Number.isFinite(n) ? Math.max(0, Math.min(100000000, Math.round(n))) : 0;
 };
-const fail = (path: string, message: string): never => redirect(`${path}?error=${encodeURIComponent(message)}`);
+const withError = (path: string, message: string) => `${path}${path.includes("?") ? "&" : "?"}error=${encodeURIComponent(message)}`;
+const isKey = <T extends object>(obj: T, key: string): key is Extract<keyof T, string> => Object.hasOwn(obj, key);
 
-const BOOKING_STATUSES = ["ALLOCATED", "CONFIRMED", "IN_PROGRESS", "COMPLETED", "CANCELLED"];
-const COMMISSION_STATUSES = ["PENDING", "PAID", "NOT_DUE"];
+const leadPath = (id: string) => `/admin/leads/${id}/`;
 
-// Lead statuses that come before a booking exists. Allocating a booking only moves a lead forward from
-// one of these, so a lead already further along (or closed) is never pushed backwards.
-const PRE_BOOKING = {
-  TRANSPORT: ["NEW", "CHECKING", "QUOTE_SENT", "AWAITING_CUSTOMER", "AWAITING_ADVANCE", "CONFIRMED"],
-  OTHER: ["NEW", "CONTACTED", "QUALIFIED", "QUOTE_SENT"],
-};
-
-/**
- * The lead status that matches a booking status. The lead's workflow is decided by the enquiry kind
- * (see statusesFor in config/options), not by the booking's service type.
- */
-function leadStatusFor(enquiryKind: string, serviceType: string, bookingStatus: string) {
-  if (enquiryKind === "TRANSPORT") {
-    if (bookingStatus === "ALLOCATED") return serviceType === "TAXI" ? "DRIVER_ASSIGNED" : "CONFIRMED";
-    return bookingStatus; // CONFIRMED | IN_PROGRESS | COMPLETED | CANCELLED all exist in the transport workflow
-  }
-  return bookingStatus === "CANCELLED" ? "LOST" : "CONFIRMED";
+/** Re-derive a lead's status from all of its bookings and log what happened on its timeline. */
+async function syncLead(
+  tx: Parameters<Parameters<typeof db.$transaction>[0]>[0],
+  enquiryId: string,
+  event: { actor: string; action: string; detail: string },
+  moveStatus: boolean,
+) {
+  const lead = await tx.enquiry.findUnique({ where: { id: enquiryId }, select: { kind: true, status: true } });
+  if (!lead) return;
+  const bookings = await tx.booking.findMany({ where: { enquiryId }, select: { serviceType: true, status: true } });
+  const next = moveStatus ? leadStatusFromBookings(lead, bookings) : null;
+  await tx.enquiry.update({
+    where: { id: enquiryId },
+    data: {
+      ...(next && next !== lead.status ? { status: next } : {}),
+      events: {
+        create: [
+          event,
+          ...(next && next !== lead.status ? [{ actor: event.actor, action: "status", detail: `${lead.status} → ${next} (from bookings)` }] : []),
+        ],
+      },
+    },
+  });
 }
 
 export async function createHotelPartnerAction(fd: FormData) {
@@ -41,10 +49,10 @@ export async function createHotelPartnerAction(fd: FormData) {
   const phone = value(fd, "phone", 20);
   const location = value(fd, "location", 120);
   const propertyType = value(fd, "propertyType", 30);
-  const commissionPct = Number(fd.get("commissionPct") ?? 0);
-  if (name.length < 2 || phone.replace(/\D/g, "").length < 10 || !location) fail("/admin/hotels/", "Please enter a valid name, mobile and location");
-  if (!["HOTEL", "HOMESTAY", "RESORT", "GUESTHOUSE"].includes(propertyType) || !Number.isFinite(commissionPct) || commissionPct < 0 || commissionPct > 100)
-    fail("/admin/hotels/", "Please check property type and commission");
+  const commissionPct = Number(fd.get("commissionPct") || 0);
+  if (name.length < 2 || phone.replace(/\D/g, "").length < 10 || !location) redirect(withError("/admin/hotels/", "Please enter a valid name, mobile and location"));
+  if (!isKey(hotelPropertyTypes, propertyType) || !Number.isFinite(commissionPct) || commissionPct < 0 || commissionPct > 100)
+    redirect(withError("/admin/hotels/", "Please check property type and commission"));
   await db.hotelPartner.create({
     data: {
       ref: makeRef("HT"),
@@ -66,9 +74,9 @@ export async function updateHotelPartnerAction(fd: FormData) {
   await requireAdmin("partners.manage");
   const id = value(fd, "id", 80);
   const status = value(fd, "status", 20);
-  if (!["ACTIVE", "INACTIVE", "UNDER_REVIEW"].includes(status)) fail("/admin/hotels/", "Choose a valid status");
+  if (!isKey(hotelPartnerStatuses, status)) redirect(withError("/admin/hotels/", "Choose a valid status"));
   const { count } = await db.hotelPartner.updateMany({ where: { id }, data: { status } });
-  if (count === 0) fail("/admin/hotels/", "That hotel partner no longer exists");
+  if (count === 0) redirect(withError("/admin/hotels/", "That hotel partner no longer exists"));
   revalidatePath("/admin/hotels/");
 }
 
@@ -83,39 +91,50 @@ export async function createBookingAction(fd: FormData) {
   const rateInput = value(fd, "commissionRate", 20);
   const commissionRate = rateInput === "" ? null : Number(rateInput);
   const bookingAmount = amount(fd, "bookingAmount");
+  const travelDate = value(fd, "travelDate", 10) || null;
+  const endDate = value(fd, "endDate", 10) || null;
+  // Started from a lead page: errors come back to the pre-filled form, success goes back to the lead
+  const fromLead = value(fd, "fromLead", 80) || null;
+  const formPath = fromLead ? `/admin/bookings/?lead=${encodeURIComponent(fromLead)}#allocate` : "/admin/bookings/#allocate";
+  const fail = (message: string): never => redirect(withError(formPath.replace("#allocate", ""), message) + "#allocate");
 
-  if (!["TAXI", "HOTEL", "PACKAGE", "OTHER"].includes(serviceType)) fail("/admin/bookings/", "Choose a valid service");
-  if (commissionType !== "PERCENT" && commissionType !== "FIXED") fail("/admin/bookings/", "Invalid commission type");
+  if (!isKey(bookingServiceTypes, serviceType)) fail("Choose a valid service");
+  if (commissionType !== "PERCENT" && commissionType !== "FIXED") fail("Invalid commission type");
   if (commissionRate !== null && (!Number.isFinite(commissionRate) || commissionRate < 0 || commissionRate > (commissionType === "PERCENT" ? 100 : 10000000)))
-    fail("/admin/bookings/", "Invalid commission");
-  if (serviceType === "TAXI" && (!driverPartnerId || hotelPartnerId)) fail("/admin/bookings/", "Select only a taxi partner");
-  if (serviceType === "HOTEL" && (!hotelPartnerId || driverPartnerId)) fail("/admin/bookings/", "Select only a hotel partner");
-  if (serviceType !== "TAXI" && serviceType !== "HOTEL" && (driverPartnerId || hotelPartnerId)) fail("/admin/bookings/", "Partner allocation does not match the service");
+    fail("Invalid commission");
+  if ((travelDate && !DATE_RE.test(travelDate)) || (endDate && !DATE_RE.test(endDate))) fail("Use valid dates");
+  if (endDate && !travelDate) fail("Add the travel / check-in date");
+  if (travelDate && endDate && endDate < travelDate) fail("Return / check-out can't be before the travel / check-in date");
+  if (serviceType === "TAXI" && (!driverPartnerId || hotelPartnerId)) fail("Select only a taxi partner");
+  if (serviceType === "HOTEL" && (!hotelPartnerId || driverPartnerId)) fail("Select only a hotel partner");
+  if (serviceType !== "TAXI" && serviceType !== "HOTEL" && (driverPartnerId || hotelPartnerId)) fail("Partner allocation does not match the service");
 
-  const enquiry = enquiryId ? await db.enquiry.findUnique({ where: { id: enquiryId }, select: { id: true, kind: true, status: true } }) : null;
-  if (enquiryId && !enquiry) fail("/admin/bookings/", "Enquiry not found");
-  if (enquiry && ["SPAM", "LOST"].includes(enquiry.status)) fail("/admin/bookings/", "That enquiry is closed (spam or lost)");
+  const enquiry = enquiryId ? await db.enquiry.findUnique({ where: { id: enquiryId }, select: { id: true, status: true } }) : null;
+  if (enquiryId && !enquiry) fail("Enquiry not found");
+  if (enquiry && closedLeadStatuses.includes(enquiry.status)) fail("That enquiry is closed (spam, lost or cancelled). Reopen it first.");
 
   if (driverPartnerId) {
-    const driver = await db.driverPartner.findUnique({ where: { id: driverPartnerId }, select: { status: true, partnerType: true } });
-    if (!driver || !["ACTIVE", "VERIFIED"].includes(driver.status) || driver.partnerType !== "WITH_VEHICLE")
-      fail("/admin/bookings/", "Taxi partner must be a verified vehicle operator");
+    const driver = await db.driverPartner.findUnique({ where: { id: driverPartnerId } });
+    if (!driver || !driverTripReady(driver, endDate ?? travelDate ?? undefined))
+      fail("Taxi partner must be an active vehicle operator with licence, insurance, permit, fitness and PUC valid for the trip dates");
   }
   let hotelDefaultPct = 0;
   if (hotelPartnerId) {
     const hotel = await db.hotelPartner.findUnique({ where: { id: hotelPartnerId }, select: { status: true, commissionPct: true } });
-    if (!hotel || hotel.status !== "ACTIVE") fail("/admin/bookings/", "Hotel partner must be active");
-    hotelDefaultPct = hotel!.commissionPct;
+    if (!hotel || hotel.status !== "ACTIVE") fail("Hotel partner must be active");
+    hotelDefaultPct = hotel?.commissionPct ?? 0;
   }
 
   const effectiveRate = commissionRate ?? (serviceType === "HOTEL" && commissionType === "PERCENT" ? hotelDefaultPct : 0);
   const commissionAmount = commissionType === "PERCENT" ? Math.round((bookingAmount * effectiveRate) / 100) : Math.round(effectiveRate);
+  if (commissionAmount > bookingAmount) fail("Commission can't be more than the booking value");
 
+  const ref = makeRef("BK");
   // Booking and lead update succeed or fail together
   await db.$transaction(async (tx) => {
     await tx.booking.create({
       data: {
-        ref: makeRef("BK"),
+        ref,
         enquiryId,
         serviceType,
         driverPartnerId,
@@ -125,27 +144,20 @@ export async function createBookingAction(fd: FormData) {
         commissionRate: effectiveRate,
         commissionAmount,
         commissionStatus: commissionAmount > 0 ? "PENDING" : "NOT_DUE",
-        travelDate: value(fd, "travelDate", 10) || null,
-        endDate: value(fd, "endDate", 10) || null,
+        travelDate,
+        endDate,
         notes: value(fd, "notes", 2000) || null,
         createdBy: actor,
       },
     });
-    if (enquiry) {
-      const preBooking = enquiry.kind === "TRANSPORT" ? PRE_BOOKING.TRANSPORT : PRE_BOOKING.OTHER;
-      const next = leadStatusFor(enquiry.kind, serviceType, "ALLOCATED");
-      await tx.enquiry.update({
-        where: { id: enquiry.id },
-        data: {
-          ...(preBooking.includes(enquiry.status) && next !== enquiry.status ? { status: next } : {}),
-          events: { create: { actor, action: "booking_allocated", detail: `${serviceType} booking created and partner allocated` } },
-        },
-      });
+    if (enquiryId) {
+      await syncLead(tx, enquiryId, { actor, action: "booking_allocated", detail: `${ref} · ${bookingServiceTypes[serviceType as keyof typeof bookingServiceTypes]} booking created` }, true);
     }
   });
   revalidatePath("/admin/bookings/");
   revalidatePath("/admin/");
-  redirect("/admin/bookings/?saved=1");
+  if (enquiryId) revalidatePath(leadPath(enquiryId));
+  redirect(fromLead && enquiryId === fromLead ? `${leadPath(enquiryId)}?booking=created` : "/admin/bookings/?saved=1");
 }
 
 export async function updateBookingAction(fd: FormData) {
@@ -153,35 +165,32 @@ export async function updateBookingAction(fd: FormData) {
   const id = value(fd, "id", 80);
   const status = value(fd, "status", 20);
   const commissionStatus = value(fd, "commissionStatus", 20);
-  if (!BOOKING_STATUSES.includes(status) || !COMMISSION_STATUSES.includes(commissionStatus)) fail("/admin/bookings/", "Choose a valid status");
+  const back = value(fd, "back", 120).startsWith("/admin/") ? value(fd, "back", 120) : "/admin/bookings/";
+  if (!isKey(bookingStatuses, status) || !isKey(commissionStatuses, commissionStatus)) redirect(withError(back, "Choose a valid status"));
 
-  const before = await db.booking.findUnique({ where: { id }, include: { enquiry: { select: { id: true, kind: true, status: true } } } });
-  if (!before) return fail("/admin/bookings/", "That booking no longer exists");
+  const before = await db.booking.findUnique({ where: { id } });
+  if (!before) redirect(withError(back, "That booking no longer exists"));
 
   // A cancelled booking earns no commission unless it was already settled
   const finalCommission = status === "CANCELLED" && commissionStatus === "PENDING" ? "NOT_DUE" : commissionStatus;
   // Keep the real settlement date; only stamp it when the commission becomes PAID
   const commissionPaidAt = finalCommission === "PAID" ? (before.commissionStatus === "PAID" ? before.commissionPaidAt : new Date()) : null;
+  const statusChanged = status !== before.status;
+  const commissionChanged = finalCommission !== before.commissionStatus;
+  if (!statusChanged && !commissionChanged) return;
 
   await db.$transaction(async (tx) => {
     await tx.booking.update({ where: { id }, data: { status, commissionStatus: finalCommission, commissionPaidAt } });
-    const enquiry = before.enquiry;
-    if (!enquiry) return;
-    const statusChanged = status !== before.status;
-    const commissionChanged = finalCommission !== before.commissionStatus;
-    if (!statusChanged && !commissionChanged) return;
-    // Only a change of booking progress moves the lead; commission-only edits just add a timeline note.
-    // Closed leads (spam / lost) are left alone.
-    const next = leadStatusFor(enquiry.kind, before.serviceType, status);
-    const moveLead = statusChanged && !["SPAM", "LOST"].includes(enquiry.status) && next !== enquiry.status;
-    await tx.enquiry.update({
-      where: { id: enquiry.id },
-      data: {
-        ...(moveLead ? { status: next } : {}),
-        events: { create: { actor, action: "booking_updated", detail: `${before.ref}: ${status.replace(/_/g, " ").toLowerCase()}; commission ${finalCommission.replace(/_/g, " ").toLowerCase()}` } },
-      },
-    });
+    if (before.enquiryId) {
+      const parts = [
+        statusChanged ? `${bookingStatuses[before.status as keyof typeof bookingStatuses] ?? before.status} → ${bookingStatuses[status as keyof typeof bookingStatuses]}` : null,
+        commissionChanged ? commissionStatuses[finalCommission as keyof typeof commissionStatuses].toLowerCase() : null,
+      ].filter(Boolean);
+      // Only booking progress moves the lead; commission-only edits just add a timeline note
+      await syncLead(tx, before.enquiryId, { actor, action: "booking_updated", detail: `${before.ref}: ${parts.join("; ")}` }, statusChanged);
+    }
   });
   revalidatePath("/admin/bookings/");
   revalidatePath("/admin/");
+  if (before.enquiryId) revalidatePath(leadPath(before.enquiryId));
 }
