@@ -41,7 +41,14 @@ export default async function PackagesPage({ searchParams }: { searchParams: Pro
         intro="Curated trips with day-wise plans and transparent inclusions. Every package can be adjusted — dates, hotels, pace and route."
         crumbs={[{ label: "Tour Packages", href: "/uttarakhand/tour-packages/" }]}
         scene="lake"
-      />
+      >
+        <nav aria-label="Popular trips" className="flex flex-wrap gap-2">
+          <Link href="/uttarakhand/char-dham-yatra/" className="chip bg-white/90">Char Dham Yatra packages →</Link>
+          <Link href="/uttarakhand/kedarnath-yatra-package/" className="chip bg-white/90">Kedarnath yatra package →</Link>
+          <Link href="/uttarakhand/auli-tour-package/" className="chip bg-white/90">Auli tour package →</Link>
+          <Link href="/uttarakhand/himalayan-treks/" className="chip bg-white/90">Himalayan treks →</Link>
+        </nav>
+      </PageHero>
 
       <section className="container-page py-10">
         {/* GET form: filters work without JavaScript and keep shareable URLs */}

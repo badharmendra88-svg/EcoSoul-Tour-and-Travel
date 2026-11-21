@@ -7,9 +7,9 @@ import { officialLinks, site } from "@/config/site";
 import { pageMeta } from "@/lib/seo";
 
 const meta = pageMeta({
-  title: "Char Dham Yatra Planning — Route, Registration & Travel Help",
+  title: "Char Dham Yatra Packages & Planning: Route, Registration",
   description:
-    "Plan your Char Dham Yatra to Yamunotri, Gangotri, Kedarnath and Badrinath: a 10-day route, official registration and helicopter guidance, stays, transport and yatra help from your city.",
+    "Char Dham Yatra packages for Yamunotri, Gangotri, Kedarnath and Badrinath: a 10-day route, hotels, SUV with hill driver, and registration and helicopter guidance.",
   path: "/uttarakhand/char-dham-yatra/",
 });
 export const metadata = {
@@ -61,7 +61,7 @@ export default function CharDhamPage() {
   return (
     <>
       <PageHero
-        title="Char Dham Yatra Planning"
+        title="Char Dham Yatra Packages & Planning"
         intro="Practical planning help for Yamunotri, Gangotri, Kedarnath and Badrinath — realistic routes, stays and transport, with clear reminders about official registration and advisories."
         crumbs={[{ label: "Char Dham & Yatra", href: "/uttarakhand/char-dham-yatra/" }]}
         scene="temple"
@@ -171,6 +171,7 @@ export default function CharDhamPage() {
             <h2 className="font-semibold text-forest-900">Yatra guides</h2>
             <ul className="mt-3 space-y-1">
               <li><Link href="/travel-guides/char-dham-yatra-guide/" className="inline-block py-1.5 text-forest-700 hover:underline">Char Dham route, days & cost →</Link></li>
+              <li><Link href="/uttarakhand/kedarnath-yatra-package/" className="inline-block py-1.5 text-forest-700 hover:underline">Kedarnath yatra package →</Link></li>
               <li><Link href="/travel-guides/kedarnath-trip-guide/" className="inline-block py-1.5 text-forest-700 hover:underline">Kedarnath trek & helicopter →</Link></li>
               <li><Link href="/taxi/haridwar-to-sonprayag/" className="inline-block py-1.5 text-forest-700 hover:underline">Haridwar to Kedarnath route taxi →</Link></li>
             </ul>

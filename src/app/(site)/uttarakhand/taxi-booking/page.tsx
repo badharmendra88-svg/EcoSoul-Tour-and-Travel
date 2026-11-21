@@ -2,16 +2,16 @@ import { TransportLanding, commonTransportFaqs } from "@/components/TransportLan
 import { pageMeta } from "@/lib/seo";
 
 export const metadata = pageMeta({
-  title: "Uttarakhand Taxi Booking — Car with Driver",
+  title: "Uttarakhand Taxi Service & Cab Rental with Driver",
   description:
-    "Book a car with driver in Uttarakhand for outstation, round-trip, one-way and group travel. Sedans, SUVs and tempo travellers with itemised quotes.",
+    "Uttarakhand taxi service and cab rental with driver for outstation, round-trip, one-way and group travel. Sedans, SUVs and tempo travellers with itemised quotes.",
   path: "/uttarakhand/taxi-booking/",
 });
 
 export default function TaxiBookingPage() {
   return (
     <TransportLanding
-      title="Book a Taxi in Uttarakhand"
+      title="Uttarakhand Taxi Service & Cab Rental"
       intro="Outstation trips, round trips, one-way drops and group vehicles across Kumaon and Garhwal — with experienced hill drivers from local partners we work with directly."
       path="/uttarakhand/taxi-booking/"
       estimator={{ from: "delhi", to: "nainital" }}
