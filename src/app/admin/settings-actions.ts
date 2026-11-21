@@ -85,6 +85,7 @@ export async function saveSettingsAction(formData: FormData) {
     address: text(formData, "address", 200) || null,
     hours: text(formData, "hours", 120) || null,
     whatsappButton: formData.get("whatsappButton") === "on",
+    showFares: formData.get("showFares") === "on",
     whatsappGreeting: text(formData, "whatsappGreeting", 300) || null,
     waApiEnabled: formData.get("waApiEnabled") === "on",
     waPhoneNumberId: waPhoneNumberId || null,

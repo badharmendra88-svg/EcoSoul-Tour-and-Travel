@@ -11,6 +11,7 @@ import { Badge, Icon, PageHeader, StatCard, type IconName } from "../ui";
 const sections: { id: string; label: string; icon: IconName }[] = [
   { id: "contact", label: "Business contact", icon: "phone" },
   { id: "business", label: "Homepage & identity", icon: "hotel" },
+  { id: "pricing", label: "Website prices", icon: "rupee" },
   { id: "payments", label: "Payments", icon: "rupee" },
   { id: "whatsapp", label: "WhatsApp", icon: "message" },
   { id: "social", label: "Social media", icon: "users" },
@@ -159,6 +160,16 @@ export default async function SettingsPage({ searchParams }: { searchParams: Pro
               <Field name="tourismRegNo" label="Uttarakhand Tourism registration no. (optional)" defaultValue={s.tourismRegNo} placeholder="Only if registered" />
               <Field name="emergencyPhone" label="Emergency / on-trip support number" defaultValue={s.emergencyPhone} placeholder="+91 …" prefix={<Icon name="phone" />} hint="Shown to travellers in policies and the footer." />
             </div>
+          </SectionCard>
+
+          {/* ---------------- Website prices ---------------- */}
+          <SectionCard id="pricing" icon="rupee" title="Website prices" description="Choose whether visitors see instant taxi fare estimates. Customer quotes and payment pages always show the exact price.">
+            <Toggle
+              name="showFares"
+              label="Show taxi fare estimates on the website"
+              description="On: ₹ fare ranges in the homepage booking box, taxi pages, route pages and trip cost guide. Off: visitors see vehicles, distance and drive time with a “Get a quote” button."
+              defaultChecked={s.showFares}
+            />
           </SectionCard>
 
           {/* ---------------- Payments ---------------- */}

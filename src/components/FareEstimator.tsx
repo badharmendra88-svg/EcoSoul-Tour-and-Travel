@@ -36,6 +36,8 @@ export function FareEstimator({
   idPrefix?: string;
 }) {
   const s = useSiteSettings();
+  // Admin → Settings → Website prices. Off: no ₹ ranges (the page also receives no rate card).
+  const showFares = s.showFares;
   const [from, setFrom] = useState(defaultFrom);
   const [to, setTo] = useState(defaultTo);
   const [kind, setKind] = useState<TripKind>("ONE_WAY");
@@ -185,13 +187,15 @@ export function FareEstimator({
                   <p className="truncate text-xs text-slate-500">{v.example} · up to {v.seats} seats</p>
                 </div>
                 <div className="text-right">
-                  <p className="font-bold whitespace-nowrap text-forest-900">{rupees(f.low)}<span className="font-medium text-slate-400">–{rupees(f.high).slice(1)}</span></p>
+                  {showFares && (
+                    <p className="font-bold whitespace-nowrap text-forest-900">{rupees(f.low)}<span className="font-medium text-slate-500">–{rupees(f.high).slice(1)}</span></p>
+                  )}
                   <Link
                     href={bookHref(f.vehicleId)}
                     onClick={() => track("fare_estimate", { from, to: toId, kind, vehicle: f.vehicleId })}
                     className="text-sm font-semibold text-forest-700 underline-offset-2 hover:underline"
                   >
-                    Book this →
+                    {showFares ? "Book this →" : "Get a quote →"}
                   </Link>
                 </div>
               </li>
@@ -199,13 +203,20 @@ export function FareEstimator({
           })}
         </ul>
       ) : (
-        <p className="rounded-xl bg-slate-50 px-4 py-3 text-sm text-slate-600">Choose a route to see an estimate.</p>
+        <p className="rounded-xl bg-slate-50 px-4 py-3 text-sm text-slate-600">{showFares ? "Choose a route to see an estimate." : "Choose a route to see the cars available."}</p>
       )}
 
-      <p className="text-xs leading-relaxed text-slate-500">
-        Approximate total for the vehicle, fuel, driver allowance{kind === "ROUND_TRIP" ? ", night halts" : ""}, service charges and GST. Tolls, parking
-        and state entry tax are extra. Your written quote confirms the exact fare before you pay anything.
-      </p>
+      {showFares ? (
+        <p className="text-xs leading-relaxed text-slate-500">
+          Approximate total for the vehicle, fuel, driver allowance{kind === "ROUND_TRIP" ? ", night halts" : ""}, service charges and GST. Tolls, parking
+          and state entry tax are extra. Your written quote confirms the exact fare before you pay anything.
+        </p>
+      ) : (
+        <p className="text-xs leading-relaxed text-slate-500">
+          Choose a car and send your dates — we reply with a written, itemised quote covering fuel, driver allowance, service charges and GST.
+          You pay nothing until you accept it.
+        </p>
+      )}
       <div className="flex flex-wrap items-center gap-x-4 gap-y-2">
         {compact && route && (
           <Link href={`/uttarakhand/taxi-booking/?from=${from}&to=${toId}#fare`} className="text-sm font-semibold text-forest-700 hover:underline">
@@ -219,7 +230,7 @@ export function FareEstimator({
           onClick={() => track("click_whatsapp", { source: "fare_estimate" })}
           className="text-sm font-semibold text-forest-700 hover:underline"
         >
-          Get the exact fare on WhatsApp →
+          {showFares ? "Get the exact fare on WhatsApp →" : "Ask for a fare on WhatsApp →"}
         </a>
       </div>
     </div>

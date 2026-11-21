@@ -11,7 +11,7 @@ import { tripTypes } from "@/config/options";
 import { site } from "@/config/site";
 import { db } from "@/lib/db";
 import { getPublishedDestinations, getPublishedPackages } from "@/lib/queries";
-import { getEstimatorRates } from "@/lib/rates";
+import { getPublicEstimatorRates } from "@/lib/rates";
 import { getSettings, type ServiceKey } from "@/lib/settings";
 import { jsonLd, pageMeta } from "@/lib/seo";
 
@@ -33,7 +33,7 @@ export const metadata = {
   ...pageMeta({
     title: homeTitle,
     description:
-      "Explore Uttarakhand your way: tour packages, custom itineraries, Char Dham planning, and taxi or driver booking from Delhi NCR, airports and stations. Instant fare estimates and written quotes.",
+      "Explore Uttarakhand your way: tour packages, custom itineraries, Char Dham planning, and taxi or driver booking from Delhi NCR, airports and stations. Written, itemised quotes before you pay.",
     path: "/",
   }),
   // Absolute: the brand is already in this title, so skip the "| EcoSoul" suffix
@@ -102,9 +102,10 @@ export default async function HomePage() {
     getPublishedDestinations(),
     getSettings(),
     db.review.findMany({ where: { published: true }, orderBy: [{ sortOrder: "asc" }, { createdAt: "desc" }], take: 6 }),
-    getEstimatorRates(),
+    getPublicEstimatorRates(),
   ]);
-  const faqs = homeFaqs(s.hours);
+  // The fare-estimate FAQ only makes sense while estimates are shown (Admin → Settings → Website prices)
+  const faqs = homeFaqs(s.hours).filter((f) => s.showFares || !/fare estimate/i.test(f.q));
 
   return (
     <>
@@ -122,7 +123,7 @@ export default async function HomePage() {
             <p className="tagline text-xl sm:text-2xl">Devbhoomi · Uttarakhand</p>
             <h1 className="mt-2 font-serif text-[2rem] leading-tight font-bold text-white sm:text-5xl">Explore Uttarakhand. Your Trip, Your Way.</h1>
             <p className="mt-4 max-w-xl text-base leading-relaxed text-forest-100 sm:mt-5 sm:text-lg">
-              Tour packages, taxis and hill drivers from Delhi NCR, airports and railway stations — with instant fare estimates and itemised
+              Tour packages, taxis and hill drivers from Delhi NCR, airports and railway stations — with {s.showFares ? "instant fare estimates and " : ""}itemised
               written quotes before you pay.
             </p>
             <ul className="mt-5 flex flex-wrap gap-x-5 gap-y-2 text-sm text-forest-100 sm:mt-6" aria-label="Why book with us">
@@ -145,7 +146,8 @@ export default async function HomePage() {
       {/* Trust strip */}
       <section aria-label="Why travellers book with us" className="border-b border-slate-200 bg-white">
         <ul className="container-page grid grid-cols-2 gap-x-4 gap-y-5 py-6 lg:grid-cols-4">
-          {trust.map((t) => (
+          {/* Without public fares (Admin → Settings → Website prices) the third promise is about quotes instead */}
+          {(s.showFares ? trust : trust.map((t) => (t.title === "Instant fare estimate" ? { ...t, title: "Quick written quote", text: "Itemised fare for your car and dates" } : t))).map((t) => (
             <li key={t.title} className="flex items-start gap-3">
               <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-forest-50 text-forest-700">
                 <svg viewBox="0 0 24 24" className="h-5 w-5" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">

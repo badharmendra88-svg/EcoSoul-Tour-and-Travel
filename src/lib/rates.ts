@@ -69,3 +69,23 @@ export const getEstimatorRates = cache(async (): Promise<EstimatorRates> => {
     taxPct: settings.gstPct,
   };
 });
+
+/**
+ * Rates for public pages. When fare estimates are switched off (Admin → Settings → Website prices) the
+ * rate card never reaches the browser: vehicles keep their name, example and seats, every money field is 0.
+ */
+export const getPublicEstimatorRates = cache(async (): Promise<EstimatorRates & { showFares: boolean }> => {
+  const [rates, showFares] = await Promise.all([
+    getEstimatorRates(),
+    db.siteSettings.findUnique({ where: { id: "default" }, select: { showFares: true } }).then((s) => s?.showFares ?? false),
+  ]);
+  if (showFares) return { ...rates, showFares };
+  const zero = <T extends object>(o: T) => Object.fromEntries(Object.entries(o).map(([k, v]) => [k, typeof v === "number" ? 0 : v])) as T;
+  return {
+    vehicles: rates.vehicles.map((v) => ({ ...zero(v), seats: v.seats })),
+    rules: zero(rates.rules),
+    markupPct: 0,
+    taxPct: 0,
+    showFares,
+  };
+});

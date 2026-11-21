@@ -3,7 +3,7 @@ import { FareEstimator } from "@/components/FareEstimator";
 import { FaqList } from "@/components/FaqList";
 import { PageHero } from "@/components/PageHero";
 import { originPath, origins } from "@/config/journeys";
-import { getEstimatorRates } from "@/lib/rates";
+import { getPublicEstimatorRates } from "@/lib/rates";
 import { pageMeta } from "@/lib/seo";
 
 export const revalidate = 3600;
@@ -40,7 +40,7 @@ const faqs = [
 ];
 
 export default async function HowToReachPage() {
-  const rates = await getEstimatorRates();
+  const rates = await getPublicEstimatorRates();
   return (
     <>
       <PageHero

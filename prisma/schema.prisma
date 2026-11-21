@@ -279,6 +279,8 @@ model SiteSettings {
   hours               String?
   // WhatsApp on the website
   whatsappButton      Boolean   @default(true)
+  // Show instant taxi fare estimates (₹ ranges) on public pages; off = vehicles + "Get a quote" only
+  showFares           Boolean   @default(false)
   whatsappGreeting    String?
   // WhatsApp Business Cloud API (Meta)
   waApiEnabled        Boolean   @default(false)

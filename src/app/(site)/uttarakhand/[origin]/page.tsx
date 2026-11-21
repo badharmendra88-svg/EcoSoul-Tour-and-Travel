@@ -9,7 +9,7 @@ import { TransportForm } from "@/components/forms/TransportForm";
 import { PageHero } from "@/components/PageHero";
 import { destinationsFrom, originBySlug, originPath, origins, placeById, routeBetween, routePages, routePath, seasons } from "@/config/journeys";
 import { getPublishedDestinations, getPublishedPackages } from "@/lib/queries";
-import { getEstimatorRates } from "@/lib/rates";
+import { getPublicEstimatorRates } from "@/lib/rates";
 import { pageMeta } from "@/lib/seo";
 
 // "Uttarakhand from <city>" landing pages for travellers across India.
@@ -49,7 +49,7 @@ export default async function OriginPage({ params }: { params: Promise<{ origin:
   const o = originFromParam((await params).origin);
   if (!o) notFound();
 
-  const [rates, destinations, packages] = await Promise.all([getEstimatorRates(), getPublishedDestinations(), getPublishedPackages({ featured: true })]);
+  const [rates, destinations, packages] = await Promise.all([getPublicEstimatorRates(), getPublishedDestinations(), getPublishedPackages({ featured: true })]);
   const start = placeById(o.startPlace)!;
   const startsAtHome = start.kind === "city";
   const picks = o.picks

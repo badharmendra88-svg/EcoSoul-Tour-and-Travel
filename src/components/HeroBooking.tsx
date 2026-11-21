@@ -3,6 +3,7 @@
 import { useState } from "react";
 import type { EstimatorRates } from "@/lib/fare-estimate";
 import { FareEstimator } from "./FareEstimator";
+import { useSiteSettings } from "./SiteSettingsProvider";
 
 const tabs = [
   { id: "taxi", label: "Taxi fare", icon: "M5 17H3v-5l2-5h11l3 5h2v5h-2M9 17h6M5 12h15" },
@@ -12,6 +13,7 @@ const tabs = [
 /** Homepage booking widget: instant taxi fare or a 4-field trip enquiry (plain GET form, works without JS). */
 export function HeroBooking({ rates, destinations, tripTypes }: { rates: EstimatorRates; destinations: string[]; tripTypes: string[] }) {
   const [tab, setTab] = useState<(typeof tabs)[number]["id"]>("taxi");
+  const { showFares } = useSiteSettings();
   return (
     <div className="min-w-0 overflow-hidden rounded-2xl bg-white shadow-2xl ring-1 ring-black/5">
       <div role="tablist" aria-label="What do you need?" className="grid grid-cols-2 border-b border-slate-200 bg-slate-50">
@@ -31,7 +33,7 @@ export function HeroBooking({ rates, destinations, tripTypes }: { rates: Estimat
             <svg viewBox="0 0 24 24" className="h-4 w-4" fill="none" stroke="currentColor" strokeWidth="2" aria-hidden="true">
               <path d={t.icon} />
             </svg>
-            {t.label}
+            {t.id === "taxi" && !showFares ? "Book a taxi" : t.label}
           </button>
         ))}
       </div>

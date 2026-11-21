@@ -12,6 +12,7 @@ import { formatDate } from "@/lib/format";
 import { computeTotals, emptyCalc, estimateHotel, estimateTransport, rupees, type CalcInput } from "@/lib/quote";
 import { getPublishedDestinations } from "@/lib/queries";
 import { getRateCard } from "@/lib/rates";
+import { getSettingsRow } from "@/lib/settings";
 import { pageMeta } from "@/lib/seo";
 
 export const dynamicParams = false;
@@ -183,6 +184,19 @@ async function CompareTable() {
 
 /** Trip cost scenarios priced with the same calculator and rate card as real quotes. */
 async function CostTable({ kind }: { kind: "trip-cost" | "char-dham-cost" }) {
+  // Admin → Settings → Website prices. Off: no calculated ₹ figures, just a quote prompt.
+  if (!(await getSettingsRow()).showFares) {
+    return (
+      <div className="not-prose rounded-2xl border border-forest-100 bg-forest-50/60 p-5 text-sm text-slate-700">
+        <p className="font-semibold text-forest-900">Get a cost for your own trip</p>
+        <p className="mt-1">
+          The total depends on your dates, car, hotel category and group size. Share them and we send a written, itemised quote with
+          transport, stays, service charges and GST — you pay nothing until you accept it.
+        </p>
+        <Link href="/customise-my-trip/" className="btn-primary mt-4">Get a trip quote</Link>
+      </div>
+    );
+  }
   const { vehicles, hotels, settings } = await getRateCard();
   const rules = {
     oneWayMinKm: settings.oneWayMinKm,

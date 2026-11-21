@@ -13,6 +13,8 @@ export type PublicSettings = {
   address: string;
   hours: string;
   whatsappButton: boolean;
+  /** Show taxi fare estimates (₹) on public pages. Off: vehicles and "Get a quote" only. */
+  showFares: boolean;
   whatsappGreeting: string;
   social: { key: SocialKey; label: string; url: string }[];
   gaId: string;
@@ -69,6 +71,7 @@ export const getSettings = cache(async (): Promise<PublicSettings> => {
     address: s.address || site.address,
     hours: s.hours || site.hours,
     whatsappButton: s.whatsappButton,
+    showFares: s.showFares,
     whatsappGreeting: s.whatsappGreeting || `Hi ${site.shortName}, I'd like help planning an Uttarakhand trip.`,
     social: socialNetworks.flatMap((n) => (s[n.key] ? [{ key: n.key, label: n.label, url: s[n.key] as string }] : [])),
     gaId: s.gaId || site.gaId,

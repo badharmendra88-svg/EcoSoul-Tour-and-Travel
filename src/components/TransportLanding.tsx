@@ -3,7 +3,7 @@ import type { ServiceType } from "@/config/options";
 import { serviceTypes, vehicleCategories } from "@/config/options";
 import { site } from "@/config/site";
 import type { Faq } from "@/lib/json";
-import { getEstimatorRates } from "@/lib/rates";
+import { getPublicEstimatorRates } from "@/lib/rates";
 import { BookingSteps } from "./BookingSteps";
 import { WhatsAppButton } from "./ContactButtons";
 import { FareEstimator } from "./FareEstimator";
@@ -58,7 +58,7 @@ export async function TransportLanding({
   estimator?: { from: string; to: string };
   children?: React.ReactNode;
 }) {
-  const rates = estimator ? await getEstimatorRates() : null;
+  const rates = estimator ? await getPublicEstimatorRates() : null;
   return (
     <>
       <JsonLd
@@ -87,8 +87,12 @@ export async function TransportLanding({
         <div className="min-w-0 space-y-12">
           {estimator && rates && (
             <section id="fare" aria-labelledby="fare-title" className="scroll-mt-24">
-              <h2 id="fare-title" className="h2">Instant fare estimate</h2>
-              <p className="mt-2 text-slate-600">Pick your route to see approximate fares for every car — then book the one that fits.</p>
+              <h2 id="fare-title" className="h2">{rates.showFares ? "Instant fare estimate" : "Choose your route and car"}</h2>
+              <p className="mt-2 text-slate-600">
+                {rates.showFares
+                  ? "Pick your route to see approximate fares for every car — then book the one that fits."
+                  : "Pick your route to see distance, drive time and the cars available — then ask for a written quote."}
+              </p>
               <div className="card mt-6 p-5 sm:p-6">
                 <FareEstimator rates={rates} defaultFrom={estimator.from} defaultTo={estimator.to} readUrl />
               </div>

@@ -13,7 +13,7 @@ import { estimateFares, suggestedDays, type EstimatorRates } from "@/lib/fare-es
 import { parseList } from "@/lib/json";
 import { rupees } from "@/lib/quote";
 import { getPublishedDestinations } from "@/lib/queries";
-import { getEstimatorRates } from "@/lib/rates";
+import { getPublicEstimatorRates } from "@/lib/rates";
 import { pageMeta } from "@/lib/seo";
 
 // "<From> to <To> taxi" landing pages — one per route in config/journeys.ts.
@@ -43,14 +43,17 @@ function fareSummary(r: RoutePage, rates: EstimatorRates) {
 export async function generateMetadata({ params }: { params: Promise<{ route: string }> }): Promise<Metadata> {
   const r = routeBySlug((await params).route);
   if (!r) return {};
-  const [rates, destinations] = await Promise.all([getEstimatorRates(), getPublishedDestinations()]);
+  const [rates, destinations] = await Promise.all([getPublicEstimatorRates(), getPublishedDestinations()]);
   const { cheapest } = fareSummary(r, rates);
   const dest = destinations.find((d) => d.slug === destinationSlugFor(r.to.id));
   const from = shortName(r.from);
   const to = shortName(r.to);
   return pageMeta({
-    title: `${from} to ${to} Taxi: ${rupees(cheapest.oneWay.low)}+ Fare`,
-    description: `${from} to ${to} taxi with a hill driver: ${r.km} km, ${r.time}. One-way and round-trip fares for sedan, SUV and tempo traveller, plus a written quote.`,
+    // Admin → Settings → Website prices decides whether a ₹ figure may appear in search results
+    title: rates.showFares ? `${from} to ${to} Taxi: ${rupees(cheapest.oneWay.low)}+ Fare` : `${from} to ${to} Taxi Service`,
+    description: rates.showFares
+      ? `${from} to ${to} taxi with a hill driver: ${r.km} km, ${r.time}. One-way and round-trip fares for sedan, SUV and tempo traveller, plus a written quote.`
+      : `${from} to ${to} taxi with a hill driver: ${r.km} km, ${r.time}. One-way or round trip in a sedan, SUV or tempo traveller, with a written quote.`,
     path: routePath(r),
     image: dest?.imageUrl,
     imageAlt: dest?.imageAlt,
@@ -61,7 +64,7 @@ export default async function RoutePage({ params }: { params: Promise<{ route: s
   const r = routeBySlug((await params).route);
   if (!r) notFound();
 
-  const [rates, destinations] = await Promise.all([getEstimatorRates(), getPublishedDestinations()]);
+  const [rates, destinations] = await Promise.all([getPublicEstimatorRates(), getPublishedDestinations()]);
   const { days, rows, cheapest } = fareSummary(r, rates);
   const from = shortName(r.from);
   const to = shortName(r.to);
@@ -72,18 +75,30 @@ export default async function RoutePage({ params }: { params: Promise<{ route: s
   const suv = rows.find((x) => x.vehicle.id === "SUV");
   const tempo = rows.find((x) => x.vehicle.id === "TEMPO");
   const range = (f: { low: number; high: number }) => `${rupees(f.low)}–${rupees(f.high).slice(1)}`;
+  // Admin → Settings → Website prices. Off: no ₹ anywhere on the page (the rate card isn't loaded either).
+  const showFares = rates.showFares;
 
   const fromSame = routePages.filter((x) => x.from.id === r.from.id && x.slug !== r.slug).slice(0, 8);
   const toSame = routePages.filter((x) => x.to.id === r.to.id && x.slug !== r.slug).slice(0, 6);
 
   const faqs = [
     { q: `How far is ${to} from ${from}?`, a: `${to} is about ${r.km} km from ${from} by road — usually a ${r.time} drive, depending on traffic, weather and stops.` },
-    {
-      q: `What is the taxi fare from ${from} to ${to}?`,
-      a: `A one-way sedan costs about ${range(sedan.oneWay)}${suv ? `, an SUV about ${range(suv.oneWay)}` : ""}${tempo ? ` and a 12-seat tempo traveller about ${range(tempo.oneWay)}` : ""}. This includes fuel, driver allowance, service charges and GST; tolls, parking and state entry tax are extra. Your written quote confirms the exact fare.`,
-    },
+    showFares
+      ? {
+          q: `What is the taxi fare from ${from} to ${to}?`,
+          a: `A one-way sedan costs about ${range(sedan.oneWay)}${suv ? `, an SUV about ${range(suv.oneWay)}` : ""}${tempo ? ` and a 12-seat tempo traveller about ${range(tempo.oneWay)}` : ""}. This includes fuel, driver allowance, service charges and GST; tolls, parking and state entry tax are extra. Your written quote confirms the exact fare.`,
+        }
+      : {
+          q: `How do I get the taxi fare from ${from} to ${to}?`,
+          a: "Send your travel date, number of travellers and preferred car. We reply with a written, itemised quote that includes fuel, driver allowance, service charges and GST; tolls, parking and state entry tax are listed separately. You pay nothing until you accept it.",
+        },
     // Answer from the actual numbers: with a daily minimum distance, short-stay round trips can cost more than two drops
-    sedan.round.low < sedan.oneWay.low * 2
+    !showFares
+      ? {
+          q: "Should I book a round trip or two one-way taxis?",
+          a: `If you only need to get there and back, two one-way drops usually cost less. A ${days}-day round trip keeps the same car and driver with you for sightseeing and day trips. Ask for both in your quote and compare.`,
+        }
+      : sedan.round.low < sedan.oneWay.low * 2
       ? {
           q: `Is a round trip cheaper than two one-way taxis?`,
           a: `On this route, yes. A ${days}-day round trip in a sedan costs about ${range(sedan.round)} with the same car and driver for sightseeing, against roughly ${rupees(sedan.oneWay.low * 2)} for two separate one-way drops.`,
@@ -118,13 +133,17 @@ export default async function RoutePage({ params }: { params: Promise<{ route: s
           url: `${site.url}${routePath(r)}`,
           areaServed: [{ "@type": "Place", name: r.from.name }, { "@type": "Place", name: r.to.name }],
           provider: { "@type": "TravelAgency", name: site.name, url: site.url },
-          offers: {
-            "@type": "AggregateOffer",
-            priceCurrency: "INR",
-            lowPrice: cheapest.oneWay.low,
-            highPrice: Math.max(...rows.map((x) => x.oneWay.high)),
-            offerCount: rows.length,
-          },
+          ...(showFares
+            ? {
+                offers: {
+                  "@type": "AggregateOffer",
+                  priceCurrency: "INR",
+                  lowPrice: cheapest.oneWay.low,
+                  highPrice: Math.max(...rows.map((x) => x.oneWay.high)),
+                  offerCount: rows.length,
+                },
+              }
+            : {}),
         }}
       />
       <PageHero
@@ -138,7 +157,7 @@ export default async function RoutePage({ params }: { params: Promise<{ route: s
       >
         <div className="flex flex-wrap gap-3">
           <a href="#book" className="btn-primary px-6 py-3 text-base">Book this taxi</a>
-          <a href="#fares" className={dest?.imageUrl ? "btn-ghost-light px-6 py-3 text-base" : "btn-outline px-6 py-3 text-base"}>See all fares</a>
+          <a href="#fares" className={dest?.imageUrl ? "btn-ghost-light px-6 py-3 text-base" : "btn-outline px-6 py-3 text-base"}>{showFares ? "See all fares" : "See cars"}</a>
         </div>
       </PageHero>
 
@@ -148,16 +167,25 @@ export default async function RoutePage({ params }: { params: Promise<{ route: s
           <section aria-labelledby="answer" className="rounded-2xl border border-forest-100 bg-forest-50/60 p-5 sm:p-6">
             <h2 id="answer" className="text-sm font-semibold tracking-wide text-forest-700 uppercase">Quick answer</h2>
             <p className="mt-2 leading-relaxed text-slate-800">
-              <strong>{from} to {to}</strong> is about <strong>{r.km} km</strong> by road, a <strong>{r.time}</strong> drive. A one-way{" "}
-              {sedan.vehicle.name.toLowerCase()} taxi costs about <strong>{range(sedan.oneWay)}</strong>
-              {suv && <> and an SUV about <strong>{range(suv.oneWay)}</strong></>}, including fuel, driver allowance, service charges and GST.
-              Tolls, parking and state entry tax are extra.
+              <strong>{from} to {to}</strong> is about <strong>{r.km} km</strong> by road, a <strong>{r.time}</strong> drive.{" "}
+              {showFares ? (
+                <>
+                  A one-way {sedan.vehicle.name.toLowerCase()} taxi costs about <strong>{range(sedan.oneWay)}</strong>
+                  {suv && <> and an SUV about <strong>{range(suv.oneWay)}</strong></>}, including fuel, driver allowance, service charges and GST.
+                  Tolls, parking and state entry tax are extra.
+                </>
+              ) : (
+                <>
+                  Choose a sedan, SUV or tempo traveller, one way or round trip, and we send a written quote with fuel, driver allowance,
+                  service charges and GST itemised.
+                </>
+              )}
             </p>
             <dl className="mt-4 grid grid-cols-2 gap-3 text-sm sm:grid-cols-4">
               {[
                 ["Distance", `${r.km} km`],
                 ["Drive time", r.time],
-                ["Fare from", rupees(cheapest.oneWay.low)],
+                showFares ? ["Fare from", rupees(cheapest.oneWay.low)] : ["Cars", `${rows.length} options`],
                 ["Round trip", `${days} day${days > 1 ? "s" : ""} suggested`],
               ].map(([k, v]) => (
                 <div key={k} className="rounded-xl bg-white p-3 ring-1 ring-forest-100">
@@ -169,16 +197,26 @@ export default async function RoutePage({ params }: { params: Promise<{ route: s
           </section>
 
           <section id="fares" aria-labelledby="fares-title" className="scroll-mt-24">
-            <h2 id="fares-title" className="h2">{from} to {to} taxi fare</h2>
-            <p className="mt-2 text-slate-600">Approximate totals from our current rate card. Your written quote confirms the exact fare before you pay.</p>
+            <h2 id="fares-title" className="h2">{from} to {to} {showFares ? "taxi fare" : "taxi options"}</h2>
+            <p className="mt-2 text-slate-600">
+              {showFares
+                ? "Approximate totals from our current rate card. Your written quote confirms the exact fare before you pay."
+                : "Pick the car that suits your group. Your written quote confirms the exact fare before you pay anything."}
+            </p>
             <div className="mt-6 overflow-x-auto rounded-2xl border border-slate-200 bg-white">
               <table className="w-full min-w-[520px] text-sm">
                 <thead className="bg-slate-50 text-left text-xs tracking-wide text-slate-500 uppercase">
                   <tr>
                     <th className="px-4 py-3">Car</th>
                     <th className="px-4 py-3">Seats</th>
-                    <th className="px-4 py-3">One way</th>
-                    <th className="px-4 py-3">Round trip ({days} day{days > 1 ? "s" : ""})</th>
+                    {showFares ? (
+                      <>
+                        <th className="px-4 py-3">One way</th>
+                        <th className="px-4 py-3">Round trip ({days} day{days > 1 ? "s" : ""})</th>
+                      </>
+                    ) : (
+                      <th className="px-4 py-3"><span className="sr-only">Book</span></th>
+                    )}
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-slate-100">
@@ -189,16 +227,26 @@ export default async function RoutePage({ params }: { params: Promise<{ route: s
                         <span className="block text-xs text-slate-500">{x.vehicle.example}</span>
                       </td>
                       <td className="px-4 py-3 text-slate-600">Up to {x.vehicle.seats}</td>
-                      <td className="px-4 py-3 font-semibold whitespace-nowrap text-forest-900">{range(x.oneWay)}</td>
-                      <td className="px-4 py-3 font-semibold whitespace-nowrap text-forest-900">{range(x.round)}</td>
+                      {showFares ? (
+                        <>
+                          <td className="px-4 py-3 font-semibold whitespace-nowrap text-forest-900">{range(x.oneWay)}</td>
+                          <td className="px-4 py-3 font-semibold whitespace-nowrap text-forest-900">{range(x.round)}</td>
+                        </>
+                      ) : (
+                        <td className="px-4 py-3 text-right">
+                          <a href="#book" className="font-semibold whitespace-nowrap text-forest-700 hover:underline">Get a quote →</a>
+                        </td>
+                      )}
                     </tr>
                   ))}
                 </tbody>
               </table>
             </div>
-            <p className="mt-3 text-xs text-slate-500">Includes fuel, driver allowance{days > 1 ? ", night halts on round trips" : ""}, service charges and GST. Excludes tolls, parking and state entry tax.</p>
+            {showFares && (
+              <p className="mt-3 text-xs text-slate-500">Includes fuel, driver allowance{days > 1 ? ", night halts on round trips" : ""}, service charges and GST. Excludes tolls, parking and state entry tax.</p>
+            )}
             <div className="card mt-6 p-5 sm:p-6">
-              <h3 className="font-semibold text-forest-900">Change the route or trip type</h3>
+              <h3 className="font-semibold text-forest-900">{showFares ? "Change the route or trip type" : "Check another route"}</h3>
               <div className="mt-4">
                 <FareEstimator rates={rates} defaultFrom={r.from.id} defaultTo={r.to.id} idPrefix={`route-${r.slug}`} />
               </div>

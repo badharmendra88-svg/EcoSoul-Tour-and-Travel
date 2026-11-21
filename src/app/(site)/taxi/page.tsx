@@ -3,7 +3,7 @@ import { PageHero } from "@/components/PageHero";
 import { places, routePages, routePath, shortName } from "@/config/journeys";
 import { estimateFares } from "@/lib/fare-estimate";
 import { rupees } from "@/lib/quote";
-import { getEstimatorRates } from "@/lib/rates";
+import { getPublicEstimatorRates } from "@/lib/rates";
 import { pageMeta } from "@/lib/seo";
 
 export const revalidate = 3600;
@@ -16,7 +16,7 @@ export const metadata = pageMeta({
 });
 
 export default async function TaxiRoutesPage() {
-  const rates = await getEstimatorRates();
+  const rates = await getPublicEstimatorRates();
   const from = (km: number) => Math.min(...estimateFares(km, "ONE_WAY", 1, rates).map((f) => f.low));
   // Group by starting point, in the order places are listed (cities, then hubs, then destinations)
   const groups = places
@@ -26,8 +26,12 @@ export default async function TaxiRoutesPage() {
   return (
     <>
       <PageHero
-        title="Taxi routes & fares"
-        intro="Distance, drive time and an approximate one-way fare for every route we run — open a route for round-trip fares and booking."
+        title={rates.showFares ? "Taxi routes & fares" : "Taxi routes"}
+        intro={
+          rates.showFares
+            ? "Distance, drive time and an approximate one-way fare for every route we run — open a route for round-trip fares and booking."
+            : "Distance and drive time for every route we run — open a route for the cars available and a written quote."
+        }
         crumbs={[{ label: "Taxi routes", href: "/taxi/" }]}
         eyebrow="Car, taxi & driver"
         scene="mountain"
@@ -49,10 +53,14 @@ export default async function TaxiRoutesPage() {
                       <span className="block font-semibold text-forest-900">{shortName(r.from)} to {shortName(r.to)}</span>
                       <span className="block text-xs text-slate-500">{r.km} km · {r.time}</span>
                     </span>
-                    <span className="shrink-0 text-right text-sm">
-                      <span className="block text-xs text-slate-500">from</span>
-                      <span className="font-semibold text-forest-800">{rupees(from(r.km))}</span>
-                    </span>
+                    {rates.showFares ? (
+                      <span className="shrink-0 text-right text-sm">
+                        <span className="block text-xs text-slate-500">from</span>
+                        <span className="font-semibold text-forest-800">{rupees(from(r.km))}</span>
+                      </span>
+                    ) : (
+                      <span className="shrink-0 text-sm font-semibold text-forest-700">Get a quote →</span>
+                    )}
                   </Link>
                 </li>
               ))}
