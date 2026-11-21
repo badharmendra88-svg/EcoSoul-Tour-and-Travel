@@ -1,6 +1,7 @@
 import type { MetadataRoute } from "next";
 import { guidePath, guides } from "@/config/guides";
 import { originPath, origins, routePages, routePath } from "@/config/journeys";
+import { kumaonPath, kumaonPlaces } from "@/config/kumaon";
 import { site } from "@/config/site";
 import { db } from "@/lib/db";
 
@@ -20,6 +21,8 @@ const staticPaths = [
   "/uttarakhand/kedarnath-yatra-package/",
   "/uttarakhand/auli-tour-package/",
   "/uttarakhand/himalayan-treks/",
+  "/uttarakhand/kumaon-tour-packages/",
+  ...kumaonPlaces.map((p) => kumaonPath(p.id)),
   "/hi/char-dham-yatra/",
   "/how-to-reach-uttarakhand/",
   ...origins.map(originPath),

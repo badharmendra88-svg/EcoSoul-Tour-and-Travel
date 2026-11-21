@@ -7,7 +7,7 @@ import { SiteSettingsProvider } from "@/components/SiteSettingsProvider";
 import { UtmCapture } from "@/components/UtmCapture";
 import { site } from "@/config/site";
 import { getSettings } from "@/lib/settings";
-import { jsonLd } from "@/lib/seo";
+import { DEFAULT_SHARE_IMAGE, jsonLd } from "@/lib/seo";
 
 // "Street, Area, City, State 263001" → schema.org PostalAddress (only for a full address with a PIN code)
 function postalAddress(address: string) {
@@ -34,6 +34,9 @@ export default async function SiteLayout({ children }: { children: React.ReactNo
     "@type": "TravelAgency",
     name: site.name,
     url: site.url,
+    // Logo and a photo let Google show the business card with the brand mark
+    logo: `${site.url}/brand/logo-full.png`,
+    image: `${site.url}${settings.heroImageUrl || DEFAULT_SHARE_IMAGE}`,
     telephone: settings.phone,
     email: settings.email,
     areaServed: { "@type": "State", name: "Uttarakhand" },

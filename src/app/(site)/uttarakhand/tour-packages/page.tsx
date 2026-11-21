@@ -43,6 +43,8 @@ export default async function PackagesPage({ searchParams }: { searchParams: Pro
         scene="lake"
       >
         <nav aria-label="Popular trips" className="flex flex-wrap gap-2">
+          <Link href="/uttarakhand/kumaon-tour-packages/" className="chip bg-white/90">Kumaon tour packages →</Link>
+          <Link href="/uttarakhand/nainital-tour-package/" className="chip bg-white/90">Nainital tour package →</Link>
           <Link href="/uttarakhand/char-dham-yatra/" className="chip bg-white/90">Char Dham Yatra packages →</Link>
           <Link href="/uttarakhand/kedarnath-yatra-package/" className="chip bg-white/90">Kedarnath yatra package →</Link>
           <Link href="/uttarakhand/auli-tour-package/" className="chip bg-white/90">Auli tour package →</Link>

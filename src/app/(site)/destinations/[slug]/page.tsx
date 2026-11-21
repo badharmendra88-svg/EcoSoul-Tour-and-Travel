@@ -6,6 +6,7 @@ import { FaqList } from "@/components/FaqList";
 import { JsonLd } from "@/components/JsonLd";
 import { PageHero } from "@/components/PageHero";
 import { destinationSlugFor, routePages, routePath, shortName } from "@/config/journeys";
+import { kumaonById, kumaonPath } from "@/config/kumaon";
 import { site } from "@/config/site";
 import { db } from "@/lib/db";
 import { formatDate } from "@/lib/format";
@@ -132,6 +133,12 @@ export default async function DestinationPage({ params }: { params: Promise<{ sl
             <h2 className="text-lg font-semibold text-forest-900">Plan a trip to {d.name}</h2>
             <p className="mt-2 text-sm text-slate-600">Tell us your dates and group — we&apos;ll send a day-wise plan and quote.</p>
             <div className="mt-4 grid gap-3">
+              {/* Guide → booking page for destinations that have a dedicated tour package page */}
+              {(kumaonById(d.slug) || d.slug === "auli") && (
+                <Link href={d.slug === "auli" ? "/uttarakhand/auli-tour-package/" : kumaonPath(d.slug)} className="btn-secondary w-full">
+                  {d.name} tour package
+                </Link>
+              )}
               <Link href={`/customise-my-trip/?destination=${encodeURIComponent(d.name)}`} className="btn-primary w-full">
                 Customise My Trip
               </Link>
@@ -146,7 +153,7 @@ export default async function DestinationPage({ params }: { params: Promise<{ sl
                   <li key={r.slug}>
                     <Link href={routePath(r)} className="flex justify-between gap-3 py-1.5 text-forest-700 hover:underline">
                       <span>From {shortName(r.from)}</span>
-                      <span className="text-slate-400">{r.km} km · {r.time}</span>
+                      <span className="text-slate-500">{r.km} km · {r.time}</span>
                     </Link>
                   </li>
                 ))}

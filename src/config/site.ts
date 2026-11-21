@@ -61,6 +61,7 @@ export const footerNav: { title: string; items: NavItem[] }[] = [
       { label: "Tour Packages", href: "/uttarakhand/tour-packages/" },
       { label: "Hotels & Homestays", href: "/hotel-booking/" },
       { label: "Char Dham & Yatra", href: "/uttarakhand/char-dham-yatra/" },
+      { label: "Kumaon Tour Packages", href: "/uttarakhand/kumaon-tour-packages/" },
       { label: "Kedarnath Yatra Package", href: "/uttarakhand/kedarnath-yatra-package/" },
       { label: "Auli Tour Package", href: "/uttarakhand/auli-tour-package/" },
       { label: "Himalayan Treks", href: "/uttarakhand/himalayan-treks/" },
