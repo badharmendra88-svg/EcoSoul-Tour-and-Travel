@@ -5,7 +5,7 @@ import { pageMeta } from "@/lib/seo";
 // Location page (SEO plan §27.5). Publish/keep only while partner coverage in
 // Haldwani is confirmed. Distances are approximate road distances.
 export const metadata = pageMeta({
-  title: "Haldwani Taxi Service — Kathgodam Station & Pantnagar Airport Cabs",
+  title: "Haldwani & Kathgodam Taxi Service",
   description:
     "Taxi service from Haldwani and Kathgodam railway station to Nainital, Bhimtal, Mukteshwar, Ranikhet, Almora and Jim Corbett. Outstation, local and airport transfers with itemised quotes.",
   path: "/uttarakhand/haldwani-taxi-service/",

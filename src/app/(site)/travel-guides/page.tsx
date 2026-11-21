@@ -5,7 +5,7 @@ import { getPublishedDestinations } from "@/lib/queries";
 import { pageMeta } from "@/lib/seo";
 
 export const metadata = pageMeta({
-  title: "Uttarakhand Travel Guide — Best Time, Char Dham, Costs & Tips",
+  title: "Uttarakhand Travel Guide: Best Time, Costs & Tips",
   description: "Practical Uttarakhand travel guides: the best time to visit, Char Dham and Kedarnath planning, trip costs, Nainital vs Mussoorie, packing lists and destination guides.",
   path: "/travel-guides/",
 });

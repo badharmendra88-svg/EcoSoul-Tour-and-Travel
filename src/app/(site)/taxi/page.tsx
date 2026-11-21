@@ -9,7 +9,7 @@ import { pageMeta } from "@/lib/seo";
 export const revalidate = 3600;
 
 export const metadata = pageMeta({
-  title: "Uttarakhand Taxi Routes & Fares — Delhi, Dehradun, Kathgodam, Haridwar",
+  title: "Uttarakhand Taxi Routes & Fares from Delhi",
   description:
     "Distances, drive times and taxi fares for popular Uttarakhand routes: Delhi to Nainital, Dehradun to Mussoorie, Kathgodam to Nainital, Haridwar to Kedarnath route and more.",
   path: "/taxi/",

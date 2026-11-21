@@ -2,7 +2,7 @@ import { PolicyPage } from "@/components/PolicyPage";
 import { pageMeta } from "@/lib/seo";
 
 export const metadata = pageMeta({
-  title: "Booking Policy",
+  title: "Booking Policy — Advance, Payments & Changes",
   description: "How EcoSoul Uttarakhand Travel handles enquiries, quotes, confirmations and payments for tours and transport.",
   path: "/booking-policy/",
 });

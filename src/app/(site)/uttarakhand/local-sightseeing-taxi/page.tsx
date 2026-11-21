@@ -2,7 +2,7 @@ import { TransportLanding, commonTransportFaqs } from "@/components/TransportLan
 import { pageMeta } from "@/lib/seo";
 
 export const metadata = pageMeta({
-  title: "Local Sightseeing Taxi in Uttarakhand — Half-Day & Full-Day Cabs",
+  title: "Local Sightseeing Taxi in Uttarakhand",
   description:
     "Book a local sightseeing taxi in Nainital, Mussoorie, Rishikesh and other Uttarakhand towns. Half-day and full-day options with clear km/hour inclusions.",
   path: "/uttarakhand/local-sightseeing-taxi/",

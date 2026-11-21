@@ -6,7 +6,7 @@ import { getPublishedDestinations, getPublishedPackages } from "@/lib/queries";
 import { pageMeta } from "@/lib/seo";
 
 export const metadata = pageMeta({
-  title: "Uttarakhand Tour Packages — Family, Weekend & Pilgrimage Trips",
+  title: "Uttarakhand Tour Packages for Family & Pilgrimage",
   description:
     "Compare Uttarakhand tour packages with day-wise itineraries, clear inclusions and exclusions. Nainital, Mussoorie, Rishikesh, Kumaon, Jim Corbett and Char Dham.",
   path: "/uttarakhand/tour-packages/",

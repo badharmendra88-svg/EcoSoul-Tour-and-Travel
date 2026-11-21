@@ -39,8 +39,8 @@ export async function generateMetadata({ params }: { params: Promise<{ origin: s
   const o = originFromParam((await params).origin);
   if (!o) return {};
   return pageMeta({
-    title: `Uttarakhand Tour & Taxi from ${o.city} — How to Reach, Fares & Packages`,
-    description: `${o.blurb} Instant taxi fare estimates, trains and flights from ${o.city}, and itemised quotes for Nainital, Mussoorie, Rishikesh and Char Dham.`,
+    title: `Uttarakhand Trip from ${o.city}: Taxi, Fares & Tours`,
+    description: `${o.blurb} Taxi fares, trains and flights from ${o.city}, with written quotes for Nainital, Mussoorie, Rishikesh and Char Dham.`,
     path: originPath(o),
   });
 }

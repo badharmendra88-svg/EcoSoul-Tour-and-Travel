@@ -25,7 +25,7 @@ export async function generateMetadata({ params }: { params: Promise<{ slug: str
   const p = await getPackage(slug);
   if (!p) return {};
   return pageMeta({
-    title: p.seoTitle || `${p.title} — ${p.durationLabel}`,
+    title: p.seoTitle || (`${p.title} — ${p.durationLabel}`.length <= 50 ? `${p.title} — ${p.durationLabel}` : p.title),
     description: p.seoDescription || p.summary,
     path: `/packages/${p.slug}/`,
     image: p.imageUrl,

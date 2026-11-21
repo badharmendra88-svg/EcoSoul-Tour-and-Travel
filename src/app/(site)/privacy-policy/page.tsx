@@ -4,7 +4,7 @@ import { getSettings } from "@/lib/settings";
 import { pageMeta } from "@/lib/seo";
 
 export const metadata = pageMeta({
-  title: "Privacy Policy",
+  title: "Privacy Policy & Cookie Use",
   description: "What personal information EcoSoul Uttarakhand Travel collects, why, who it is shared with, and how to contact us about your data.",
   path: "/privacy-policy/",
 });

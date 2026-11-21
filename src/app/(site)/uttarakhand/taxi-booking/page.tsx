@@ -2,7 +2,7 @@ import { TransportLanding, commonTransportFaqs } from "@/components/TransportLan
 import { pageMeta } from "@/lib/seo";
 
 export const metadata = pageMeta({
-  title: "Uttarakhand Taxi Booking — Car with Driver, Outstation & Round Trips",
+  title: "Uttarakhand Taxi Booking — Car with Driver",
   description:
     "Book a car with driver in Uttarakhand for outstation, round-trip, one-way and group travel. Sedans, SUVs and tempo travellers with itemised quotes.",
   path: "/uttarakhand/taxi-booking/",

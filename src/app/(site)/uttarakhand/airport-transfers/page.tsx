@@ -2,7 +2,7 @@ import { TransportLanding, commonTransportFaqs } from "@/components/TransportLan
 import { pageMeta } from "@/lib/seo";
 
 export const metadata = pageMeta({
-  title: "Airport & Railway Transfers in Uttarakhand — Pantnagar, Dehradun, Kathgodam",
+  title: "Uttarakhand Airport & Railway Station Transfers",
   description:
     "Pre-booked pickup and drop from Pantnagar and Dehradun airports and Kathgodam, Haridwar and Dehradun stations to Nainital, Mussoorie, Rishikesh and more.",
   path: "/uttarakhand/airport-transfers/",

@@ -5,8 +5,8 @@ import { getSettings } from "@/lib/settings";
 import { pageMeta } from "@/lib/seo";
 
 export const metadata = pageMeta({
-  title: "Terms & Conditions",
-  description: "Terms of use for the EcoSoul Uttarakhand Travel website and services.",
+  title: "Terms & Conditions of Use",
+  description: "Terms of use for the EcoSoul Uttarakhand Travel website, enquiries, quotes, bookings, payments and partner services.",
   path: "/terms-and-conditions/",
 });
 

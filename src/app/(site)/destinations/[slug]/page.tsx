@@ -25,8 +25,9 @@ export async function generateMetadata({ params }: { params: Promise<{ slug: str
   const d = await getDestination(slug);
   if (!d) return {};
   return pageMeta({
-    title: d.seoTitle || `${d.name} Travel Guide — Best Time, How to Reach & Tours`,
-    description: d.seoDescription || d.summary,
+    title: d.seoTitle || `${d.name}: Best Time, How to Reach & Tours`,
+    // Short summaries get a line about what the page covers, so search results have a useful snippet
+    description: d.seoDescription || (d.summary.length < 110 ? `${d.summary} Best time to visit, how to reach ${d.name} and tour options.` : d.summary),
     path: `/destinations/${d.slug}/`,
     image: d.imageUrl,
     imageAlt: d.imageAlt,

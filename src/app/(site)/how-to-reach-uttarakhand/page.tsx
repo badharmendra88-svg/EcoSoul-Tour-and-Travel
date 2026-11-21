@@ -9,7 +9,7 @@ import { pageMeta } from "@/lib/seo";
 export const revalidate = 3600;
 
 export const metadata = pageMeta({
-  title: "How to Reach Uttarakhand — Airports, Railway Stations & Road Routes",
+  title: "How to Reach Uttarakhand by Air, Train & Road",
   description:
     "Which airport or railway station to choose for Nainital, Mussoorie, Rishikesh, Jim Corbett and Char Dham — with taxi fares from Delhi, Dehradun, Kathgodam and Haridwar.",
   path: "/how-to-reach-uttarakhand/",

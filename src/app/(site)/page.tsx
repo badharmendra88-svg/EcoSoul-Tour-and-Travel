@@ -27,7 +27,7 @@ const websiteSchema = {
 
 export const revalidate = 300;
 
-const homeTitle = `${site.name} — Uttarakhand Tour Packages, Taxi & Driver Booking`;
+const homeTitle = `${site.name} — Tour Packages & Taxi Booking`;
 
 export const metadata = {
   ...pageMeta({

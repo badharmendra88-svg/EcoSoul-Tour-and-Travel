@@ -49,8 +49,8 @@ export async function generateMetadata({ params }: { params: Promise<{ route: st
   const from = shortName(r.from);
   const to = shortName(r.to);
   return pageMeta({
-    title: `${from} to ${to} Taxi — Fare from ${rupees(cheapest.oneWay.low)}, ${r.km} km (${r.time})`,
-    description: `Book a ${from} to ${to} taxi with an experienced hill driver. About ${r.km} km, ${r.time} drive. One-way and round-trip fares for sedan, SUV and tempo traveller, with an itemised written quote.`,
+    title: `${from} to ${to} Taxi: ${rupees(cheapest.oneWay.low)}+ Fare`,
+    description: `${from} to ${to} taxi with a hill driver: ${r.km} km, ${r.time}. One-way and round-trip fares for sedan, SUV and tempo traveller, plus a written quote.`,
     path: routePath(r),
     image: dest?.imageUrl,
     imageAlt: dest?.imageAlt,
