@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { FaqList } from "@/components/FaqList";
 import { HotelEnquiryForm } from "@/components/forms/HotelEnquiryForm";
+import { PageHero } from "@/components/PageHero";
 import { kumaonPath } from "@/config/kumaon";
 import { pageMeta } from "@/lib/seo";
 
@@ -36,15 +37,17 @@ const faqs = [
 
 export default function HotelBookingPage() {
   return (
-    <div className="container-page py-10 sm:py-16">
+    <>
+    <PageHero
+      title="Hotel & Homestay Booking in Uttarakhand"
+      intro="Tell us where and when you plan to stay. We check availability with our local hotel, resort and homestay partners and share suitable options with clear, itemised pricing."
+      crumbs={[{ label: "Hotels & Homestays", href: "/hotel-booking/" }]}
+      eyebrow="Stay in Devbhoomi"
+      scene="lake"
+    />
+    <div className="container-page py-10 sm:py-14">
       <div className="mx-auto max-w-3xl">
-        <p className="tagline text-lg">Stay in Devbhoomi</p>
-        <h1 className="mt-2 font-serif text-3xl font-bold text-forest-900 sm:text-4xl">Hotel & Homestay Booking in Uttarakhand</h1>
-        <p className="mt-4 max-w-2xl leading-relaxed text-slate-600">
-          Tell us where and when you plan to stay. We check availability with our local hotel, resort and homestay partners and share
-          suitable options with clear, itemised pricing.
-        </p>
-        <div className="panel mt-8 p-5 sm:p-8"><HotelEnquiryForm /></div>
+        <div className="panel p-5 sm:p-8"><HotelEnquiryForm /></div>
 
         <section aria-labelledby="areas" className="mt-14">
           <h2 id="areas" className="h2">Where we arrange stays</h2>
@@ -79,5 +82,6 @@ export default function HotelBookingPage() {
         </section>
       </div>
     </div>
+    </>
   );
 }

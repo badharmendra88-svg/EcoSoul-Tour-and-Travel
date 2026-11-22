@@ -1,3 +1,4 @@
+import { heroForPath } from "@/config/hero-images";
 import type { ReactNode } from "react";
 import { Breadcrumbs, type Crumb } from "./Breadcrumbs";
 import { SceneArt } from "./SceneArt";
@@ -24,6 +25,14 @@ export function PageHero({
   imageCredit?: string | null;
   children?: ReactNode;
 }) {
+  // No admin photo: use the stock photo chosen for this page (config/hero-images), else the illustration
+  if (!imageUrl) {
+    const stock = heroForPath(crumbs.at(-1)?.href);
+    if (stock) {
+      imageUrl = stock.url;
+      imageAlt = stock.alt;
+    }
+  }
   // With a real photo: dark overlay + light text. Without: illustrated sand header.
   if (imageUrl) {
     return (

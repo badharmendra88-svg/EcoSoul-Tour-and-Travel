@@ -1,3 +1,4 @@
+import { heroForPlace } from "@/config/hero-images";
 import type { Metadata } from "next";
 import Link from "next/link";
 import { notFound } from "next/navigation";
@@ -151,13 +152,13 @@ export default async function RoutePage({ params }: { params: Promise<{ route: s
         intro={`${r.km} km · ${r.time} drive · one-way or round trip with an experienced ${r.to.region === "Plains" ? "" : "hill "}driver.`}
         crumbs={[{ label: "Taxi routes", href: "/taxi/" }, { label: `${from} to ${to}`, href: routePath(r) }]}
         eyebrow="Taxi route"
-        imageUrl={dest?.imageUrl}
-        imageAlt={dest?.imageAlt}
+        imageUrl={dest?.imageUrl ?? heroForPlace(r.to.id).url}
+        imageAlt={dest?.imageUrl ? dest.imageAlt : heroForPlace(r.to.id).alt}
         scene={dest?.scene ?? "mountain"}
       >
         <div className="flex flex-wrap gap-3">
           <a href="#book" className="btn-primary px-6 py-3 text-base">Book this taxi</a>
-          <a href="#fares" className={dest?.imageUrl ? "btn-ghost-light px-6 py-3 text-base" : "btn-outline px-6 py-3 text-base"}>{showFares ? "See all fares" : "See cars"}</a>
+          <a href="#fares" className="btn-ghost-light px-6 py-3 text-base">{showFares ? "See all fares" : "See cars"}</a>
         </div>
       </PageHero>
 
