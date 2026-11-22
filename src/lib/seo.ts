@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import { heroForPath } from "@/config/hero-images";
 import { site } from "@/config/site";
 
 export const DEFAULT_SHARE_IMAGE = "/brand/og-default.png";
@@ -49,8 +50,16 @@ export function pageMeta({
 }): Metadata {
   const url = `${site.url}${path}`;
   description = seoDescription(description);
-  // Every page gets a share image (WhatsApp, Facebook, X): its own photo, or the brand card
-  const images = [image ? { url: `${site.url}${image}`, alt: imageAlt ?? title } : { url: `${site.url}${DEFAULT_SHARE_IMAGE}`, width: 1200, height: 630, alt: site.name }];
+  // Link previews (WhatsApp, Facebook, Google Discover) show the page's own photo: the admin photo, else the
+  // stock header photo chosen for this page, else the brand card
+  const stock = image ? null : heroForPath(path);
+  const images = [
+    image
+      ? { url: `${site.url}${image}`, alt: imageAlt ?? title }
+      : stock
+        ? { url: `${site.url}${stock.url}`, width: 1920, height: 1080, alt: stock.alt }
+        : { url: `${site.url}${DEFAULT_SHARE_IMAGE}`, width: 1200, height: 630, alt: site.name },
+  ];
   return {
     title: seoTitle(title),
     description,

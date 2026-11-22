@@ -38,10 +38,14 @@ const destinationSlug: Record<string, string> = { corbett: "jim-corbett" };
 export async function generateMetadata({ params }: { params: Promise<{ origin: string }> }): Promise<Metadata> {
   const o = originFromParam((await params).origin);
   if (!o) return {};
+  const destinations = await getPublishedDestinations();
+  const photo = o.picks.map((id) => destinations.find((d) => d.slug === (destinationSlug[id] ?? id))).find((d) => d?.imageUrl);
   return pageMeta({
     title: `Uttarakhand Trip from ${o.city}: Taxi, Fares & Tours`,
     description: `${o.blurb} Taxi fares, trains and flights from ${o.city}, with written quotes for Nainital, Mussoorie, Rishikesh and Char Dham.`,
     path: originPath(o),
+    image: photo?.imageUrl,
+    imageAlt: photo?.imageAlt,
   });
 }
 

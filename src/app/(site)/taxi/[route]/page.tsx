@@ -56,8 +56,8 @@ export async function generateMetadata({ params }: { params: Promise<{ route: st
       ? `${from} to ${to} taxi with a hill driver: ${r.km} km, ${r.time}. One-way and round-trip fares for sedan, SUV and tempo traveller, plus a written quote.`
       : `${from} to ${to} taxi with a hill driver: ${r.km} km, ${r.time}. One-way or round trip in a sedan, SUV or tempo traveller, with a written quote.`,
     path: routePath(r),
-    image: dest?.imageUrl,
-    imageAlt: dest?.imageAlt,
+    image: dest?.imageUrl ?? heroForPlace(r.to.id).url,
+    imageAlt: dest?.imageUrl ? dest.imageAlt : heroForPlace(r.to.id).alt,
   });
 }
 
