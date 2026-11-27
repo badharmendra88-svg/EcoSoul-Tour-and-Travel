@@ -25,6 +25,15 @@ export default async function HimalayanTreksPage() {
       title="Himalayan Treks in Uttarakhand"
       eyebrow="Trekking"
       intro="From easy winter summits to monsoon flower valleys — Himalayan treks in Uttarakhand run with experienced local partner guides, plus transport to the trek base and stays before and after."
+      answer={
+        <p>
+          Uttarakhand&apos;s most popular Himalayan treks are <strong>Kedarkantha and Brahmatal</strong> in winter (December–April),
+          <strong> Har Ki Dun</strong> in spring and autumn, and the <strong>Valley of Flowers</strong> in the monsoon (July–September).{" "}
+          <strong>Dayara Bugyal</strong> is the easiest first trek. Most treks take 4–8 days, reach about 3,400–3,900 m and start with a
+          drive from Dehradun, Rishikesh or Haridwar.
+        </p>
+      }
+      updated="22 Nov 2026"
       crumbLabel="Himalayan Treks"
       path={PATH}
       scene="snow"

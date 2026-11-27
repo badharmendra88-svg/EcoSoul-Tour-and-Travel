@@ -3,6 +3,7 @@ import type { ReactNode } from "react";
 import { WhatsAppButton } from "@/components/ContactButtons";
 import { FaqList } from "@/components/FaqList";
 import { PageHero } from "@/components/PageHero";
+import { QuickAnswer } from "@/components/QuickAnswer";
 
 // Shared layout for keyword landing pages (Kedarnath yatra, Auli, Himalayan treks): quick facts,
 // what we arrange, a sample plan, a checklist, FAQs and an enquiry sidebar. Prices are quoted per
@@ -12,6 +13,10 @@ export type TripLandingProps = {
   title: string;
   eyebrow: string;
   intro: string;
+  /** Two or three factual sentences answering the page's main question (shown first, quoted by search and AI). */
+  answer: ReactNode;
+  /** Date the content was last checked, e.g. "22 Nov 2026". */
+  updated?: string;
   crumbLabel: string;
   path: string;
   scene: string;
@@ -50,6 +55,8 @@ export function TripLanding(p: TripLandingProps) {
 
       <div className="container-page grid gap-10 py-12 lg:grid-cols-[1fr_320px]">
         <article className="prose-body min-w-0">
+          <QuickAnswer updated={p.updated}>{p.answer}</QuickAnswer>
+
           {p.notice && (
             <div role="note" className="rounded-xl border border-amber-300 bg-amber-50 p-5 text-amber-950">
               <p className="font-semibold">{p.notice.title}</p>

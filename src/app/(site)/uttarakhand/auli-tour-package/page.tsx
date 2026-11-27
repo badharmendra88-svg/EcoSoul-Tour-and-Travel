@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { TripLanding } from "@/components/TripLanding";
+import { routeBetween } from "@/config/journeys";
 import { getPublishedDestinations } from "@/lib/queries";
 import { pageMeta } from "@/lib/seo";
 
@@ -19,11 +20,22 @@ export async function generateMetadata() {
 
 export default async function AuliTourPackagePage() {
   const auli = (await getPublishedDestinations()).find((d) => d.slug === "auli");
+  const fromHaridwar = routeBetween("haridwar", "auli");
+  const fromDelhi = routeBetween("delhi", "auli");
   return (
     <TripLanding
       title="Auli Tour Package"
       eyebrow="Snow & skiing"
       intro="Snow slopes, ski lessons and some of the best Himalayan views in India — an Auli trip with stays in Auli or Joshimath, a vehicle with an experienced hill driver and a realistic day-wise plan."
+      answer={
+        <p>
+          An Auli tour package usually takes <strong>4–6 days</strong>. Auli sits above Joshimath at about 2,500–3,000 m
+          {fromHaridwar && <>, about <strong>{fromHaridwar.km} km ({fromHaridwar.time})</strong> by road from Haridwar</>}
+          {fromDelhi && <> and {fromDelhi.km} km from Delhi</>}. Go from <strong>January to March</strong> for snow and skiing, or April–June
+          and September–November for green meadows and clear views of Nanda Devi.
+        </p>
+      }
+      updated="22 Nov 2026"
       crumbLabel="Auli Tour Package"
       path={PATH}
       scene="snow"

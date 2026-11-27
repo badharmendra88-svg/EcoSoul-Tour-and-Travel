@@ -2,7 +2,7 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 import { TripLanding } from "@/components/TripLanding";
 import { routeBetween, routePages, routePath, shortName } from "@/config/journeys";
-import { KUMAON_HUB_PATH, kumaonById, kumaonPath } from "@/config/kumaon";
+import { KUMAON_HUB_PATH, KUMAON_REVIEWED, kumaonById, kumaonPath } from "@/config/kumaon";
 import { getPublishedDestinations } from "@/lib/queries";
 import { pageMeta } from "@/lib/seo";
 
@@ -31,6 +31,15 @@ export async function KumaonPackagePage({ id }: { id: string }) {
       title={`${p.name} Tour Package`}
       eyebrow="Kumaon"
       intro={p.intro}
+      answer={
+        <p>
+          {/^[AEIOU]/.test(p.name) ? "An" : "A"} {p.name} tour package usually needs <strong>{p.idealStay}</strong>. {p.name} is at {p.altitude.toLowerCase()}
+          {fromKathgodam && <>, about <strong>{fromKathgodam.km} km ({fromKathgodam.time})</strong> from Kathgodam railway station</>}
+          {fromDelhi && <> and {fromDelhi.km} km ({fromDelhi.time}) from Delhi</>}. The best time to visit is <strong>{p.bestTime}</strong>. Our
+          package includes hotels in your category, a car with an experienced hill driver and a day-wise plan, quoted for your group.
+        </p>
+      }
+      updated={KUMAON_REVIEWED}
       crumbLabel={`${p.name} Tour Package`}
       path={kumaonPath(id)}
       scene="lake"

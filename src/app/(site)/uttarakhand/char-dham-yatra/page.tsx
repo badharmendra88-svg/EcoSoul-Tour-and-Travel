@@ -2,6 +2,7 @@ import Link from "next/link";
 import { WhatsAppButton } from "@/components/ContactButtons";
 import { FaqList } from "@/components/FaqList";
 import { PageHero } from "@/components/PageHero";
+import { QuickAnswer } from "@/components/QuickAnswer";
 import { originBySlug, originPath } from "@/config/journeys";
 import { officialLinks, site } from "@/config/site";
 import { pageMeta } from "@/lib/seo";
@@ -74,6 +75,15 @@ export default function CharDhamPage() {
 
       <div className="container-page grid gap-10 py-12 lg:grid-cols-[1fr_320px]">
         <article className="prose-body min-w-0">
+          <QuickAnswer updated={LAST_REVIEWED}>
+            <p>
+              The Char Dham Yatra covers <strong>Yamunotri, Gangotri, Kedarnath and Badrinath</strong>, usually in that order, and takes
+              about <strong>9–12 days</strong> by road from Haridwar or Rishikesh. The temples typically open in <strong>late April or May</strong>{" "}
+              and close in October or November. Registration on the official Uttarakhand Tourist Care portal is required, and Kedarnath
+              helicopter seats are sold only on IRCTC HeliYatra.
+            </p>
+          </QuickAnswer>
+
           <div role="note" className="rounded-xl border border-amber-300 bg-amber-50 p-5 text-amber-950">
             <p className="font-semibold">Important — this is not a government website</p>
             <p className="mt-1 text-sm">

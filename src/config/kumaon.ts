@@ -278,5 +278,8 @@ export const kumaonPlaces: KumaonPlace[] = [
 ];
 
 export const kumaonById = (id: string) => kumaonPlaces.find((p) => p.id === id);
+/** Date the Kumaon pages were last checked; shown on each page. */
+export const KUMAON_REVIEWED = "22 Nov 2026";
+
 export const kumaonPath = (id: string) => `/uttarakhand/${id}-tour-package/`;
 export const KUMAON_HUB_PATH = "/uttarakhand/kumaon-tour-packages/";

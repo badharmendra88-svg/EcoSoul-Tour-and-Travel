@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { TripLanding } from "@/components/TripLanding";
+import { routeBetween } from "@/config/journeys";
 import { officialLinks } from "@/config/site";
 import { pageMeta } from "@/lib/seo";
 
@@ -16,11 +17,21 @@ export const metadata = pageMeta({
 const LAST_REVIEWED = "22 November 2026";
 
 export default function KedarnathYatraPackagePage() {
+  const drive = routeBetween("haridwar", "sonprayag");
   return (
     <TripLanding
       title="Kedarnath Yatra Package"
       eyebrow="Pilgrimage"
       intro="A complete Kedarnath yatra from Haridwar, Rishikesh, Dehradun or Delhi — hotels near the trek start, a vehicle with an experienced hill driver, and honest guidance on the trek, helicopter and official registration."
+      answer={
+        <p>
+          A Kedarnath yatra package from Haridwar usually takes <strong>4–5 days</strong>. You drive
+          {drive ? <> about <strong>{drive.km} km ({drive.time})</strong></> : ""} to Sonprayag, then trek <strong>about 16–18 km</strong> from
+          Gaurikund to the temple at about 3,580 m, or fly by helicopter (seats sold only on IRCTC HeliYatra). The temple is usually open
+          from <strong>May to October or early November</strong>, and every pilgrim must register on the official Uttarakhand portal.
+        </p>
+      }
+      updated={LAST_REVIEWED}
       crumbLabel="Kedarnath Yatra Package"
       path={PATH}
       scene="temple"

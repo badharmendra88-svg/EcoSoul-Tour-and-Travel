@@ -3,8 +3,9 @@ import { PackageCard } from "@/components/Cards";
 import { WhatsAppButton } from "@/components/ContactButtons";
 import { FaqList } from "@/components/FaqList";
 import { PageHero } from "@/components/PageHero";
+import { QuickAnswer } from "@/components/QuickAnswer";
 import { routeBetween } from "@/config/journeys";
-import { KUMAON_HUB_PATH, kumaonPath, kumaonPlaces } from "@/config/kumaon";
+import { KUMAON_HUB_PATH, KUMAON_REVIEWED, kumaonPath, kumaonPlaces } from "@/config/kumaon";
 import { getPublishedPackages } from "@/lib/queries";
 import { pageMeta } from "@/lib/seo";
 
@@ -49,6 +50,15 @@ export default async function KumaonToursPage() {
 
       <div className="container-page grid gap-10 py-12 lg:grid-cols-[1fr_320px]">
         <article className="prose-body min-w-0">
+          <QuickAnswer updated={KUMAON_REVIEWED}>
+            <p>
+              Kumaon&apos;s main hill destinations are <strong>{kumaonPlaces.map((p) => p.name).join(", ").replace(/, ([^,]*)$/, " and $1")}</strong>.
+              The gateways are Kathgodam railway station and Pantnagar Airport; Nainital is about {routeBetween("kathgodam", "nainital")?.km} km
+              from Kathgodam and {routeBetween("delhi", "nainital")?.time} by road from Delhi. Plan <strong>3–4 days</strong> for Nainital and
+              the lakes, or <strong>7 days</strong> for a full Kumaon circuit. The best months are March–June and September–November.
+            </p>
+          </QuickAnswer>
+
           <p>
             Kumaon is the eastern half of Uttarakhand: gentle hill stations, lakes and old temple towns facing the snow peaks of the
             Nanda Devi range. Pick a single destination below, or combine several on a Kumaon circuit. Every package includes your stay, a

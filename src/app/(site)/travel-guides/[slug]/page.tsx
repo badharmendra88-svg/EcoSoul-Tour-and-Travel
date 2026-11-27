@@ -53,7 +53,7 @@ export default async function GuidePage({ params }: { params: Promise<{ slug: st
         title={g.title}
         intro={g.description}
         crumbs={[{ label: "Travel Guide", href: "/travel-guides/" }, { label: g.title, href: guidePath(g) }]}
-        eyebrow={`Travel guide · ${g.readMinutes} min read`}
+        eyebrow={`Travel guide · ${g.readMinutes} min read · Updated ${formatDate(g.reviewed)}`}
         scene="river"
       />
       <div className="container-page grid gap-10 py-12 lg:grid-cols-[1fr_300px]">
