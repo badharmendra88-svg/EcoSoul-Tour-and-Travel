@@ -16,7 +16,7 @@ export function HotelEnquiryForm() {
     if (Number(v.rooms) < 1 || Number(v.rooms) > 20) e.rooms = "Choose 1–20 rooms";
     if (Number(v.adults) < 1) e.adults = "At least one guest is required";
     if (v.name.trim().length < 2) e.name = "Please enter your name";
-    if (!v.phone.trim() && !v.email.trim()) e.phone = "Please share a phone number or email";
+    if (!v.phone.trim()) e.phone = "Please enter your phone / WhatsApp number";
     if (!v.consent) e.consent = "Please accept the privacy notice and booking terms";
     setErrors(e);
     if (Object.keys(e).length) return;

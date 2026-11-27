@@ -33,7 +33,7 @@ export default async function AboutPage() {
           </p>
           <h2>How we work</h2>
           <ul>
-            <li><strong>Enquiry first.</strong> We never claim live availability. We check with partners, then send a written quote.</li>
+            <li><strong>Real availability.</strong> We check your hotel and car with our partners for your dates before we quote, so what we confirm is what you get.</li>
             <li><strong>Transparent pricing.</strong> Every quote shows the price basis, inclusions, exclusions and validity.</li>
             <li><strong>Checked partners.</strong> Before a driver, vehicle or operator joins our network, our team checks their documents and agreements.</li>
             <li><strong>Responsible travel.</strong> We encourage low-waste travel, respect for local communities and following official advisories.</li>
@@ -50,7 +50,7 @@ export default async function AboutPage() {
           <dl className="mt-3 space-y-2 text-sm">
             <div><dt className="text-slate-500">Phone</dt><dd className="font-medium">{s.phone}</dd></div>
             <div><dt className="text-slate-500">Email</dt><dd className="font-medium">{s.email}</dd></div>
-            <div><dt className="text-slate-500">Service area</dt><dd className="font-medium">{s.address}</dd></div>
+            <div><dt className="text-slate-500">Office</dt><dd className="font-medium">{s.address}</dd></div>
             <div><dt className="text-slate-500">Hours</dt><dd className="font-medium">{s.hours}</dd></div>
             {s.legalName && <div><dt className="text-slate-500">Registered name</dt><dd className="font-medium">{s.legalName}</dd></div>}
             {s.gstin && <div><dt className="text-slate-500">GSTIN</dt><dd className="font-medium">{s.gstin}</dd></div>}

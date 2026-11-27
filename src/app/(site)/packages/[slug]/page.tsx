@@ -4,6 +4,7 @@ import { WhatsAppButton } from "@/components/ContactButtons";
 import { TripEnquiryForm } from "@/components/forms/TripEnquiryForm";
 import { PageHero } from "@/components/PageHero";
 import { TrackPackageView } from "@/components/TrackView";
+import { TravellerReviews } from "@/components/TravellerReviews";
 import { tripTypes } from "@/config/options";
 import { db } from "@/lib/db";
 import { formatPrice } from "@/lib/format";
@@ -242,6 +243,8 @@ export default async function PackagePage({ params }: { params: Promise<{ slug: 
           </div>
         </aside>
       </div>
+
+      <TravellerReviews limit={3} className="container-page pb-14" />
 
       {related.length > 0 && (
         <section className="bg-sand py-14">

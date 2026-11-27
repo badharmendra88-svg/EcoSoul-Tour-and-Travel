@@ -61,7 +61,7 @@ export function TripEnquiryForm({ mode, packageSlug, packageTitle, destinations 
     }
     if (i === 2 || !multiStep) {
       if (v.name.trim().length < 2) e.name = "Please enter your name";
-      if (!v.phone.trim() && !v.email.trim()) e.phone = "Please share a phone number or email so we can reply";
+      if (!v.phone.trim()) e.phone = "Please enter your phone / WhatsApp number";
       if (!v.consent) e.consent = "Please accept the privacy notice and booking terms";
     }
     setErrors(e);

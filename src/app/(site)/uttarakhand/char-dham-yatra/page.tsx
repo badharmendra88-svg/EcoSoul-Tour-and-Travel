@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { WhatsAppButton } from "@/components/ContactButtons";
 import { FaqList } from "@/components/FaqList";
+import { PackageRow } from "@/components/PackageRow";
 import { PageHero } from "@/components/PageHero";
 import { QuickAnswer } from "@/components/QuickAnswer";
 import { originBySlug, originPath } from "@/config/journeys";
@@ -115,6 +116,12 @@ export default function CharDhamPage() {
               </div>
             ))}
           </div>
+
+          <PackageRow
+            title="Ready-made yatra packages"
+            slugs={["char-dham-yatra-10-days", "do-dham-kedarnath-badrinath-6-days", "kedarnath-yatra-5-days"]}
+            className="mt-10"
+          />
 
           <h2>A typical 10-day road plan from Haridwar</h2>
           <ol className="not-prose relative space-y-3 border-l-2 border-forest-100 pl-5">

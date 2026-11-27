@@ -44,9 +44,12 @@ export async function POST(request: Request) {
     return NextResponse.json({ ok: false, errors: fieldErrors(parsed.error) }, { status: 422 });
   }
   const v = parsed.data as Record<string, unknown> & { kind: string; phone?: string; email?: string };
-  if (!hasContactMethod(v)) {
+  if (!hasContactMethod(v, v.kind)) {
     return NextResponse.json(
-      { ok: false, errors: { phone: "Please share a phone number or email so we can reply" } },
+      {
+        ok: false,
+        errors: { phone: v.kind === "CONTACT" ? "Please share a phone number or email so we can reply" : "Please enter your phone / WhatsApp number" },
+      },
       { status: 422 },
     );
   }

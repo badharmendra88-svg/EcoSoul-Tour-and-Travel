@@ -35,7 +35,7 @@ export default async function ContactPage() {
                 <dd><a href={`mailto:${s.email}`} className="font-medium text-forest-700 hover:underline">{s.email}</a></dd>
               </div>
               <div>
-                <dt className="text-slate-500">Service area</dt>
+                <dt className="text-slate-500">Office</dt>
                 <dd className="font-medium">{s.address}</dd>
               </div>
               <div>

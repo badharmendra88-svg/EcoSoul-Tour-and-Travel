@@ -2,8 +2,10 @@ import Link from "next/link";
 import type { ReactNode } from "react";
 import { WhatsAppButton } from "@/components/ContactButtons";
 import { FaqList } from "@/components/FaqList";
+import { PackageRow } from "@/components/PackageRow";
 import { PageHero } from "@/components/PageHero";
 import { QuickAnswer } from "@/components/QuickAnswer";
+import { TravellerReviews } from "@/components/TravellerReviews";
 
 // Shared layout for keyword landing pages (Kedarnath yatra, Auli, Himalayan treks): quick facts,
 // what we arrange, a sample plan, a checklist, FAQs and an enquiry sidebar. Prices are quoted per
@@ -35,6 +37,8 @@ export type TripLandingProps = {
   faqTitle: string;
   faqs: { q: string; a: string }[];
   sources?: ReactNode;
+  /** Ready-made packages (by slug) shown after the cards. */
+  packages?: { title: string; slugs: string[] };
   cta: { title: string; text: string; href: string; label: string; whatsapp: string };
   related: { title: string; links: { href: string; label: string }[] };
 };
@@ -86,6 +90,8 @@ export function TripLanding(p: TripLandingProps) {
             ))}
           </div>
 
+          {p.packages && <PackageRow title={p.packages.title} slugs={p.packages.slugs} className="mt-10" />}
+
           {p.plan && (
             <>
               <h2>{p.plan.title}</h2>
@@ -131,6 +137,8 @@ export function TripLanding(p: TripLandingProps) {
           </nav>
         </aside>
       </div>
+
+      <TravellerReviews limit={3} className="container-page pb-14" />
     </>
   );
 }

@@ -164,9 +164,10 @@ export function schemaFor(kind: unknown) {
   }
 }
 
-/** Every enquiry needs at least one way to reach the customer. */
-export function hasContactMethod(v: { phone?: string; email?: string }) {
-  return Boolean(v.phone || v.email);
+/** Trip, taxi, hotel and package enquiries need a phone / WhatsApp number (that is how we send the quote);
+ * the general contact form also accepts email only. */
+export function hasContactMethod(v: { phone?: string; email?: string }, kind?: string) {
+  return kind === "CONTACT" ? Boolean(v.phone || v.email) : Boolean(v.phone);
 }
 
 export function fieldErrors(error: z.ZodError): Record<string, string> {

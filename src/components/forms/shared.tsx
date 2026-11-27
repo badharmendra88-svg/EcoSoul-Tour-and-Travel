@@ -5,6 +5,7 @@ import { useRef, useState, type ReactNode } from "react";
 import { track } from "@/lib/analytics";
 import { heardFromOptions } from "@/config/options";
 import { travellingFromOptions } from "@/config/journeys";
+import { site } from "@/config/site";
 import { readUtm } from "@/lib/utm";
 import { Combobox } from "./Combobox";
 
@@ -116,7 +117,10 @@ export function ContactFields({
   values,
   set,
   errors,
+  phoneOptional = false,
 }: {
+  /** Contact form only: accept email instead of a phone number. */
+  phoneOptional?: boolean;
   /** Include `travellingFrom` in the form state to ask for the customer's home city. */
   values: { name: string; phone: string; email: string; heardFrom: string; travellingFrom?: string };
   set: (key: string, value: string) => void;
@@ -130,7 +134,13 @@ export function ContactFields({
           <input {...inputProps("name", errors.name)} autoComplete="name" value={values.name} onChange={(e) => set("name", e.target.value)} />
         </Field>
       </div>
-      <Field id="phone" label="Phone / WhatsApp" error={errors.phone} hint="Phone or email — at least one">
+      <Field
+        id="phone"
+        label="Phone / WhatsApp"
+        error={errors.phone}
+        required={!phoneOptional}
+        hint={phoneOptional ? "Phone or email — at least one" : "We send your quote on WhatsApp"}
+      >
         <input
           {...inputProps("phone", errors.phone)}
           type="tel"
@@ -141,7 +151,7 @@ export function ContactFields({
           onChange={(e) => set("phone", e.target.value)}
         />
       </Field>
-      <Field id="email" label="Email" error={errors.email}>
+      <Field id="email" label={phoneOptional ? "Email" : "Email (optional)"} error={errors.email}>
         <input
           {...inputProps("email", errors.email)}
           type="email"
@@ -239,8 +249,8 @@ export function SuccessPanel({ refId, children }: { refId: string; children?: Re
       </div>
       <h3 className="mt-4 text-xl font-semibold text-forest-900">Thank you — we&apos;ve received your request</h3>
       <p className="mt-2 text-slate-700">
-        Your enquiry ID is <strong className="font-mono">{refId}</strong>. Our team will review availability and reply during
-        working hours. This is an enquiry, not a confirmed booking.
+        Your enquiry ID is <strong className="font-mono">{refId}</strong>. We usually reply on WhatsApp or phone within {site.replyTime}{" "}
+        during working hours, with availability and your quote.
       </p>
       {children && <div className="mt-5 flex flex-wrap justify-center gap-3">{children}</div>}
     </div>

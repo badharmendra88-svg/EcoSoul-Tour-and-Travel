@@ -21,6 +21,8 @@ export const site = {
   hours: process.env.NEXT_PUBLIC_HOURS || "Mon–Sun, 9:00 am – 8:00 pm IST",
   gaId: process.env.NEXT_PUBLIC_GA_ID || "",
   locale: "en_IN",
+  /** Reply-time promise shown next to forms and in FAQs. Change it here if the team cannot keep it. */
+  replyTime: "30 minutes",
 };
 
 export function whatsappLink(number: string, message?: string) {
@@ -48,9 +50,11 @@ export const mainNav: NavItem[] = [
 
 // Extra links in the mobile menu (desktop has no room in the top bar)
 export const mobileExtraNav: NavItem[] = [
-  { label: "Taxi routes & fares", href: "/taxi/" },
+  { label: "Taxi routes", href: "/taxi/" },
   { label: "How to reach Uttarakhand", href: "/how-to-reach-uttarakhand/" },
   { label: "चार धाम यात्रा (हिंदी)", href: "/hi/char-dham-yatra/" },
+  { label: "केदारनाथ यात्रा (हिंदी)", href: "/hi/kedarnath-yatra/" },
+  { label: "टैक्सी बुकिंग (हिंदी)", href: "/hi/nainital-taxi/" },
 ];
 
 export const footerNav: { title: string; items: NavItem[] }[] = [
@@ -74,7 +78,7 @@ export const footerNav: { title: string; items: NavItem[] }[] = [
     title: "Transport",
     items: [
       { label: "Book a Taxi", href: "/uttarakhand/taxi-booking/" },
-      { label: "Taxi Routes & Fares", href: "/taxi/" },
+      { label: "Taxi Routes", href: "/taxi/" },
       { label: "Book a Driver", href: "/uttarakhand/driver-booking/" },
       { label: "Airport / Railway Transfers", href: "/uttarakhand/airport-transfers/" },
       { label: "Local Sightseeing Taxi", href: "/uttarakhand/local-sightseeing-taxi/" },

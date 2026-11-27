@@ -9,7 +9,7 @@ import { SitePhoto } from "@/components/SitePhoto";
 import { originPath, origins, placeById, routeBySlug, routePath, seasons } from "@/config/journeys";
 import { tripTypes } from "@/config/options";
 import { site } from "@/config/site";
-import { db } from "@/lib/db";
+import { TravellerReviews } from "@/components/TravellerReviews";
 import { getPublishedDestinations, getPublishedPackages } from "@/lib/queries";
 import { getPublicEstimatorRates } from "@/lib/rates";
 import { getSettings, type ServiceKey } from "@/lib/settings";
@@ -93,15 +93,14 @@ const homeFaqs = (hours: string) => [
   { q: "How accurate is the instant fare estimate?", a: "It is calculated from our current rate card for a typical route distance, including driver allowance, service charges and GST. Tolls, parking and state entry tax are extra. Your written quote confirms the exact fare." },
   { q: "How do I pay the advance?", a: "Once you accept the quote, open the quote link and pay the advance online by UPI, card or net banking (or by UPI transfer). We confirm hotels and the vehicle after the advance is received." },
   { q: "Do you handle Char Dham yatra registration?", a: "Yatra registration is completed by travellers on the official government portal. We guide you through it and help with route planning, stays and transport." },
-  { q: "How quickly will you reply?", a: `We aim to respond during working hours (${hours}). For urgent travel, WhatsApp or call us.` },
+  { q: "How quickly will you reply?", a: `Usually within ${site.replyTime} on WhatsApp or phone during working hours (${hours}). Enquiries sent at night are answered first thing the next morning.` },
 ];
 
 export default async function HomePage() {
-  const [featured, destinations, s, reviews, rates] = await Promise.all([
+  const [featured, destinations, s, rates] = await Promise.all([
     getPublishedPackages({ featured: true }),
     getPublishedDestinations(),
     getSettings(),
-    db.review.findMany({ where: { published: true }, orderBy: [{ sortOrder: "asc" }, { createdAt: "desc" }], take: 6 }),
     getPublicEstimatorRates(),
   ]);
   // The fare-estimate FAQ only makes sense while estimates are shown (Admin → Settings → Website prices)
@@ -123,11 +122,11 @@ export default async function HomePage() {
             <p className="tagline text-xl sm:text-2xl">Devbhoomi · Uttarakhand</p>
             <h1 className="mt-2 font-serif text-[2rem] leading-tight font-bold text-white sm:text-5xl">Explore Uttarakhand. Your Trip, Your Way.</h1>
             <p className="mt-4 max-w-xl text-base leading-relaxed text-forest-100 sm:mt-5 sm:text-lg">
-              Tour packages, taxis and hill drivers from Delhi NCR, airports and railway stations — with {s.showFares ? "instant fare estimates and " : ""}itemised
-              written quotes before you pay.
+              Lake towns, snow peaks and the Char Dham — with hotels, a car and an experienced hill driver from Delhi NCR, airports and stations.
+              Tell us your dates and get a {s.showFares ? "fare estimate now and a " : ""}day-wise plan with an itemised quote on WhatsApp.
             </p>
             <ul className="mt-5 flex flex-wrap gap-x-5 gap-y-2 text-sm text-forest-100 sm:mt-6" aria-label="Why book with us">
-              {["Pickup from Delhi NCR & airports", "Local partners in Kumaon & Garhwal", "Pay advance online"].map((t) => (
+              {["Pickup from Delhi NCR & airports", "Local team in Nainital", `Reply within ${site.replyTime}`].map((t) => (
                 <li key={t} className="flex items-center gap-2">
                   <span aria-hidden="true" className="text-accent">✓</span>
                   {t}
@@ -203,7 +202,7 @@ export default async function HomePage() {
           <div className="flex flex-wrap items-end justify-between gap-4">
             <div>
               <p className="text-xs font-semibold tracking-widest text-accent uppercase">Travelling from your city?</p>
-              <h2 className="mt-2 font-serif text-2xl font-bold sm:text-3xl">Trains, flights, drive times & fares from across India</h2>
+              <h2 className="mt-2 font-serif text-2xl font-bold sm:text-3xl">Trains, flights and drive times from across India</h2>
             </div>
             <Link href="/how-to-reach-uttarakhand/" className="py-2 font-semibold text-accent hover:underline">How to reach Uttarakhand →</Link>
           </div>
@@ -228,9 +227,9 @@ export default async function HomePage() {
             <div className="flex flex-wrap items-end justify-between gap-4">
               <div>
                 <p className="eyebrow">Popular tour packages</p>
-                <h2 className="h2 mt-2">Uttarakhand trips travellers ask about</h2>
+                <h2 className="h2 mt-2">Popular Uttarakhand tour packages</h2>
                 <p className="mt-2 max-w-2xl text-sm text-slate-600">
-                  Final prices depend on dates, hotel category, vehicle and group size — every quote is itemised and written.
+                  Ready-made plans you can change — choose your hotel category and car, and we send the final price for your dates.
                 </p>
               </div>
               <Link href="/uttarakhand/tour-packages/" className="inline-block py-2 font-semibold text-forest-700 hover:underline">
@@ -252,7 +251,7 @@ export default async function HomePage() {
           <div>
             <p className="eyebrow">Taxi & driver</p>
             <h2 className="h2 mt-2">Popular taxi routes</h2>
-            <p className="mt-2 text-slate-600">Distance, drive time and fares for every car — then book in a minute.</p>
+            <p className="mt-2 text-slate-600">{s.showFares ? "Distance, drive time and fares for every car — then book in a minute." : "Distance, drive time and the right car for your group — then book in a minute."}</p>
             <ul className="mt-6 grid gap-3 sm:grid-cols-2">
               {routes.map((r) => (
                 <li key={r.from + r.to}>
@@ -264,18 +263,18 @@ export default async function HomePage() {
                       <span className="block font-medium text-forest-900">{r.from} → {r.to}</span>
                       <span className="block text-xs text-slate-500">{r.km} km</span>
                     </span>
-                    <span className="shrink-0 text-sm font-semibold text-forest-700">Fares →</span>
+                    <span className="shrink-0 text-sm font-semibold text-forest-700">{s.showFares ? "Fares" : "Book"} →</span>
                   </Link>
                 </li>
               ))}
             </ul>
-            <Link href="/taxi/" className="mt-3 inline-block py-2 font-semibold text-forest-700 hover:underline">All taxi routes & fares →</Link>
+            <Link href="/taxi/" className="mt-3 inline-block py-2 font-semibold text-forest-700 hover:underline">{s.showFares ? "All taxi routes & fares" : "All taxi routes"} →</Link>
             <h3 className="mt-8 text-lg font-semibold text-forest-900">How taxi and driver bookings are confirmed</h3>
             <BookingSteps className="mt-4" />
           </div>
           <aside className="space-y-5">
             <div className="rounded-2xl bg-forest-800 p-6 text-white">
-              <h3 className="text-lg font-semibold">Clear fares, no surprises</h3>
+              <h3 className="text-lg font-semibold">{s.showFares ? "Clear fares, no surprises" : "Clear quotes, no surprises"}</h3>
               <dl className="mt-4 space-y-3 text-sm">
                 {fareFacts.map(([k, v]) => (
                   <div key={k}>
@@ -284,7 +283,7 @@ export default async function HomePage() {
                   </div>
                 ))}
               </dl>
-              <Link href="/uttarakhand/taxi-booking/#fare" className="btn-primary mt-6 w-full">Check Taxi Fare</Link>
+              <Link href="/uttarakhand/taxi-booking/#fare" className="btn-primary mt-6 w-full">{s.showFares ? "Check Taxi Fare" : "Get a Taxi Quote"}</Link>
             </div>
             <div className="card p-6">
               <h3 className="font-semibold text-forest-900">Driving your own car?</h3>
@@ -373,34 +372,7 @@ export default async function HomePage() {
       </section>
 
       {/* 9 — Real reviews (only when published with permission), FAQs & final CTA */}
-      {reviews.length > 0 && (
-        <section className="container-page py-12 sm:py-16">
-          <p className="eyebrow">Traveller reviews</p>
-          <h2 className="h2 mt-2">What our travellers say</h2>
-          <div className="snap-row mt-8 md:grid md:grid-cols-2 md:gap-5 lg:grid-cols-3">
-            {reviews.map((r) => (
-              <figure key={r.id} className="card flex flex-col p-6">
-                {r.rating && (
-                  // SVG stars, not "★" text: gold text on white fails the 4.5:1 text-contrast check
-                  <p className="flex gap-0.5" role="img" aria-label={`${r.rating} out of 5`}>
-                    {[1, 2, 3, 4, 5].map((n) => (
-                      <svg key={n} viewBox="0 0 20 20" className={`h-4 w-4 ${n <= r.rating! ? "text-amber-500" : "text-slate-300"}`} fill="currentColor" aria-hidden="true">
-                        <path d="M10 1.5l2.6 5.4 5.9.8-4.3 4.1 1 5.9L10 14.9l-5.2 2.8 1-5.9L1.5 7.7l5.9-.8z" />
-                      </svg>
-                    ))}
-                  </p>
-                )}
-                <blockquote className="mt-3 flex-1 leading-relaxed text-slate-700">“{r.text}”</blockquote>
-                <figcaption className="mt-4 text-sm">
-                  <span className="font-semibold text-forest-900">{r.name}</span>
-                  {r.place && <span className="text-slate-500">, {r.place}</span>}
-                  {r.tripLabel && <span className="block text-xs text-slate-500">{r.tripLabel}</span>}
-                </figcaption>
-              </figure>
-            ))}
-          </div>
-        </section>
-      )}
+      <TravellerReviews className="container-page py-12 sm:py-16" />
 
       <section className="container-page grid gap-10 py-12 sm:py-16 lg:grid-cols-[1.4fr_1fr]">
         <div>

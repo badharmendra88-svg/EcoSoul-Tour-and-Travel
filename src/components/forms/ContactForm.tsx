@@ -25,7 +25,7 @@ export function ContactForm() {
   return (
     <form onSubmit={onSubmit} noValidate className="@container relative space-y-5">
       <Honeypot value={v.website} onChange={(x) => set("website", x)} />
-      <ContactFields values={v} set={set} errors={errors} />
+      <ContactFields values={v} set={set} errors={errors} phoneOptional />
       <Field id="message" label="Message" error={errors.message} required>
         <textarea {...inputProps("message", errors.message)} rows={5} maxLength={2000} value={v.message} onChange={(e) => set("message", e.target.value)} />
       </Field>

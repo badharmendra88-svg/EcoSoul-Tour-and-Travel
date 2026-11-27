@@ -1,17 +1,21 @@
 import Link from "next/link";
 import { TripLanding } from "@/components/TripLanding";
 import { routeBetween } from "@/config/journeys";
-import { officialLinks } from "@/config/site";
+import { officialLinks, site } from "@/config/site";
 import { pageMeta } from "@/lib/seo";
 
 const PATH = "/uttarakhand/kedarnath-yatra-package/";
 
-export const metadata = pageMeta({
+const meta = pageMeta({
   title: "Kedarnath Yatra Package from Haridwar & Delhi",
   description:
     "Kedarnath yatra package with hotels at Guptkashi or Sitapur, an SUV with hill driver, trek or helicopter guidance and registration help. 4–5 days from Haridwar.",
   path: PATH,
 });
+export const metadata = {
+  ...meta,
+  alternates: { ...meta.alternates, languages: { "en-IN": `${site.url}${PATH}`, "hi-IN": `${site.url}/hi/kedarnath-yatra/` } },
+};
 
 // Content review date — update whenever this page is re-checked against official sources
 const LAST_REVIEWED = "22 November 2026";
@@ -94,6 +98,7 @@ export default function KedarnathYatraPackagePage() {
         { q: "When is the Kedarnath temple open?", a: "The temple usually opens in late April or May and closes around October or early November. Exact dates are announced each year by the temple committee." },
         { q: "Is the Kedarnath yatra suitable for elderly travellers?", a: "Many elderly pilgrims complete it with a pony, palki or helicopter, an extra rest day and medical clearance. Discuss any health conditions with a doctor before booking." },
       ]}
+      packages={{ title: "Ready-made yatra packages", slugs: ["kedarnath-yatra-5-days", "do-dham-kedarnath-badrinath-6-days", "char-dham-yatra-10-days"] }}
       sources={
         <>
           Last reviewed: {LAST_REVIEWED}. Official sources:{" "}

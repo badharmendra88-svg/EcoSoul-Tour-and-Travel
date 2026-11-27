@@ -22,6 +22,12 @@ import { pageMeta } from "@/lib/seo";
 // from the live rate card, destination guide), not a shared template text.
 
 export const dynamicParams = false;
+
+// Routes with a Hindi landing page (hreflang pair)
+const hindiVersions: Record<string, string> = {
+  "delhi-to-nainital": "/hi/nainital-taxi/",
+  "delhi-to-haridwar": "/hi/haridwar-rishikesh-taxi/",
+};
 export const revalidate = 3600;
 
 export function generateStaticParams() {
@@ -49,7 +55,7 @@ export async function generateMetadata({ params }: { params: Promise<{ route: st
   const dest = destinations.find((d) => d.slug === destinationSlugFor(r.to.id));
   const from = shortName(r.from);
   const to = shortName(r.to);
-  return pageMeta({
+  const meta = pageMeta({
     // Admin → Settings → Website prices decides whether a ₹ figure may appear in search results
     title: rates.showFares ? `${from} to ${to} Taxi: ${rupees(cheapest.oneWay.low)}+ Fare` : `${from} to ${to} Taxi Service`,
     description: rates.showFares
@@ -59,6 +65,10 @@ export async function generateMetadata({ params }: { params: Promise<{ route: st
     image: dest?.imageUrl ?? heroForPlace(r.to.id).url,
     imageAlt: dest?.imageUrl ? dest.imageAlt : heroForPlace(r.to.id).alt,
   });
+  const hindi = hindiVersions[r.slug];
+  return hindi
+    ? { ...meta, alternates: { ...meta.alternates, languages: { "en-IN": `${site.url}${routePath(r)}`, "hi-IN": `${site.url}${hindi}` } } }
+    : meta;
 }
 
 export default async function RoutePage({ params }: { params: Promise<{ route: string }> }) {

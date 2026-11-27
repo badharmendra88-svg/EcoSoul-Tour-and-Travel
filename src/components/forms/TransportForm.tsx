@@ -107,7 +107,7 @@ export function TransportForm({
     if (!(travellers >= 1)) e.adults = "At least 1 traveller";
     if (asksDays && v.tripDays && !(Number(v.tripDays) >= 1)) e.tripDays = "At least 1 day";
     if (v.name.trim().length < 2) e.name = "Please enter your name";
-    if (!v.phone.trim() && !v.email.trim()) e.phone = "Please share a phone number or email so we can reply";
+    if (!v.phone.trim()) e.phone = "Please enter your phone / WhatsApp number";
     if (!v.consent) e.consent = "Please accept the privacy notice and booking terms";
     setErrors(e);
     return Object.keys(e).length === 0;
