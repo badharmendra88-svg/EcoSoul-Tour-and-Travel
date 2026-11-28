@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { RidgeTop } from "./Depth";
 import { originPath, origins } from "@/config/journeys";
 import { footerNav, officialLinks, site, telLink } from "@/config/site";
 import { getSettings } from "@/lib/settings";
@@ -13,7 +14,8 @@ export async function Footer() {
   const gbp = s.social.find((x) => x.key === "googleBusiness")?.url;
   const reviewUrl = gbp && /^https:\/\/g\.page\/r\/[\w-]+\/?(review)?$/.test(gbp) ? gbp.replace(/\/?(review)?$/, "/review") : null;
   return (
-    <footer className="mt-20 bg-forest-900 pb-24 text-forest-100 sm:pb-0">
+    <footer className="bg-topo relative mt-24 bg-forest-900 pb-24 text-forest-100 sm:pb-0">
+      <RidgeTop fill="var(--color-forest-900)" />
       <div className="container-page grid grid-cols-2 gap-x-6 gap-y-10 py-14 md:grid-cols-[1.3fr_repeat(4,1fr)]">
         <div className="col-span-2 space-y-4 md:col-span-1">
           <Logo light lazy />

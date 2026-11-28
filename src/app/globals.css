@@ -51,10 +51,12 @@ body {
     @apply mx-auto w-full max-w-screen-2xl px-4 sm:px-6 lg:px-10 xl:px-12;
   }
   .btn-primary {
-    @apply inline-flex items-center justify-center gap-2 rounded-full px-5 py-2.5 text-sm font-semibold transition-colors disabled:cursor-not-allowed disabled:opacity-60 bg-accent text-forest-900 hover:bg-accent-strong;
+    @apply inline-flex items-center justify-center gap-2 rounded-full px-5 py-2.5 text-sm font-semibold transition-[background-color,transform,box-shadow] duration-150 hover:-translate-y-px active:translate-y-[2px] disabled:cursor-not-allowed disabled:opacity-60 disabled:translate-y-0 bg-accent text-forest-900 hover:bg-accent-strong;
+    box-shadow: 0 3px 0 #c87406, 0 8px 18px -8px rgb(240 140 10 / 0.7), inset 0 1px 0 rgb(255 255 255 / 0.45);
   }
   .btn-secondary {
-    @apply inline-flex items-center justify-center gap-2 rounded-full px-5 py-2.5 text-sm font-semibold transition-colors disabled:cursor-not-allowed disabled:opacity-60 bg-forest-700 text-white hover:bg-forest-800;
+    @apply inline-flex items-center justify-center gap-2 rounded-full px-5 py-2.5 text-sm font-semibold transition-[background-color,transform,box-shadow] duration-150 hover:-translate-y-px active:translate-y-[2px] disabled:cursor-not-allowed disabled:opacity-60 disabled:translate-y-0 bg-forest-700 text-white hover:bg-forest-800;
+    box-shadow: 0 3px 0 var(--color-forest-900), 0 8px 18px -8px rgb(3 41 26 / 0.6), inset 0 1px 0 rgb(255 255 255 / 0.18);
   }
   .btn-outline {
     @apply inline-flex items-center justify-center gap-2 rounded-full px-5 py-2.5 text-sm font-semibold transition-colors disabled:cursor-not-allowed disabled:opacity-60 border border-forest-700 text-forest-800 hover:bg-forest-50;
@@ -62,8 +64,10 @@ body {
   .btn-ghost-light {
     @apply inline-flex items-center justify-center gap-2 rounded-full px-5 py-2.5 text-sm font-semibold transition-colors disabled:cursor-not-allowed disabled:opacity-60 border border-white/60 text-white hover:bg-white/10;
   }
+  /* Cards sit "on" the page: hairline border + soft layered shadow */
   .card {
-    @apply rounded-2xl border border-slate-200 bg-white shadow-sm;
+    @apply rounded-2xl border border-slate-200/80 bg-white;
+    box-shadow: 0 1px 2px rgb(3 41 26 / 0.05), 0 10px 28px -16px rgb(3 41 26 / 0.22);
   }
   .eyebrow {
     @apply text-xs font-semibold tracking-widest text-leaf-700 uppercase;
@@ -231,5 +235,238 @@ select.admin-input:disabled {
   select.input option::checkmark,
   select.admin-input option::checkmark {
     color: var(--color-forest-700);
+  }
+}
+
+/* ================= 2D / 3D depth layer ================= */
+
+/* 3D tilt cards: [data-tilt] + .tilt. TiltEffects.tsx feeds --rx/--ry/--mx/--my from the mouse. */
+.tilt {
+  transform: perspective(1000px) rotateX(var(--rx, 0deg)) rotateY(var(--ry, 0deg)) translateY(var(--lift, 0px));
+  transition: transform 0.45s cubic-bezier(0.2, 0.8, 0.2, 1), box-shadow 0.45s ease;
+  will-change: transform;
+}
+.tilt[data-tilting] {
+  transition: transform 0.08s linear, box-shadow 0.3s ease;
+}
+.tilt::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  z-index: 2;
+  pointer-events: none;
+  border-radius: inherit;
+  background: radial-gradient(circle at var(--mx, 50%) var(--my, 0%), rgb(255 255 255 / 0.35), transparent 55%);
+  opacity: 0;
+  transition: opacity 0.3s ease;
+}
+@media (hover: hover) {
+  .tilt:hover {
+    --lift: -6px;
+    box-shadow: 0 2px 4px rgb(3 41 26 / 0.06), 0 28px 48px -22px rgb(3 41 26 / 0.45);
+  }
+  .tilt:hover::before {
+    opacity: 1;
+  }
+}
+
+/* 3D icon tile: gradient face, glossy top edge, drop shadow */
+.icon-3d {
+  position: relative;
+  display: inline-flex;
+  height: 2.75rem;
+  width: 2.75rem;
+  flex-shrink: 0;
+  align-items: center;
+  justify-content: center;
+  border-radius: 0.9rem;
+  color: #fff;
+  background: linear-gradient(145deg, var(--color-forest-400), var(--color-forest-700));
+  box-shadow:
+    0 3px 0 var(--color-forest-900),
+    0 10px 18px -8px rgb(3 41 26 / 0.55),
+    inset 0 1px 0 rgb(255 255 255 / 0.35);
+}
+.icon-3d::after {
+  content: "";
+  position: absolute;
+  inset: 2px 2px 50% 2px;
+  border-radius: 0.75rem 0.75rem 0.4rem 0.4rem;
+  background: linear-gradient(to bottom, rgb(255 255 255 / 0.28), transparent);
+  pointer-events: none;
+}
+.icon-3d-accent {
+  color: var(--color-forest-900);
+  background: linear-gradient(145deg, #ffc35e, var(--color-accent-strong));
+  box-shadow:
+    0 3px 0 #b86a05,
+    0 10px 18px -8px rgb(240 140 10 / 0.6),
+    inset 0 1px 0 rgb(255 255 255 / 0.5);
+}
+
+/* Numbered step "coin" */
+.coin-3d {
+  display: inline-flex;
+  height: 2.25rem;
+  width: 2.25rem;
+  flex-shrink: 0;
+  align-items: center;
+  justify-content: center;
+  border-radius: 9999px;
+  font-weight: 800;
+  font-size: 0.875rem;
+  color: var(--color-forest-900);
+  background: radial-gradient(circle at 35% 30%, #ffd88f, var(--color-accent) 55%, var(--color-accent-strong));
+  box-shadow: 0 3px 0 #b86a05, 0 8px 14px -6px rgb(240 140 10 / 0.6), inset 0 -2px 3px rgb(0 0 0 / 0.08);
+}
+
+/* Glass panel (on photos / dark backgrounds) */
+.glass {
+  background: rgb(255 255 255 / 0.08);
+  -webkit-backdrop-filter: blur(10px) saturate(1.2);
+  backdrop-filter: blur(10px) saturate(1.2);
+  box-shadow: inset 0 1px 0 rgb(255 255 255 / 0.15);
+}
+
+/* Faint 2D contour-map lines for dark sections */
+.bg-topo {
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='320' height='320' viewBox='0 0 320 320' fill='none' stroke='%23ffffff' stroke-opacity='0.06' stroke-width='1.2'%3E%3Cpath d='M-20 60c60-40 120 30 180-10s120-30 180 10'/%3E%3Cpath d='M-20 100c60-40 120 30 180-10s120-30 180 10'/%3E%3Cpath d='M-20 140c60-40 120 30 180-10s120-30 180 10'/%3E%3Cpath d='M-20 220c70 30 120-40 190 0s110 30 170-10'/%3E%3Cpath d='M-20 260c70 30 120-40 190 0s110 30 170-10'/%3E%3Cpath d='M-20 300c70 30 120-40 190 0s110 30 170-10'/%3E%3Ccircle cx='250' cy='180' r='18'/%3E%3Ccircle cx='250' cy='180' r='34'/%3E%3C/svg%3E");
+}
+
+/* Hero ridges: each layer drifts at its own speed on scroll (parallax). Static where unsupported. */
+@keyframes ridge-drift {
+  to {
+    transform: translateY(var(--drift, 0px));
+  }
+}
+@keyframes hero-zoom {
+  from {
+    transform: scale(1.08);
+  }
+  to {
+    transform: scale(1);
+  }
+}
+@keyframes float-y {
+  0%, 100% {
+    transform: translate3d(0, 0, 0);
+  }
+  50% {
+    transform: translate3d(0, -10px, 0);
+  }
+}
+@keyframes drift-x {
+  from {
+    transform: translateX(-6%);
+  }
+  to {
+    transform: translateX(6%);
+  }
+}
+@media (prefers-reduced-motion: no-preference) {
+  .hero-zoom img {
+    animation: hero-zoom 18s ease-out both;
+  }
+  .float-slow {
+    animation: float-y 7s ease-in-out infinite;
+  }
+  @supports (animation-timeline: scroll()) {
+    .ridge-back,
+    .ridge-mid {
+      animation: ridge-drift linear both;
+      animation-timeline: scroll(root);
+      animation-range: 0 700px;
+    }
+    .ridge-back {
+      --drift: 46px;
+    }
+    .ridge-mid {
+      --drift: 22px;
+    }
+  }
+}
+
+/* ---- Road map (RoadMap.tsx): tilted 3D "table map" ---- */
+.map-stage {
+  perspective: 1600px;
+}
+.map-plane {
+  transform: rotateX(22deg) rotateZ(-4deg);
+  transform-origin: 50% 60%;
+  transition: transform 0.8s cubic-bezier(0.2, 0.8, 0.2, 1);
+}
+@media (hover: hover) {
+  .map-stage:hover .map-plane {
+    transform: rotateX(8deg) rotateZ(-1deg);
+  }
+}
+.map-road {
+  stroke-dasharray: 10 8;
+}
+.map-label {
+  paint-order: stroke;
+  stroke: #03291a;
+  stroke-width: 4px;
+  stroke-linejoin: round;
+}
+.map-pin circle,
+.map-pin text {
+  transition: fill 0.2s ease;
+}
+.map-pin:hover text,
+.map-pin:focus-visible text {
+  fill: var(--color-accent);
+}
+@keyframes road-flow {
+  to {
+    stroke-dashoffset: -36;
+  }
+}
+@keyframes pin-pulse {
+  from {
+    r: 9;
+    opacity: 0.7;
+  }
+  to {
+    r: 26;
+    opacity: 0;
+  }
+}
+@keyframes reveal-up {
+  from {
+    opacity: 0;
+    transform: translateY(32px) scale(0.98);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+@media (prefers-reduced-motion: no-preference) {
+  .map-road {
+    animation: road-flow 1.2s linear infinite;
+  }
+  .map-pulse {
+    animation: pin-pulse 2.2s ease-out infinite;
+  }
+  /* Sections rise into view while scrolling (CSS view timeline; shown normally where unsupported) */
+  @supports (animation-timeline: view()) {
+    .reveal {
+      animation: reveal-up linear both;
+      animation-timeline: view();
+      animation-range: entry 0% entry 45%;
+    }
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .map-car,
+  .map-pulse {
+    display: none;
+  }
+}
+/* Phones: a flatter tilt so labels stay readable */
+@media (max-width: 640px) {
+  .map-plane {
+    transform: rotateX(12deg);
   }
 }

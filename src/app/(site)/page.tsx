@@ -5,6 +5,8 @@ import { PhoneButton, WhatsAppButton } from "@/components/ContactButtons";
 import { FaqList } from "@/components/FaqList";
 import { HeroBooking } from "@/components/HeroBooking";
 import { SceneArt } from "@/components/SceneArt";
+import { IconTile, MountainLayers, RidgeTop } from "@/components/Depth";
+import { RoadMap } from "@/components/RoadMap";
 import { SitePhoto } from "@/components/SitePhoto";
 import { originPath, origins, placeById, routeBySlug, routePath, seasons } from "@/config/journeys";
 import { tripTypes } from "@/config/options";
@@ -74,10 +76,10 @@ const bookingStages = [
 ];
 
 const reasons = [
-  { title: "Uttarakhand specialists", text: "We plan only Uttarakhand, so routes, timings and seasonal advice stay specific — wherever in India you start." },
-  { title: "Written, itemised quotes", text: "Every quote lists what is included, what is not, and how the price is calculated." },
-  { title: "Local partners", text: "Hotels, homestays and taxi owners we work with directly — confirmed before you pay." },
-  { title: "Honest advice", text: "We tell you about road, weather and crowd conditions, even when that means changing plans." },
+  { title: "Uttarakhand specialists", icon: "m3 20 6-10 4 6 3-4 5 8H3Z", text: "We plan only Uttarakhand, so routes, timings and seasonal advice stay specific — wherever in India you start." },
+  { title: "Written, itemised quotes", icon: "M9 12h6M9 16h6M7 3h7l5 5v13H7a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2Z", text: "Every quote lists what is included, what is not, and how the price is calculated." },
+  { title: "Local partners", icon: "M16 19v-1a4 4 0 0 0-8 0v1M12 11a3 3 0 1 0 0-6 3 3 0 0 0 0 6ZM20 19v-1a3 3 0 0 0-3-3M4 19v-1a3 3 0 0 1 3-3", text: "Hotels, homestays and taxi owners we work with directly — confirmed before you pay." },
+  { title: "Honest advice", icon: "M12 3 4 6v6c0 5 3.5 8 8 9 4.5-1 8-4 8-9V6l-8-3Zm-3 9 2 2 4-4", text: "We tell you about road, weather and crowd conditions, even when that means changing plans." },
 ];
 
 const trust = [
@@ -112,12 +114,14 @@ export default async function HomePage() {
       {/* 1 — Hero + booking widget */}
       <section className="relative overflow-hidden bg-forest-900">
         {s.heroImageUrl ? (
-          <SitePhoto url={s.heroImageUrl} alt={s.heroImageAlt} sizes="100vw" priority className="absolute inset-0" />
+          <SitePhoto url={s.heroImageUrl} alt={s.heroImageAlt} sizes="100vw" priority className="hero-zoom absolute inset-0" />
         ) : (
           <SceneArt scene="snow" className="absolute inset-0 h-full w-full opacity-40" />
         )}
         <div className="absolute inset-0 bg-gradient-to-b from-forest-900/90 via-forest-900/75 to-forest-900/60 lg:bg-gradient-to-r lg:from-forest-900/95 lg:via-forest-900/75 lg:to-forest-900/30" />
-        <div className="container-page relative grid gap-8 py-10 sm:py-16 lg:grid-cols-[1.1fr_1fr] lg:items-center lg:gap-12 lg:py-20">
+        {/* Decorative depth: soft sun glow behind the booking card */}
+        <div aria-hidden="true" className="pointer-events-none absolute -top-24 right-[8%] h-72 w-72 rounded-full bg-accent/25 blur-3xl" />
+        <div className="container-page relative grid gap-8 pt-10 pb-24 sm:pt-16 sm:pb-36 lg:grid-cols-[1.1fr_1fr] lg:items-center lg:gap-12 lg:pt-20 lg:pb-44">
           <div>
             <p className="tagline text-xl sm:text-2xl">Devbhoomi · Uttarakhand</p>
             <h1 className="mt-2 font-serif text-[2rem] leading-tight font-bold text-white sm:text-5xl">Explore Uttarakhand. Your Trip, Your Way.</h1>
@@ -138,8 +142,16 @@ export default async function HomePage() {
               <Link href="/how-to-reach-uttarakhand/" className="btn-ghost-light px-6 py-3 text-base">How to reach</Link>
             </div>
           </div>
-          <HeroBooking rates={rates} destinations={destinations.map((d) => d.name)} tripTypes={Object.values(tripTypes)} />
+          {/* Booking card with stacked "cards" behind it for a 3D layered look */}
+          <div className="relative lg:[perspective:1400px]">
+            <div aria-hidden="true" className="absolute inset-x-6 top-3 -bottom-3 rounded-2xl bg-white/15 lg:inset-x-8 lg:-bottom-5" />
+            <div aria-hidden="true" className="absolute inset-x-12 top-6 -bottom-6 rounded-2xl bg-white/10 lg:inset-x-16 lg:-bottom-10" />
+            <div className="relative transition-transform duration-700 lg:[transform:rotateY(-5deg)_rotateX(2deg)] lg:hover:[transform:none]">
+              <HeroBooking rates={rates} destinations={destinations.map((d) => d.name)} tripTypes={Object.values(tripTypes)} />
+            </div>
+          </div>
         </div>
+        <MountainLayers fill="#ffffff" />
       </section>
 
       {/* Trust strip */}
@@ -148,11 +160,7 @@ export default async function HomePage() {
           {/* Without public fares (Admin → Settings → Website prices) the third promise is about quotes instead */}
           {(s.showFares ? trust : trust.map((t) => (t.title === "Instant fare estimate" ? { ...t, title: "Quick written quote", text: "Itemised fare for your car and dates" } : t))).map((t) => (
             <li key={t.title} className="flex items-start gap-3">
-              <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-forest-50 text-forest-700">
-                <svg viewBox="0 0 24 24" className="h-5 w-5" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
-                  <path d={t.icon} />
-                </svg>
-              </span>
+              <IconTile d={t.icon} />
               <span>
                 <span className="block text-sm font-semibold text-forest-900">{t.title}</span>
                 <span className="block text-xs text-slate-500">{t.text}</span>
@@ -173,9 +181,9 @@ export default async function HomePage() {
       <section className="container-page py-12 sm:py-16">
         <p className="eyebrow">Choose your travel service</p>
         <h2 className="h2 mt-2">How can we help you travel?</h2>
-        <div className="mt-6 grid grid-cols-2 gap-3 sm:mt-8 sm:gap-5 lg:grid-cols-3 xl:grid-cols-5">
+        <div className="reveal mt-6 grid grid-cols-2 gap-3 sm:mt-8 sm:gap-5 lg:grid-cols-3 xl:grid-cols-5">
           {services.map((sv) => (
-            <article key={sv.title} className="card group relative flex flex-col overflow-hidden">
+            <article key={sv.title} data-tilt="7" className="card tilt group relative flex flex-col overflow-hidden">
               <SitePhoto
                 url={s.serviceImages[sv.photo].url}
                 alt={s.serviceImages[sv.photo].alt}
@@ -197,7 +205,8 @@ export default async function HomePage() {
       </section>
 
       {/* 3 — Travelling from your city */}
-      <section className="bg-forest-800 py-12 text-white sm:py-14">
+      <section className="bg-topo relative bg-forest-800 py-12 text-white sm:py-14">
+        <RidgeTop fill="var(--color-forest-800)" />
         <div className="container-page">
           <div className="flex flex-wrap items-end justify-between gap-4">
             <div>
@@ -206,10 +215,10 @@ export default async function HomePage() {
             </div>
             <Link href="/how-to-reach-uttarakhand/" className="py-2 font-semibold text-accent hover:underline">How to reach Uttarakhand →</Link>
           </div>
-          <ul className="snap-row mt-6 md:grid md:grid-cols-5 md:gap-3">
+          <ul className="reveal snap-row mt-6 md:grid md:grid-cols-5 md:gap-3">
             {origins.map((o) => (
               <li key={o.slug} className="!w-[44%] sm:!w-[30%] md:!w-auto">
-                <Link href={originPath(o)} className="flex h-full flex-col rounded-2xl bg-white/10 p-4 ring-1 ring-white/15 transition-colors hover:bg-white/15">
+                <Link href={originPath(o)} data-tilt="10" className="glass tilt relative flex h-full flex-col rounded-2xl p-4 ring-1 ring-white/15 transition-colors hover:bg-white/15">
                   <span className="font-semibold">{o.city}</span>
                   <span className="mt-0.5 line-clamp-1 text-xs text-forest-100">{o.state}</span>
                   <span className="mt-3 text-sm font-semibold text-accent">Plan trip →</span>
@@ -222,7 +231,8 @@ export default async function HomePage() {
 
       {/* 4 — Popular tour packages */}
       {featured.length > 0 && (
-        <section className="bg-sand py-12 sm:py-16">
+        <section className="relative bg-sand py-12 sm:py-16">
+          <RidgeTop fill="var(--color-sand)" />
           <div className="container-page">
             <div className="flex flex-wrap items-end justify-between gap-4">
               <div>
@@ -236,7 +246,7 @@ export default async function HomePage() {
                 View all packages →
               </Link>
             </div>
-            <div className="snap-row mt-8 md:grid md:grid-cols-2 md:gap-6 lg:grid-cols-3">
+            <div className="reveal snap-row mt-8 md:grid md:grid-cols-2 md:gap-6 lg:grid-cols-3">
               {featured.slice(0, 6).map((p) => (
                 <PackageCard key={p.id} pkg={p} />
               ))}
@@ -244,6 +254,9 @@ export default async function HomePage() {
           </div>
         </section>
       )}
+
+      {/* Animated road map of the main journeys */}
+      <RoadMap />
 
       {/* 5 — Popular taxi routes & driver booking */}
       <section className="container-page py-12 sm:py-16">
@@ -273,7 +286,7 @@ export default async function HomePage() {
             <BookingSteps className="mt-4" />
           </div>
           <aside className="space-y-5">
-            <div className="rounded-2xl bg-forest-800 p-6 text-white">
+            <div className="bg-topo rounded-2xl bg-forest-800 p-6 text-white shadow-[0_24px_48px_-24px_rgb(3_41_26/0.6)]">
               <h3 className="text-lg font-semibold">{s.showFares ? "Clear fares, no surprises" : "Clear quotes, no surprises"}</h3>
               <dl className="mt-4 space-y-3 text-sm">
                 {fareFacts.map(([k, v]) => (
@@ -297,14 +310,15 @@ export default async function HomePage() {
       </section>
 
       {/* 6 — Season planner */}
-      <section className="bg-sand py-12 sm:py-16">
+      <section className="relative bg-sand py-12 sm:py-16">
+        <RidgeTop fill="var(--color-sand)" />
         <div className="container-page">
           <p className="eyebrow">When to go</p>
           <h2 className="h2 mt-2">Uttarakhand through the year</h2>
           <p className="mt-2 max-w-2xl text-sm text-slate-600">Every season has its places. Peak weeks — summer holidays, Puja, Diwali and New Year — book out early.</p>
-          <ol className="snap-row mt-8 md:grid md:grid-cols-5 md:gap-4">
+          <ol className="reveal snap-row mt-8 md:grid md:grid-cols-5 md:gap-4">
             {seasons.map((se) => (
-              <li key={se.months} className="flex flex-col rounded-2xl bg-white p-5 ring-1 ring-slate-200">
+              <li key={se.months} data-tilt="6" className="card tilt relative flex flex-col p-5">
                 <p className="text-xs font-bold tracking-wide text-leaf-600 uppercase">{se.months}</p>
                 <h3 className="mt-1 font-semibold text-forest-900">{se.title}</h3>
                 <p className="mt-2 flex-1 text-sm leading-relaxed text-slate-600">{se.text}</p>
@@ -323,19 +337,20 @@ export default async function HomePage() {
       <section className="container-page py-12 sm:py-16">
         <p className="eyebrow">Why travel with EcoSoul</p>
         <h2 className="h2 mt-2">Planned locally, explained clearly</h2>
-        <div className="mt-8 grid gap-4 sm:grid-cols-2 sm:gap-6 lg:grid-cols-4">
-          {reasons.map((r) => (
-            <div key={r.title} className="card p-5 sm:p-6">
-              <h3 className="font-semibold text-forest-900">{r.title}</h3>
+        <div className="reveal mt-8 grid gap-4 sm:grid-cols-2 sm:gap-6 lg:grid-cols-4">
+          {reasons.map((r, i) => (
+            <div key={r.title} data-tilt="6" className="card tilt relative p-5 sm:p-6">
+              <IconTile d={r.icon} className={i % 2 ? "icon-3d-accent" : ""} />
+              <h3 className="mt-4 font-semibold text-forest-900">{r.title}</h3>
               <p className="mt-2 text-sm leading-relaxed text-slate-600">{r.text}</p>
             </div>
           ))}
         </div>
         <h3 className="mt-12 text-xl font-semibold text-forest-900">How booking works</h3>
-        <ol className="mt-5 grid gap-3 sm:grid-cols-2 sm:gap-4 lg:grid-cols-5">
+        <ol className="reveal relative mt-5 grid gap-3 sm:grid-cols-2 sm:gap-4 lg:grid-cols-5">
           {bookingStages.map((st, i) => (
-            <li key={st.title} className="flex gap-4 rounded-2xl border border-forest-100 bg-white p-4 sm:block sm:p-5">
-              <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-forest-700 text-sm font-bold text-white">{i + 1}</span>
+            <li key={st.title} className="card relative flex gap-4 p-4 sm:block sm:p-5">
+              <span className="coin-3d">{i + 1}</span>
               <div>
                 <h4 className="font-semibold text-forest-900 sm:mt-3">{st.title}</h4>
                 <p className="mt-1 text-sm leading-relaxed text-slate-600">{st.text}</p>
@@ -351,7 +366,8 @@ export default async function HomePage() {
       </section>
 
       {/* 8 — Destinations & travel guides */}
-      <section className="bg-sand py-12 sm:py-16">
+      <section className="relative bg-sand py-12 sm:py-16">
+        <RidgeTop fill="var(--color-sand)" />
         <div className="container-page">
           <div className="flex flex-wrap items-end justify-between gap-4">
             <div>
@@ -363,7 +379,7 @@ export default async function HomePage() {
               <Link href="/destinations/" className="inline-block py-2 font-semibold text-forest-700 hover:underline">All destinations →</Link>
             </div>
           </div>
-          <div className="snap-row mt-8 md:grid md:grid-cols-4 md:gap-4">
+          <div className="reveal snap-row mt-8 md:grid md:grid-cols-4 md:gap-4">
             {destinations.slice(0, 8).map((d) => (
               <DestinationCard key={d.id} d={d} />
             ))}
@@ -383,7 +399,7 @@ export default async function HomePage() {
           </div>
           <Link href="/faqs/" className="mt-2 inline-block py-2 font-semibold text-forest-700 hover:underline">More FAQs →</Link>
         </div>
-        <aside className="h-fit rounded-2xl bg-forest-800 p-6 text-white">
+        <aside className="bg-topo h-fit rounded-2xl bg-forest-800 p-6 text-white shadow-[0_24px_48px_-24px_rgb(3_41_26/0.6)]">
           <h2 className="text-xl font-semibold">Ready to plan your trip?</h2>
           <p className="mt-2 text-sm text-forest-100">Tell us your dates and group — we reply with a written quote. {s.hours}.</p>
           <div className="mt-5 grid gap-3">

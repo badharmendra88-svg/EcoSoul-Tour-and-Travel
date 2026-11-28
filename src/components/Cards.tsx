@@ -27,7 +27,7 @@ export function PackageCard({ pkg, layout = "row" }: { pkg: PackageWithDest; lay
   const facts = parseList(pkg.inclusions).slice(0, 3);
   const places = pkg.destinations?.map((d) => d.name).join(" · ");
   return (
-    <article className="card group relative flex flex-col overflow-hidden">
+    <article data-tilt="5" className="card tilt group relative flex flex-col overflow-hidden">
       <SitePhoto
         url={pkg.imageUrl}
         alt={pkg.imageAlt}
@@ -36,7 +36,7 @@ export function PackageCard({ pkg, layout = "row" }: { pkg: PackageWithDest; lay
         className="aspect-[16/10]"
         imgClassName="transition-transform duration-500 group-hover:scale-105"
       />
-      <span className="absolute top-3 left-3 rounded-full bg-white/90 px-2.5 py-1 text-xs font-semibold text-forest-800">
+      <span className="absolute top-3 left-3 z-[3] rounded-full bg-white/90 px-2.5 py-1 text-xs font-semibold text-forest-800 shadow-md backdrop-blur">
         {tripTypes[pkg.tripType as keyof typeof tripTypes] ?? pkg.tripType}
       </span>
       <div className="flex flex-1 flex-col gap-3 p-5">
@@ -90,7 +90,7 @@ export function DestinationCard({
 }) {
   const tags = (d.bestFor ?? "").split(",").map((t) => t.trim()).filter(Boolean).slice(0, 3);
   return (
-    <article className="card group relative flex flex-col overflow-hidden">
+    <article data-tilt="7" className="card tilt group relative flex flex-col overflow-hidden">
       <SitePhoto
         url={d.imageUrl}
         alt={d.imageAlt}
@@ -99,7 +99,7 @@ export function DestinationCard({
         className="aspect-[4/3]"
         imgClassName="transition-transform duration-500 group-hover:scale-105"
       />
-      <span className="absolute top-3 left-3 rounded-full bg-white/90 px-2.5 py-1 text-xs font-semibold text-forest-800">{d.region}</span>
+      <span className="absolute top-3 left-3 z-[3] rounded-full bg-white/90 px-2.5 py-1 text-xs font-semibold text-forest-800 shadow-md backdrop-blur">{d.region}</span>
       <div className="flex flex-1 flex-col p-4">
         <h3 className="font-semibold text-forest-900">
           <Link href={`/destinations/${d.slug}/`} className="after:absolute after:inset-0 group-hover:underline">

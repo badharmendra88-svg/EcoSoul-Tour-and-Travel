@@ -4,6 +4,7 @@ import { Footer } from "@/components/Footer";
 import { Header } from "@/components/Header";
 import { MobileEnquiryBar } from "@/components/MobileEnquiryBar";
 import { SiteSettingsProvider } from "@/components/SiteSettingsProvider";
+import { TiltEffects } from "@/components/TiltEffects";
 import { UtmCapture } from "@/components/UtmCapture";
 import { site } from "@/config/site";
 import { getSettings } from "@/lib/settings";
@@ -53,6 +54,7 @@ export default async function SiteLayout({ children }: { children: React.ReactNo
       <MobileEnquiryBar />
       <FloatingWhatsApp />
       <UtmCapture />
+      <TiltEffects />
       <CookieConsent gaId={settings.gaId} metaPixelId={settings.metaPixelId} />
     </SiteSettingsProvider>
   );

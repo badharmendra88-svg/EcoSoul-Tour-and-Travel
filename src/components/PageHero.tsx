@@ -2,6 +2,7 @@ import { heroForPath } from "@/config/hero-images";
 import type { ReactNode } from "react";
 import { Breadcrumbs, type Crumb } from "./Breadcrumbs";
 import { SceneArt } from "./SceneArt";
+import { MountainLayers } from "./Depth";
 import { SitePhoto } from "./SitePhoto";
 
 export function PageHero({
@@ -37,9 +38,10 @@ export function PageHero({
   if (imageUrl) {
     return (
       <section className="relative overflow-hidden bg-forest-900">
-        <SitePhoto url={imageUrl} alt={imageAlt} sizes="100vw" priority className="absolute inset-0" />
+        <SitePhoto url={imageUrl} alt={imageAlt} sizes="100vw" priority className="hero-zoom absolute inset-0" />
         <div className="absolute inset-0 bg-gradient-to-r from-forest-900/90 via-forest-900/65 to-forest-900/20" />
-        <div className="container-page relative py-12 text-white sm:py-20 [&_nav]:text-forest-100 [&_nav_a:hover]:text-white [&_nav_[aria-current]]:text-white">
+        <MountainLayers />
+        <div className="container-page relative pt-12 pb-20 text-white sm:pt-20 sm:pb-32 [&_nav]:text-forest-100 [&_nav_a:hover]:text-white [&_nav_[aria-current]]:text-white">
           <Breadcrumbs items={crumbs} />
           {eyebrow && <p className="mt-6 text-xs font-semibold tracking-widest text-accent uppercase">{eyebrow}</p>}
           <h1 className={`max-w-3xl text-3xl font-bold tracking-tight sm:text-4xl ${eyebrow ? "mt-2" : "mt-6"}`}>{title}</h1>
