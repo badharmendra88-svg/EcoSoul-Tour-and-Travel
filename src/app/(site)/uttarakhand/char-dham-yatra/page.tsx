@@ -178,8 +178,8 @@ export default function CharDhamPage() {
               <Link href="/customise-my-trip/?destination=Char+Dham+Yatra&interest=Pilgrimage" className="btn-primary w-full">
                 Request a yatra plan
               </Link>
-              <Link href="/packages/char-dham-planning-assistance/" className="btn-outline w-full">
-                View planning package
+              <Link href="/packages/char-dham-yatra-10-days/" className="btn-outline w-full">
+                View 10-day Char Dham package
               </Link>
               <WhatsAppButton className="btn-secondary w-full" message="Hi EcoSoul, I'd like help planning the Char Dham Yatra." />
             </div>

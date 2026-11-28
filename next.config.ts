@@ -1,4 +1,5 @@
 import type { NextConfig } from "next";
+import { mergedRoutes } from "./src/config/journeys";
 
 const isDev = process.env.NODE_ENV !== "production";
 
@@ -84,6 +85,11 @@ const nextConfig: NextConfig = {
       { source: "/char-dham-yatra/", destination: "/uttarakhand/char-dham-yatra/", permanent: true },
       // Package pages live at /packages/<slug>/; the listing itself is the tour-packages page
       { source: "/packages/", destination: "/uttarakhand/tour-packages/", permanent: true },
+      // Duplicate taxi route pages merged into their twin (Haldwani → Kathgodam, Dehradun Airport → Dehradun)
+      ...Object.entries(mergedRoutes).map(([from, to]) => ({ source: `/taxi/${from}/`, destination: `/taxi/${to}/`, permanent: true })),
+      // Retired packages: replaced by a fuller package or by the trip planner
+      { source: "/packages/char-dham-planning-assistance/", destination: "/packages/char-dham-yatra-10-days/", permanent: true },
+      { source: "/packages/custom-uttarakhand-family-trip/", destination: "/customise-my-trip/", permanent: true },
     ];
   },
   async headers() {

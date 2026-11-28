@@ -166,14 +166,33 @@ export const destinationSlugFor = (id: string) => (id === "corbett" ? "jim-corbe
 
 export type RoutePage = { slug: string; from: Place; to: Place; km: number; time: string };
 
+/**
+ * Route pages folded into a near-identical page: Haldwani is about 6 km from Kathgodam station, so
+ * "Haldwani to X" duplicated "Kathgodam to X"; Dehradun Airport duplicated Dehradun. The legs stay in the
+ * fare estimator, and the old URLs redirect permanently to the target (see next.config.ts).
+ */
+export const mergedRoutes: Record<string, string> = {
+  "delhi-to-haldwani": "delhi-to-kathgodam",
+  "delhi-to-dehradun-airport": "delhi-to-dehradun",
+  "haldwani-to-nainital": "kathgodam-to-nainital",
+  "haldwani-to-bhimtal": "kathgodam-to-bhimtal",
+  "haldwani-to-naukuchiatal": "kathgodam-to-naukuchiatal",
+  "haldwani-to-almora": "kathgodam-to-almora",
+  "haldwani-to-mukteshwar": "kathgodam-to-mukteshwar",
+  "haldwani-to-ranikhet": "kathgodam-to-ranikhet",
+  "haldwani-to-jim-corbett": "kathgodam-to-jim-corbett",
+};
+
 /** One page per leg, in the direction travellers usually book it (as listed in `legs`). */
-export const routePages: RoutePage[] = legs.map(([a, b, km, time]) => ({
-  slug: `${placeSlug(a)}-to-${placeSlug(b)}`,
-  from: placeById(a)!,
-  to: placeById(b)!,
-  km,
-  time,
-}));
+export const routePages: RoutePage[] = legs
+  .map(([a, b, km, time]) => ({
+    slug: `${placeSlug(a)}-to-${placeSlug(b)}`,
+    from: placeById(a)!,
+    to: placeById(b)!,
+    km,
+    time,
+  }))
+  .filter((r) => !mergedRoutes[r.slug]);
 
 export const routePath = (r: Pick<RoutePage, "slug">) => `/taxi/${r.slug}/`;
 

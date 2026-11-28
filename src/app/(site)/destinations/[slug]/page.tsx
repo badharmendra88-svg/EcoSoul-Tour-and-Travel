@@ -6,6 +6,7 @@ import { FaqList } from "@/components/FaqList";
 import { JsonLd } from "@/components/JsonLd";
 import { PageHero } from "@/components/PageHero";
 import { destinationSlugFor, routePages, routePath, shortName } from "@/config/journeys";
+import { destinationGuides } from "@/config/destination-guides";
 import { kumaonById, kumaonPath } from "@/config/kumaon";
 import { site } from "@/config/site";
 import { db } from "@/lib/db";
@@ -42,7 +43,10 @@ export default async function DestinationPage({ params }: { params: Promise<{ sl
 
   const experiences = parseList(d.experiences);
   const practical = parseList(d.practical);
-  const faqs = parseFaqs(d.faqs);
+  const guide = destinationGuides[d.slug];
+  // Admin FAQs first, then the guide's extra questions (skipping any question the admin already answers)
+  const adminFaqs = parseFaqs(d.faqs);
+  const faqs = [...adminFaqs, ...(guide?.faqs ?? []).filter((g) => !adminFaqs.some((f) => f.q.toLowerCase() === g.q.toLowerCase()))];
   const taxiRoutes = routePages.filter((r) => destinationSlugFor(r.to.id) === d.slug).sort((a, b) => a.km - b.km).slice(0, 6);
 
   return (
@@ -99,6 +103,40 @@ export default async function DestinationPage({ params }: { params: Promise<{ sl
                   <li key={e}>{e}</li>
                 ))}
               </ul>
+            </>
+          )}
+
+          {guide && (
+            <>
+              <h2>Places to see in and around {d.name}</h2>
+              <div className="not-prose grid gap-4 sm:grid-cols-2">
+                {guide.places.map((p) => (
+                  <div key={p.name} className="card p-5">
+                    <h3 className="font-semibold text-forest-900">{p.name}</h3>
+                    <p className="mt-1 text-sm leading-relaxed text-slate-600">{p.text}</p>
+                  </div>
+                ))}
+              </div>
+
+              <h2>Where to stay in {d.name}</h2>
+              <ul>
+                {guide.stay.map((s) => <li key={s}>{s}</li>)}
+              </ul>
+
+              <h2>Getting there and around</h2>
+              <ul>
+                {guide.gettingAround.map((s) => <li key={s}>{s}</li>)}
+              </ul>
+
+              <h2>{guide.plan.title}</h2>
+              <ol className="not-prose relative space-y-3 border-l-2 border-forest-100 pl-5">
+                {guide.plan.days.map(([day, text]) => (
+                  <li key={day} className="relative">
+                    <span className="absolute top-1 -left-[1.6rem] h-3 w-3 rounded-full bg-forest-600 ring-4 ring-cream" aria-hidden="true" />
+                    <p className="text-sm"><strong className="text-forest-900">{day}:</strong> <span className="text-slate-700">{text}</span></p>
+                  </li>
+                ))}
+              </ol>
             </>
           )}
 

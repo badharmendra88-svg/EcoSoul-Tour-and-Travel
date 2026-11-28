@@ -9,6 +9,8 @@ import { TransportForm } from "@/components/forms/TransportForm";
 import { JsonLd } from "@/components/JsonLd";
 import { PageHero } from "@/components/PageHero";
 import { destinationSlugFor, routeBySlug, routePages, routePath, shortName, type RoutePage } from "@/config/journeys";
+import { placeInfo } from "@/config/place-info";
+import { routeNotes } from "@/config/route-notes";
 import { site } from "@/config/site";
 import { estimateFares, suggestedDays, type EstimatorRates } from "@/lib/fare-estimate";
 import { parseList } from "@/lib/json";
@@ -132,6 +134,8 @@ export default async function RoutePage({ params }: { params: Promise<{ route: s
   ];
 
   const experiences = dest ? parseList(dest.experiences).slice(0, 4) : [];
+  const notes = routeNotes(r.from, r.to);
+  const info = placeInfo[r.to.id];
 
   return (
     <>
@@ -265,7 +269,12 @@ export default async function RoutePage({ params }: { params: Promise<{ route: s
           </section>
 
           <section aria-labelledby="pickup-title">
-            <h2 id="pickup-title" className="h2">Pickup and the drive</h2>
+            <h2 id="pickup-title" className="h2">{from} to {to}: pickup and the drive</h2>
+            <div className="mt-4 space-y-3 leading-relaxed text-slate-700">
+              {notes.start && <p><strong className="text-forest-900">Pickup in {from}.</strong> {notes.start}</p>}
+              {notes.road && <p><strong className="text-forest-900">The road.</strong> {notes.road}</p>}
+              {notes.arrival && <p><strong className="text-forest-900">Arriving in {to}.</strong> {notes.arrival}</p>}
+            </div>
             <ul className="mt-4 space-y-3 text-slate-700">
               <li className="flex gap-3">
                 <span aria-hidden="true" className="text-forest-600">✓</span>
@@ -305,6 +314,26 @@ export default async function RoutePage({ params }: { params: Promise<{ route: s
               <Link href={`/destinations/${dest.slug}/`} className="mt-3 inline-block py-2 font-semibold text-forest-700 hover:underline">
                 Full {dest.name} travel guide →
               </Link>
+            </section>
+          )}
+
+          {!dest && info && (
+            <section aria-labelledby="dest-title">
+              <h2 id="dest-title" className="h2">About {to}</h2>
+              <p className="mt-3 leading-relaxed text-slate-700">{info.summary}</p>
+              <div className="mt-4 grid gap-4 sm:grid-cols-2">
+                <div className="card p-5">
+                  <h3 className="text-sm font-semibold tracking-wide text-forest-700 uppercase">Best time</h3>
+                  <p className="mt-2 text-sm leading-relaxed text-slate-700">{info.bestTime}</p>
+                </div>
+                <div className="card p-5">
+                  <h3 className="text-sm font-semibold tracking-wide text-forest-700 uppercase">Where to stay</h3>
+                  <p className="mt-2 text-sm leading-relaxed text-slate-700">{info.stay}</p>
+                </div>
+              </div>
+              <ul className="mt-4 list-disc space-y-1 pl-5 text-slate-700">
+                {info.highlights.map((h) => <li key={h}>{h}</li>)}
+              </ul>
             </section>
           )}
 

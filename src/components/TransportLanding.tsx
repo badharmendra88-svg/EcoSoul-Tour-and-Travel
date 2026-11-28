@@ -24,13 +24,6 @@ const fareRules = [
   ["One-way / empty return", "Any route-specific return charge explained before you confirm."],
 ];
 
-const workflow = [
-  "You submit a request with route, date and travellers.",
-  "We check partner, driver and vehicle availability and route suitability.",
-  "You receive an itemised quote with fare rules, cancellation terms and expiry.",
-  "You accept the quote and complete the agreed advance.",
-  "We confirm the booking and share pickup details; driver contact follows closer to the trip.",
-];
 
 export async function TransportLanding({
   title,
@@ -43,6 +36,7 @@ export async function TransportLanding({
   faqs,
   showVehicles = true,
   estimator,
+  showFareRules = false,
   children,
 }: {
   title: string;
@@ -56,6 +50,8 @@ export async function TransportLanding({
   showVehicles?: boolean;
   /** Show the instant fare estimator, starting on this route. */
   estimator?: { from: string; to: string };
+  /** The full "how fares are quoted" table (main taxi page); other pages show a one-line summary. */
+  showFareRules?: boolean;
   children?: React.ReactNode;
 }) {
   const rates = estimator ? await getPublicEstimatorRates() : null;
@@ -136,8 +132,9 @@ export async function TransportLanding({
             </section>
           )}
 
+          {showFareRules ? (
           <section>
-            <h2 className="h2">How fares are quoted</h2>
+            <h2 id="fare-rules" className="h2 scroll-mt-24">How fares are quoted</h2>
             <p className="mt-2 text-slate-600">
               {estimator
                 ? "The instant estimate is a guide from our current rate card. Your written quote confirms the exact fare after we check the route with local partners, and every quote is itemised:"
@@ -152,18 +149,13 @@ export async function TransportLanding({
               ))}
             </dl>
           </section>
+          ) : (
+            <p className="rounded-xl bg-forest-50 p-4 text-sm text-slate-700">
+              Every quote is itemised — base fare, included km and hours, driver allowance, tolls and parking, taxes and waiting charges.{" "}
+              <Link href="/uttarakhand/taxi-booking/#fare-rules" className="font-semibold text-forest-700 underline">How fares are quoted</Link>
+            </p>
+          )}
 
-          <section>
-            <h2 className="h2">How booking works</h2>
-            <ol className="mt-6 space-y-3">
-              {workflow.map((w, i) => (
-                <li key={w} className="flex gap-4">
-                  <span className="flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-forest-700 text-sm font-bold text-white">{i + 1}</span>
-                  <span className="pt-0.5 text-slate-700">{w}</span>
-                </li>
-              ))}
-            </ol>
-          </section>
 
           <section>
             <h2 className="h2">Frequently asked questions</h2>
@@ -187,7 +179,7 @@ export async function TransportLanding({
               <li><Link className="inline-block py-1.5 text-forest-700 hover:underline" href="/uttarakhand/airport-transfers/">Airport / railway transfers</Link></li>
               <li><Link className="inline-block py-1.5 text-forest-700 hover:underline" href="/uttarakhand/local-sightseeing-taxi/">Local sightseeing taxi</Link></li>
               <li><Link className="inline-block py-1.5 text-forest-700 hover:underline" href="/uttarakhand/haldwani-taxi-service/">Haldwani taxi service</Link></li>
-              <li><Link className="inline-block py-1.5 font-semibold text-forest-700 hover:underline" href="/taxi/">All taxi routes & fares →</Link></li>
+              <li><Link className="inline-block py-1.5 font-semibold text-forest-700 hover:underline" href="/taxi/">All taxi routes →</Link></li>
             </ul>
           </div>
         </aside>
