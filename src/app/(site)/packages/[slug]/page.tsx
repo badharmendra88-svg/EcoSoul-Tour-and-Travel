@@ -202,7 +202,7 @@ export default async function PackagePage({ params }: { params: Promise<{ slug: 
             <h2 className="font-semibold text-forest-900">How the price is worked out</h2>
             <p className="mt-2">
               {price
-                ? `The starting price is ${p.priceBasis ?? "per person"} for the lowest hotel category and off-peak dates.`
+                ? `From ${price} ${p.priceBasis ?? "per person"} — the lowest hotel category on off-peak dates.`
                 : "We don't show a fixed price until your trip details are known."}{" "}
               Your final quote depends on travel dates, hotel category, vehicle type and group size, and lists every inclusion and
               exclusion before you pay anything.
