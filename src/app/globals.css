@@ -386,52 +386,6 @@ select.admin-input:disabled {
   }
 }
 
-/* ---- Road map (RoadMap.tsx): tilted 3D "table map" ---- */
-.map-stage {
-  perspective: 1600px;
-}
-.map-plane {
-  transform: rotateX(22deg) rotateZ(-4deg);
-  transform-origin: 50% 60%;
-  transition: transform 0.8s cubic-bezier(0.2, 0.8, 0.2, 1);
-}
-@media (hover: hover) {
-  .map-stage:hover .map-plane {
-    transform: rotateX(8deg) rotateZ(-1deg);
-  }
-}
-.map-road {
-  stroke-dasharray: 10 8;
-}
-.map-label {
-  paint-order: stroke;
-  stroke: #03291a;
-  stroke-width: 4px;
-  stroke-linejoin: round;
-}
-.map-pin circle,
-.map-pin text {
-  transition: fill 0.2s ease;
-}
-.map-pin:hover text,
-.map-pin:focus-visible text {
-  fill: var(--color-accent);
-}
-@keyframes road-flow {
-  to {
-    stroke-dashoffset: -36;
-  }
-}
-@keyframes pin-pulse {
-  from {
-    r: 9;
-    opacity: 0.7;
-  }
-  to {
-    r: 26;
-    opacity: 0;
-  }
-}
 @keyframes reveal-up {
   from {
     opacity: 0;
@@ -443,12 +397,6 @@ select.admin-input:disabled {
   }
 }
 @media (prefers-reduced-motion: no-preference) {
-  .map-road {
-    animation: road-flow 1.2s linear infinite;
-  }
-  .map-pulse {
-    animation: pin-pulse 2.2s ease-out infinite;
-  }
   /* Sections rise into view while scrolling (CSS view timeline; shown normally where unsupported) */
   @supports (animation-timeline: view()) {
     .reveal {
@@ -456,17 +404,5 @@ select.admin-input:disabled {
       animation-timeline: view();
       animation-range: entry 0% entry 45%;
     }
-  }
-}
-@media (prefers-reduced-motion: reduce) {
-  .map-car,
-  .map-pulse {
-    display: none;
-  }
-}
-/* Phones: a flatter tilt so labels stay readable */
-@media (max-width: 640px) {
-  .map-plane {
-    transform: rotateX(12deg);
   }
 }

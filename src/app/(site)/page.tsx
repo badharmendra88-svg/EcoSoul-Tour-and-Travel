@@ -6,7 +6,6 @@ import { FaqList } from "@/components/FaqList";
 import { HeroBooking } from "@/components/HeroBooking";
 import { SceneArt } from "@/components/SceneArt";
 import { IconTile, MountainLayers, RidgeTop } from "@/components/Depth";
-import { RoadMap } from "@/components/RoadMap";
 import { SitePhoto } from "@/components/SitePhoto";
 import { originPath, origins, placeById, routeBySlug, routePath, seasons } from "@/config/journeys";
 import { tripTypes } from "@/config/options";
@@ -254,9 +253,6 @@ export default async function HomePage() {
           </div>
         </section>
       )}
-
-      {/* Animated road map of the main journeys */}
-      <RoadMap />
 
       {/* 5 — Popular taxi routes & driver booking */}
       <section className="container-page py-12 sm:py-16">
